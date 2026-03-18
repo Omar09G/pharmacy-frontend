@@ -1,10 +1,32 @@
-const App = () => {
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router';
+import AuthPage from './features/auth/AuthPage';
+import RequireAuth from './features/auth/components/RequireAuth';
+import ProductPage from './features/product/ProductPage';
+import HomePage from './pages/Home/HomePage';
+
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <h1 className="text-4xl font-bold underline">Hello world!</h1>
-      </div>
-    </>
+    <Routes>
+      <Route
+        path="/pharmacy"
+        element={
+          <RequireAuth>
+            <HomePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/pharmacy/product"
+        element={
+          <RequireAuth>
+            <ProductPage />
+          </RequireAuth>
+        }
+      />
+      <Route path="/login" element={<AuthPage />} />
+      <Route path="*" element={<Navigate to="/pharmacy" replace />} />
+    </Routes>
   );
 };
 
