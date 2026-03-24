@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import useUsers from '../hooks/useUsers';
 import {
   showError,
@@ -218,7 +218,9 @@ const UserList: React.FC = () => {
                 </td>
                 <td className="px-4 py-3 flex gap-2 justify-center">
                   <button
-                    onClick={() => setSelectedUser(u)}
+                    onClick={() =>
+                      setSelectedUser({ ...u, password: '', country: null })
+                    }
                     className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded-md shadow-sm"
                     title={`Editar ${u.username}`}
                   >

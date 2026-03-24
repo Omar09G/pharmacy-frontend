@@ -250,7 +250,7 @@ const AppMenu: React.FC = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              Admin
+              Administrador
             </a>
           )}
         </nav>
@@ -470,7 +470,7 @@ const AppMenu: React.FC = () => {
                     strokeLinejoin="round"
                   />
                 </svg>
-                Admin
+                Administrador
               </a>
             )}
             <div className="pt-2 border-t border-fuchsia-300 mt-2">

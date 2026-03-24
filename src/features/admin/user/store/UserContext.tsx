@@ -14,6 +14,13 @@ import {
   UserResponse,
 } from '../../../../components/Admin/User/Utils/utils';
 
+// Declare global setter on window to avoid `any` casts and satisfy ESLint
+declare global {
+  interface Window {
+    __USER_CTX_SETTER__?: (u: UserRequest | null) => void;
+  }
+}
+
 type State = {
   items: UserResponse[];
   total: number;
@@ -148,12 +155,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // expose a small bridge for lightweight selection from components
-    (window as any).__USER_CTX_SETTER__ = setSelectedUser;
+    if (typeof window !== 'undefined') {
+      window.__USER_CTX_SETTER__ = setSelectedUser;
+    }
     return () => {
-      try {
-        delete (window as any).__USER_CTX_SETTER__;
-      } catch (err) {
-        console.error('Error cleaning up user context bridge:', err);
+      if (typeof window !== 'undefined') {
+        window.__USER_CTX_SETTER__ = undefined;
       }
     };
   }, [setSelectedUser]);
