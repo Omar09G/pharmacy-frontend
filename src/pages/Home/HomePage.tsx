@@ -8,9 +8,7 @@ const HomePage: React.FC = () => {
     <div className="min-h-screen flex flex-col ">
       <AppMenu />
 
-      <div className="flex-1 flex items-start justify-center">
-        <AppContent />
-      </div>
+      <AppContent />
 
       <AppFooter />
     </div>

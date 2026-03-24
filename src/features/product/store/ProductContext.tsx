@@ -1,9 +1,16 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useReducer,
+  ReactNode,
+  useCallback,
+} from 'react';
 import { ProductRequest } from '../../../components/Product/Utils/UtilsProduct';
 import productService from '../services/productService';
 
 type State = {
   items: ProductRequest[];
+  itemsFilter: ProductRequest[];
   total: number;
   page: number;
   limit: number;
@@ -16,14 +23,24 @@ type Actions =
   | { type: 'error'; payload: string }
   | {
       type: 'set';
-      payload: { items: ProductRequest[]; total: number; page: number };
+      payload: {
+        items: ProductRequest[];
+        itemsFilter: ProductRequest[];
+        total: number;
+        page: number;
+      };
     }
+  | { type: 'setLimit'; payload: number }
+  | { type: 'setItems'; payload: ProductRequest[] }
+  | { type: 'clear' }
   | { type: 'add'; payload: ProductRequest }
   | { type: 'update'; payload: ProductRequest }
-  | { type: 'remove'; payload: number };
+  | { type: 'remove'; payload: number }
+  | { type: 'clearError' };
 
 const initial: State = {
   items: [],
+  itemsFilter: [],
   total: 0,
   page: 1,
   limit: 10,
@@ -42,9 +59,16 @@ function reducer(state: State, action: Actions): State {
         ...state,
         loading: false,
         items: action.payload.items,
+        itemsFilter: action.payload.items,
         total: action.payload.total,
         page: action.payload.page,
       };
+    case 'setLimit':
+      return { ...state, limit: action.payload };
+    case 'setItems':
+      return { ...state, items: action.payload };
+    case 'clear':
+      return { ...initial };
     case 'add':
       return {
         ...state,
@@ -67,6 +91,8 @@ function reducer(state: State, action: Actions): State {
         items: state.items.filter((p) => p.productId !== action.payload),
         total: Math.max(0, state.total - 1),
       };
+    case 'clearError':
+      return { ...state, error: null };
     default:
       return state;
   }
@@ -78,6 +104,10 @@ type ContextType = State & {
   edit: (id: number, data: Partial<ProductRequest>) => Promise<void>;
   remove: (id: number) => Promise<void>;
   setLimit: (limit: number) => void;
+  setError: () => void;
+  setItems: () => void;
+  clearVista: () => void;
+  buscarProducto: (productName: string) => void;
   fetchPageProductDetail: (page: number, productName: string) => Promise<void>;
 };
 
@@ -86,79 +116,141 @@ const ProductContext = createContext<ContextType | undefined>(undefined);
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, initial);
 
-  const fetchPage = async (page = 1) => {
-    try {
-      dispatch({ type: 'loading' });
-      const res = await productService.fetchProducts(
-        page,
-        state.limit,
-        state.total,
-      );
-      // expecting { items, total }
+  const fetchPage = useCallback(
+    async (page = 1, limitParam?: number) => {
+      console.count('product.fetchPage');
+      try {
+        dispatch({ type: 'loading' });
+        const limitToUse =
+          typeof limitParam === 'number' ? limitParam : state.limit;
+        const res = await productService.fetchProducts(
+          page,
+          limitToUse,
+          state.total,
+        );
+        dispatch({
+          type: 'set',
+          payload: {
+            items: res.items,
+            itemsFilter: res.items,
+            total: res.total,
+            page,
+          },
+        });
+      } catch (err: unknown) {
+        let message = 'Fetch error';
+        if (err instanceof Error) message = err.message;
+        dispatch({ type: 'error', payload: message });
+      }
+    },
+    [state.limit, state.total],
+  );
 
-      dispatch({
-        type: 'set',
-        payload: { items: res.items, total: res.total, page },
-      });
-    } catch (err: any) {
-      dispatch({ type: 'error', payload: err.message || 'Fetch error' });
-    }
-  };
+  const fetchPageProductDetail = useCallback(
+    async (page = 1, productName: string) => {
+      try {
+        dispatch({ type: 'loading' });
+        const res = await productService.getProductDetails(
+          page,
+          state.limit,
+          state.total,
+          productName,
+        );
+        dispatch({
+          type: 'set',
+          payload: {
+            items: res.items,
+            itemsFilter: res.items,
+            total: res.total,
+            page,
+          },
+        });
+      } catch (err: unknown) {
+        let message = 'Fetch error';
+        if (err instanceof Error) message = err.message;
+        dispatch({ type: 'error', payload: 'Product not Found  ' + message });
+      }
+    },
+    [state.limit, state.total],
+  );
 
-  const fetchPageProductDetail = async (page = 1, productName: string) => {
-    try {
-      dispatch({ type: 'loading' });
-      const res = await productService.getProductDetails(
-        page,
-        state.limit,
-        state.total,
-        productName,
-      );
-      // expecting { items, total }
+  const create = useCallback(
+    async (data: Omit<ProductRequest, 'productId'>) => {
+      console.count('product.create');
+      try {
+        dispatch({ type: 'loading' });
+        const created = await productService.createProduct(data);
+        dispatch({ type: 'add', payload: created });
+      } catch (err: unknown) {
+        let message = 'Create error';
+        if (err instanceof Error) message = err.message;
+        dispatch({ type: 'error', payload: message });
+      }
+    },
+    [],
+  );
 
-      dispatch({
-        type: 'set',
-        payload: { items: res.items, total: res.total, page },
-      });
-    } catch (err: any) {
-      dispatch({ type: 'error', payload: err.message || 'Fetch error' });
-    }
-  };
+  const edit = useCallback(
+    async (id: number, data: Partial<ProductRequest>) => {
+      console.count('product.edit');
+      try {
+        dispatch({ type: 'loading' });
+        const updated = await productService.updateProduct(id, data);
+        dispatch({ type: 'update', payload: updated });
+      } catch (err: unknown) {
+        let message = 'Update error';
+        if (err instanceof Error) message = err.message;
+        dispatch({ type: 'error', payload: message });
+      }
+    },
+    [],
+  );
 
-  const create = async (data: Omit<ProductRequest, 'productId'>) => {
-    try {
-      dispatch({ type: 'loading' });
-      const created = await productService.createProduct(data);
-      dispatch({ type: 'add', payload: created });
-    } catch (err: any) {
-      dispatch({ type: 'error', payload: err.message || 'Create error' });
-    }
-  };
-
-  const edit = async (id: number, data: Partial<ProductRequest>) => {
-    try {
-      dispatch({ type: 'loading' });
-      const updated = await productService.updateProduct(id, data);
-      dispatch({ type: 'update', payload: updated });
-    } catch (err: any) {
-      dispatch({ type: 'error', payload: err.message || 'Update error' });
-    }
-  };
-
-  const remove = async (id: number) => {
+  const remove = useCallback(async (id: number) => {
+    console.count('product.remove');
     try {
       dispatch({ type: 'loading' });
       await productService.deleteProduct(id);
       dispatch({ type: 'remove', payload: id });
-    } catch (err: any) {
-      dispatch({ type: 'error', payload: err.message || 'Delete error' });
+    } catch (err: unknown) {
+      let message = 'Delete error';
+      if (err instanceof Error) message = err.message;
+      dispatch({ type: 'error', payload: message });
     }
-  };
+  }, []);
 
-  const setLimit = (limit: number) => {
-    state.limit = limit;
-    fetchPage(state.page);
-  };
+  const setLimit = useCallback(
+    (limit: number) => {
+      dispatch({ type: 'setLimit', payload: limit });
+      // fetch page with new limit
+      fetchPage(1, limit);
+    },
+    [fetchPage],
+  );
+
+  const setError = useCallback(() => {
+    dispatch({ type: 'clearError' });
+  }, []);
+
+  const setItems = useCallback(() => {
+    dispatch({ type: 'setItems', payload: [] });
+  }, []);
+
+  // removed unused setItemsProduct to satisfy lint rules
+
+  const clearVista = useCallback(() => {
+    dispatch({ type: 'clear' });
+  }, []);
+
+  const buscarProducto = useCallback(
+    (productName: string) => {
+      const newItems = state.itemsFilter.filter((p) =>
+        p.productName.startsWith(productName),
+      );
+      dispatch({ type: 'setItems', payload: newItems });
+    },
+    [state.itemsFilter],
+  );
 
   return (
     <ProductContext.Provider
@@ -169,7 +261,11 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         edit,
         remove,
         setLimit,
+        setError,
+        setItems,
+        clearVista,
         fetchPageProductDetail,
+        buscarProducto,
       }}
     >
       {children}

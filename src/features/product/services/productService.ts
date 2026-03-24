@@ -2,8 +2,18 @@ import { ApiResponse } from '../../../utils/Utils';
 import { ProductRequest } from '../../../components/Product/Utils/UtilsProduct';
 import AxioscCient from '../../../services/Service';
 
+type AxiosLike =
+  | { response?: { data?: { message?: string } } }
+  | Record<string, unknown>;
+
 const BASE = '/product';
 const BASE_DETAILS = '/product/details';
+const BASE_CODE = '/product/code';
+
+//Funcion para validar con expecion regular si el texto ingresado es un numero o no, para buscar por nombre o por codigo de barras
+export function isNumeric(value: string): boolean {
+  return /^\d+$/.test(value);
+}
 
 export const productService = {
   async fetchProducts(page = 0, limit = 0, total = 0) {
@@ -19,10 +29,13 @@ export const productService = {
       };
 
       return ilResult;
-    } catch (err: any) {
-      throw new Error(
-        err?.response?.data?.message || err.message || 'API error',
-      );
+    } catch (err: unknown) {
+      let message = 'API error';
+      if (err instanceof Error) message = err.message;
+      if (err && typeof err === 'object' && 'response' in err) {
+        message = (err as AxiosLike).response?.data?.message ?? message;
+      }
+      throw new Error(message);
     }
   },
 
@@ -32,24 +45,30 @@ export const productService = {
         `${BASE}/${id}`,
       );
       return res.data.data;
-    } catch (err: any) {
-      throw new Error(
-        err?.response?.data?.message || err.message || 'API error',
-      );
+    } catch (err: unknown) {
+      let message = 'API error';
+      if (err instanceof Error) message = err.message;
+      if (err && typeof err === 'object' && 'response' in err) {
+        message = (err as AxiosLike).response?.data?.message ?? message;
+      }
+      throw new Error(message);
     }
   },
 
-  async createProduct(payload: Omit<ProductRequest, 'productd'>) {
+  async createProduct(payload: Omit<ProductRequest, 'productId'>) {
     try {
       const res = await AxioscCient.put<ApiResponse<ProductRequest>>(
         BASE,
         payload,
       );
       return res.data.data;
-    } catch (err: any) {
-      throw new Error(
-        err?.response?.data?.message || err.message || 'API error',
-      );
+    } catch (err: unknown) {
+      let message = 'API error';
+      if (err instanceof Error) message = err.message;
+      if (err && typeof err === 'object' && 'response' in err) {
+        message = (err as AxiosLike).response?.data?.message ?? message;
+      }
+      throw new Error(message);
     }
   },
 
@@ -60,10 +79,13 @@ export const productService = {
         payload,
       );
       return res.data.data;
-    } catch (err: any) {
-      throw new Error(
-        err?.response?.data?.message || err.message || 'API error',
-      );
+    } catch (err: unknown) {
+      let message = 'API error';
+      if (err instanceof Error) message = err.message;
+      if (err && typeof err === 'object' && 'response' in err) {
+        message = (err as AxiosLike).response?.data?.message ?? message;
+      }
+      throw new Error(message);
     }
   },
 
@@ -73,18 +95,22 @@ export const productService = {
         `${BASE}/${id}`,
       );
       return res.data.data;
-    } catch (err: any) {
-      throw new Error(
-        err?.response?.data?.message || err.message || 'API error',
-      );
+    } catch (err: unknown) {
+      let message = 'API error';
+      if (err instanceof Error) message = err.message;
+      if (err && typeof err === 'object' && 'response' in err) {
+        message = (err as AxiosLike).response?.data?.message ?? message;
+      }
+      throw new Error(message);
     }
   },
 
   async getProductDetails(page = 0, limit = 0, total = 0, productName: string) {
     const pageTotal = page - 1;
+    const BASE_URL: string = isNumeric(productName) ? BASE_CODE : BASE_DETAILS;
     try {
       const res = await AxioscCient.get<ApiResponse<ProductRequest[]>>(
-        BASE_DETAILS,
+        BASE_URL,
         {
           params: { page: pageTotal, limit, total, productName },
         },
@@ -96,10 +122,13 @@ export const productService = {
       };
 
       return ilResult;
-    } catch (err: any) {
-      throw new Error(
-        err?.response?.data?.message || err.message || 'API error',
-      );
+    } catch (err: unknown) {
+      let message = 'API error';
+      if (err instanceof Error) message = err.message;
+      if (err && typeof err === 'object' && 'response' in err) {
+        message = (err as AxiosLike).response?.data?.message ?? message;
+      }
+      throw new Error(message);
     }
   },
 };

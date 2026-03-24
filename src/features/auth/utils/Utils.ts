@@ -21,4 +21,5 @@ export type AuthContextValue = {
   error: string | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  setError: (error: string | null) => void;
 };
