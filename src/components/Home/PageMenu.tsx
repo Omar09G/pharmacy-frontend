@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import useAuth from '../../features/auth/hooks/useAuth';
+import { ADMIN_ROLE } from '../../utils/Utils';
 
 const AppMenu: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
@@ -226,28 +227,32 @@ const AppMenu: React.FC = () => {
             </svg>
             Facturacion
           </a>
-
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            className="inline-flex items-center gap-2 bg-gradient-to from-fuchsia-500 to-fuchsia-700 hover:from-fuchsia-600 hover:to-fuchsia-800 text-white font-semibold py-2 px-4 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-300"
-          >
-            <svg
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
+          {user?.role === ADMIN_ROLE && (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/pharmacy/admin');
+              }}
+              className="inline-flex items-center gap-2 bg-gradient-to from-fuchsia-500 to-fuchsia-700 hover:from-fuchsia-600 hover:to-fuchsia-800 text-white font-semibold py-2 px-4 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-300"
             >
-              <path
-                d="M12 2v4M5 7l2 2M19 7l-2 2M4 13h16M8 19h8"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Admin
-          </a>
+              <svg
+                className="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2v4M5 7l2 2M19 7l-2 2M4 13h16M8 19h8"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Admin
+            </a>
+          )}
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
@@ -441,30 +446,33 @@ const AppMenu: React.FC = () => {
               </svg>
               Facturacion
             </a>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setOpen(false);
-              }}
-              className="text-left inline-flex items-center gap-2 bg-fuchsia-500 text-white py-2 px-3 rounded"
-            >
-              <svg
-                className="w-4 h-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
+            {user?.role === ADMIN_ROLE && (
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpen(false);
+                  navigate('/pharmacy/admin');
+                }}
+                className="text-left inline-flex items-center gap-2 bg-fuchsia-500 text-white py-2 px-3 rounded"
               >
-                <path
-                  d="M12 2v4M5 7l2 2M19 7l-2 2M4 13h16M8 19h8"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Admin
-            </a>
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 2v4M5 7l2 2M19 7l-2 2M4 13h16M8 19h8"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Admin
+              </a>
+            )}
             <div className="pt-2 border-t border-fuchsia-300 mt-2">
               <a
                 href="#"

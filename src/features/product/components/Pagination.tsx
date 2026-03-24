@@ -50,14 +50,14 @@ const Pagination: React.FC<Props> = ({
         aria-disabled={page <= 1}
       >
         <svg
-          className="inline-block w-4 h-4 mr-2"
+          className="inline-block w-4 h-4 ml-2"
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
         >
           <path
             fillRule="evenodd"
-            d="M12.293 16.293a1 1 0 010-1.414L15.586 11H5a1 1 0 110-2h10.586l-3.293-3.293a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
+            d="M7.707 3.707a1 1 0 010 1.414L4.414 9H15a1 1 0 110 2H4.414l3.293 3.293a1 1 0 01-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z"
             clipRule="evenodd"
           />
         </svg>
@@ -80,14 +80,14 @@ const Pagination: React.FC<Props> = ({
       >
         Next
         <svg
-          className="inline-block w-4 h-4 ml-2"
+          className="inline-block w-4 h-4 mr-2"
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
         >
           <path
             fillRule="evenodd"
-            d="M7.707 3.707a1 1 0 010 1.414L4.414 9H15a1 1 0 110 2H4.414l3.293 3.293a1 1 0 01-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z"
+            d="M12.293 16.293a1 1 0 010-1.414L15.586 11H5a1 1 0 110-2h10.586l-3.293-3.293a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
             clipRule="evenodd"
           />
         </svg>

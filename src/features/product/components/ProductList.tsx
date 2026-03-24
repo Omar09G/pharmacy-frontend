@@ -4,7 +4,10 @@ import Pagination from './Pagination';
 import { useProductStore } from '../store/ProductContext';
 import ProductForm from './ProductForm';
 import Swal from 'sweetalert2';
-import { showError } from '../../../components/Alerts/AlertsComponent';
+import {
+  showError,
+  showSuccess,
+} from '../../../components/Alerts/AlertsComponent';
 
 const ProductList: React.FC = () => {
   const {
@@ -54,11 +57,10 @@ const ProductList: React.FC = () => {
       if (result.isConfirmed) {
         remove(id);
         if (error == null) {
-          Swal.fire({
-            title: 'Deleted!',
-            text: 'Your file has been deleted.',
-            icon: 'success',
-          });
+          showSuccess(
+            'Producto Eliminado',
+            'El producto se ha eliminado correctamente',
+          );
         }
       }
     });

@@ -6,3 +6,7 @@ export type ApiResponse<T> = {
   timestamp: string;
   total: number;
 };
+
+export const ADMIN_ROLE = 'ADMIN';
+
+export const USER_ROLE = 'USER';
