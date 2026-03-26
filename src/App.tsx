@@ -5,6 +5,7 @@ import RequireAuth from './features/auth/components/RequireAuth';
 import ProductPage from './features/product/ProductPage';
 import HomePage from './pages/Home/HomePage';
 import AdminPage from './pages/Admin/AdminPage';
+import SalesPage from './features/venta/SalesPage';
 
 const App: React.FC = () => {
   return (
@@ -25,7 +26,14 @@ const App: React.FC = () => {
           </RequireAuth>
         }
       />
-
+      <Route
+        path="/pharmacy/sales"
+        element={
+          <RequireAuth>
+            <SalesPage />
+          </RequireAuth>
+        }
+      />
       <Route
         path="/pharmacy/admin"
         element={

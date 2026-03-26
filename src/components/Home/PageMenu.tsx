@@ -117,7 +117,10 @@ const AppMenu: React.FC = () => {
 
           <a
             href="#"
-            onClick={(e) => e.preventDefault()}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/pharmacy/sales');
+            }}
             className="inline-flex items-center gap-2 bg-gradient-t from-fuchsia-500 to-fuchsia-700 hover:from-fuchsia-600 hover:to-fuchsia-800 text-white font-semibold py-2 px-4 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-300"
           >
             <svg
@@ -330,6 +333,7 @@ const AppMenu: React.FC = () => {
               onClick={(e) => {
                 e.preventDefault();
                 setOpen(false);
+                navigate('/pharmacy/sales');
               }}
               className="text-left inline-flex items-center gap-2 bg-fuchsia-500 text-white py-2 px-3 rounded"
             >

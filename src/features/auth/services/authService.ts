@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { LoginData } from '../utils/Utils';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:8080/v1/api';
 
 const client = axios.create({
   baseURL: API_URL,
