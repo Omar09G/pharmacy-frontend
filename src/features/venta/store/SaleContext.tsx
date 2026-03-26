@@ -6,6 +6,10 @@ import {
   SalesResponseIdDTO,
 } from '../ventaDto/ventaDto';
 import saleService from '../services/saleService';
+import {
+  showError,
+  showSuccess,
+} from '../../../components/Alerts/AlertsComponent';
 
 type LastQuery =
   | { type: 'date'; params: PaginationParamsSales }
@@ -31,6 +35,8 @@ type SaleContextType = {
   selectSale: (s: SalesResponse | null) => void;
   /** Re-calls the last search service with a new page number */
   goToPage: (p: number) => Promise<void>;
+  /** Reset sales list/search state to initial values */
+  resetSalesSearchState: () => void;
   setPage: (p: number) => void;
   setLimit: (l: number) => void;
 };
@@ -48,40 +54,66 @@ export const SaleProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selected, setSelected] = useState<SalesResponse | null>(null);
   const [lastQuery, setLastQuery] = useState<LastQuery | null>(null);
 
+  const resetSalesSearchState = () => {
+    setSales([]);
+    setTotal(0);
+    setPage(1);
+    setSelected(null);
+    setLastQuery(null);
+  };
+
   const fetchSalesByDate = async (params: PaginationParamsSales) => {
+    const normalizedParams: PaginationParamsSales = { ...params, page: 1 };
+    resetSalesSearchState();
     setLoading(true);
-    setLastQuery({ type: 'date', params });
-    setPage(params.page ?? 1);
+    setLastQuery({ type: 'date', params: normalizedParams });
     try {
-      const res = await saleService.getSalesByDate(params);
+      const res = await saleService.getSalesByDate(normalizedParams);
       setSales(res.items);
       setTotal(res.total);
+    } catch (e) {
+      console.error(e);
+      showError((e as Error)?.message ?? 'Error al obtener ventas por fecha');
+      resetSalesSearchState();
+      throw e;
     } finally {
       setLoading(false);
     }
   };
 
   const fetchSalesByUser = async (params: PaginationParamsSales) => {
+    const normalizedParams: PaginationParamsSales = { ...params, page: 1 };
+    resetSalesSearchState();
     setLoading(true);
-    setLastQuery({ type: 'user', params });
-    setPage(params.page ?? 1);
+    setLastQuery({ type: 'user', params: normalizedParams });
     try {
-      const res = await saleService.getSalesByUsername(params);
+      const res = await saleService.getSalesByUsername(normalizedParams);
       setSales(res.items);
       setTotal(res.total);
+    } catch (e) {
+      console.error(e);
+      showError((e as Error)?.message ?? 'Error al obtener ventas por usuario');
+      resetSalesSearchState();
+      throw e;
     } finally {
       setLoading(false);
     }
   };
 
   const searchSales = async (params: PaginationParamsSales) => {
+    const normalizedParams: PaginationParamsSales = { ...params, page: 1 };
+    resetSalesSearchState();
     setLoading(true);
-    setLastQuery({ type: 'search', params });
-    setPage(params.page ?? 1);
+    setLastQuery({ type: 'search', params: normalizedParams });
     try {
-      const res = await saleService.searchSales(params);
+      const res = await saleService.searchSales(normalizedParams);
       setSales(res.items);
       setTotal(res.total);
+    } catch (e) {
+      console.error(e);
+      showError((e as Error)?.message ?? 'Error al buscar ventas');
+      resetSalesSearchState();
+      throw e;
     } finally {
       setLoading(false);
     }
@@ -112,7 +144,16 @@ export const SaleProvider: React.FC<{ children: React.ReactNode }> = ({
   const createSale = async (payload: SalesRequestDTO) => {
     setLoading(true);
     try {
-      return await saleService.createSale(payload);
+      const res = await saleService.createSale(payload);
+      showSuccess(
+        'Venta creada',
+        'La venta se registró correctamente' +
+          (res ? ` con ID #${res.id}` : ''),
+      );
+      return res;
+    } catch (e) {
+      console.error(e);
+      showError((e as Error)?.message ?? 'Error al crear la venta');
     } finally {
       setLoading(false);
     }
@@ -125,6 +166,10 @@ export const SaleProvider: React.FC<{ children: React.ReactNode }> = ({
       setSales((prev) =>
         prev.map((s) => (s.id === id ? { ...s, status: 'CANCEL' } : s)),
       );
+      showSuccess('Venta cancelada', 'La venta fue cancelada correctamente');
+    } catch (e) {
+      console.error(e);
+      showError((e as Error)?.message ?? 'Error al cancelar la venta');
     } finally {
       setLoading(false);
     }
@@ -135,6 +180,10 @@ export const SaleProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await saleService.deleteSale(id);
       setSales((prev) => prev.filter((s) => s.id !== id));
+      showSuccess('Venta eliminada', 'La venta fue eliminada correctamente');
+    } catch (e) {
+      console.error(e);
+      showError((e as Error)?.message ?? 'Error al eliminar la venta');
     } finally {
       setLoading(false);
     }
@@ -159,6 +208,7 @@ export const SaleProvider: React.FC<{ children: React.ReactNode }> = ({
         deleteSale,
         selectSale,
         goToPage,
+        resetSalesSearchState,
         setPage,
         setLimit,
       }}

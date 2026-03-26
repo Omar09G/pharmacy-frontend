@@ -4,7 +4,7 @@ import AxioscCient from '../../../services/Service';
 
 type AxiosLike =
   | { response?: { data?: { message?: string } } }
-  | Record<string, unknown>;
+  | { response?: undefined };
 
 const BASE = '/product';
 const BASE_DETAILS = '/product/details';

@@ -13,6 +13,12 @@ type AxiosLike = { response?: { data?: { message?: string } } };
 
 const BASE = '/sale';
 
+// In-flight requests cache to deduplicate concurrent detail fetches
+const inflightSaleDetails = new Map<
+  number,
+  Promise<SalesDetailResponseDTO[]>
+>();
+
 function apiErr(err: unknown): never {
   let message = 'API error';
   if (err instanceof Error) message = err.message;
@@ -81,7 +87,7 @@ export const saleService = {
   ): Promise<{ items: SalesResponse[]; total: number }> {
     try {
       const res = await AxioscCient.get<ApiResponse<SalesResponse[]>>(
-        `${BASE}/date/${params.dateInicio ?? ''}`,
+        `${BASE}/date`,
         { params },
       );
       return { items: res.data.data ?? [], total: res.data.total ?? 0 };
@@ -128,14 +134,23 @@ export const saleService = {
   // ── GET /v1/api/sale/detail/{sale_id} ─────────────────────────────────
   // Path: sale_id → returns child detail rows for that sale
   async getSaleDetailsById(id: number): Promise<SalesDetailResponseDTO[]> {
-    try {
-      const res = await AxioscCient.get<ApiResponse<SalesDetailResponseDTO[]>>(
-        `${BASE}/detail/${id}`,
-      );
-      return res.data.data ?? [];
-    } catch (err) {
-      apiErr(err);
-    }
+    if (inflightSaleDetails.has(id)) return inflightSaleDetails.get(id)!;
+
+    const p = (async () => {
+      try {
+        const res = await AxioscCient.get<
+          ApiResponse<SalesDetailResponseDTO[]>
+        >(`${BASE}/detail/${id}`);
+        return res.data.data ?? [];
+      } catch (err) {
+        apiErr(err);
+      } finally {
+        inflightSaleDetails.delete(id);
+      }
+    })();
+
+    inflightSaleDetails.set(id, p);
+    return p;
   },
 
   // ── GET /v1/api/sale/details ───────────────────────────────────────────

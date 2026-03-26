@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SalesDetailResponseDTO } from '../ventaDto/ventaDto';
 import saleService from '../services/saleService';
 import useSales from '../hooks/useSales';
+import { showError } from '../../../components/Alerts/AlertsComponent';
 
 const SalesDetail: React.FC = () => {
   const { selected } = useSales();
@@ -16,7 +17,7 @@ const SalesDetail: React.FC = () => {
         const res = await saleService.getSaleDetailsById(selected.id);
         setDetails(res || []);
       } catch (e) {
-        console.error(e);
+        showError((e as Error)?.message ?? 'Error al cargar detalles de venta');
       } finally {
         setLoading(false);
       }
