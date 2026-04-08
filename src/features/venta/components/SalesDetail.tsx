@@ -72,11 +72,13 @@ const SalesDetail: React.FC = () => {
               {details.map((d) => (
                 <tr
                   key={d.id}
-                  className="border-t border-gray-100 hover:bg-gray-50"
+                  className="border-t border-gray-200 hover:bg-fuchsia-100"
                 >
                   <td className="px-2 py-1.5">{d.productCodeBar ?? '-'}</td>
-                  <td className="px-2 py-1.5">{d.productId}</td>
-                  <td className="px-2 py-1.5 text-right">{d.productCount}</td>
+                  <td className="px-2 py-1.5">{d.productName}</td>
+                  <td className="px-2 py-1.5 text-right">
+                    {(d.productCount ?? 0).toFixed(2)}
+                  </td>
                   <td className="px-2 py-1.5 text-right">
                     ${(d.productPrice ?? 0).toFixed(2)}
                   </td>

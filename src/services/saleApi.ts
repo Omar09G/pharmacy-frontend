@@ -1,0 +1,32 @@
+import api from '../api/axiosInstance';
+import type { ApiResponse } from '../utils/Utils';
+import type { Sale, AddSaleRequest } from '../models/sale.model';
+
+export const saleApi = {
+  getAll: (page = 0, limit = 10, total = 0) =>
+    api
+      .get<ApiResponse<Sale[]>>('/sale', { params: { page, limit, total } })
+      .then((r) => r.data),
+
+  getById: (id: number) =>
+    api.get<ApiResponse<Sale>>(`/sale/${id}`).then((r) => r.data),
+
+  getDetailById: (id: number) =>
+    api.get<ApiResponse<Sale>>(`/sale/${id}`).then((r) => r.data),
+
+  getByDate: (date: string, page = 0, limit = 10, total = 0) =>
+    api
+      .get<
+        ApiResponse<Sale[]>
+      >('/sale/date', { params: { date, page, limit, total } })
+      .then((r) => r.data),
+
+  search: (params: Record<string, unknown>) =>
+    api.get<ApiResponse<Sale[]>>('/sale', { params }).then((r) => r.data),
+
+  create: (payload: AddSaleRequest) =>
+    api.put<ApiResponse<Sale>>('/add_sale', payload).then((r) => r.data),
+
+  cancel: (id: number) =>
+    api.patch<ApiResponse<null>>(`/add_sale/${id}`, {}).then((r) => r.data),
+};

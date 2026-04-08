@@ -82,6 +82,10 @@ const SalesList: React.FC<Props> = ({ onViewDetail }) => {
                     <span className="font-medium text-fuchsia-700">Pago:</span>{' '}
                     {s.paymentMethod ?? '-'} / {s.paymentStatus ?? '-'}
                   </div>
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium text-fuchsia-700">Iva:</span> $
+                    {s.iva.toFixed(2) ?? '-'}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-1 ml-3 shrink-0">

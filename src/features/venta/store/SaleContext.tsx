@@ -73,7 +73,7 @@ export const SaleProvider: React.FC<{ children: React.ReactNode }> = ({
       setTotal(res.total);
     } catch (e) {
       console.error(e);
-      showError((e as Error)?.message ?? 'Error al obtener ventas por fecha');
+      showError('Error al obtener ventas por fecha: ' + params.dateInicio);
       resetSalesSearchState();
       throw e;
     } finally {

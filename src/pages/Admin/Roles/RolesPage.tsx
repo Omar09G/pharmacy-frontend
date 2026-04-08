@@ -1,0 +1,216 @@
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { type ColumnDef } from '@tanstack/react-table';
+import { roleApi } from '../../../services/roleApi';
+import type { Role, RoleCreate } from '../../../models/role.model';
+import { DEFAULT_PAGE_SIZE } from '../../../utils/constants';
+import { showSuccess, showError, confirmDelete } from '../../../utils/alerts';
+import { useCrudModal } from '../../../hooks/useCrudModal';
+import Card from '../../../components/ui/Card';
+import Button from '../../../components/ui/Button';
+import DataTable from '../../../components/ui/DataTable';
+import Pagination from '../../../components/ui/Pagination';
+import SearchInput from '../../../components/ui/SearchInput';
+import Modal from '../../../components/ui/Modal';
+import Input from '../../../components/ui/Input';
+import Badge from '../../../components/ui/Badge';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+
+const schema = z.object({
+  roleName: z.string().min(1, 'Requerido'),
+  description: z.string().catch(''),
+  active: z.boolean().catch(true),
+});
+type FormData = z.infer<typeof schema>;
+
+const RolesPage: React.FC = () => {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
+  const { open, editing, openCreate, openEdit, close } = useCrudModal<Role>();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['roles', page, search],
+    queryFn: () => roleApi.getAll(page, DEFAULT_PAGE_SIZE),
+  });
+  const items = Array.isArray(data?.data) ? data.data : [];
+  const total = data?.total ?? 0;
+
+  const form = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  const createMut = useMutation({
+    mutationFn: (d: RoleCreate) => roleApi.create(d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['roles'] });
+      showSuccess(t('roles.created'));
+      close();
+    },
+    onError: () => showError(t('common.error')),
+  });
+  const updateMut = useMutation({
+    mutationFn: ({ id, data: d }: { id: number; data: Partial<Role> }) =>
+      roleApi.update(id, d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['roles'] });
+      showSuccess(t('roles.updated'));
+      close();
+    },
+    onError: () => showError(t('common.error')),
+  });
+  const deleteMut = useMutation({
+    mutationFn: (id: number) => roleApi.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['roles'] });
+      showSuccess(t('roles.deleted'));
+    },
+    onError: () => showError(t('common.error')),
+  });
+
+  const onSubmit = (d: FormData) => {
+    if (editing) {
+      updateMut.mutate({ id: editing.id, data: d });
+    } else {
+      createMut.mutate({ id: 0, ...d } as RoleCreate);
+    }
+  };
+
+  const handleEdit = (item: Role) => {
+    openEdit(item);
+    setTimeout(
+      () =>
+        form.reset({
+          roleName: item.roleName,
+          description: item.description,
+          active: item.active,
+        }),
+      10,
+    );
+  };
+  const handleDelete = async (item: Role) => {
+    const r = await confirmDelete(item.roleName);
+    if (r.isConfirmed) deleteMut.mutate(item.id);
+  };
+  const handleCreate = () => {
+    form.reset({ roleName: '', description: '', active: true });
+    openCreate();
+  };
+
+  const columns: ColumnDef<Role>[] = [
+    { accessorKey: 'id', header: 'ID', size: 60 },
+    { accessorKey: 'name', header: t('roles.roleName') },
+    { accessorKey: 'description', header: t('common.description') },
+    {
+      accessorKey: 'status',
+      header: t('common.status'),
+      cell: ({ getValue }) => (
+        <Badge color={getValue() ? 'green' : 'red'}>
+          {getValue() ? t('common.active') : t('common.inactive')}
+        </Badge>
+      ),
+    },
+    {
+      id: 'actions',
+      header: t('common.actions'),
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEdit(row.original)}
+          >
+            <Pencil size={16} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDelete(row.original)}
+          >
+            <Trash2 size={16} className="text-red-500" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          {t('roles.title')}
+        </h1>
+        <Button onClick={handleCreate}>
+          <Plus size={16} /> {t('roles.newRole')}
+        </Button>
+      </div>
+      <Card>
+        <SearchInput
+          onSearch={(v) => {
+            setSearch(v);
+            setPage(0);
+          }}
+          placeholder={t('common.search')}
+          className="mb-4 max-w-sm"
+        />
+        <DataTable columns={columns} data={items} loading={isLoading} />
+        <Pagination
+          page={page}
+          totalItems={total}
+          pageSize={DEFAULT_PAGE_SIZE}
+          onPageChange={setPage}
+        />
+      </Card>
+
+      <Modal
+        open={open}
+        onClose={close}
+        title={editing ? t('roles.editRole') : t('roles.newRole')}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => form.reset()}>
+              {t('common.clear')}
+            </Button>
+            <Button variant="secondary" onClick={close}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              onClick={form.handleSubmit(onSubmit)}
+              loading={createMut.isPending || updateMut.isPending}
+            >
+              {t('common.save')}
+            </Button>
+          </>
+        }
+      >
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="grid grid-cols-1 gap-4"
+        >
+          <Input
+            label={t('roles.roleName')}
+            {...form.register('roleName')}
+            error={form.formState.errors.roleName?.message}
+          />
+          <Input
+            label={t('common.description')}
+            {...form.register('description')}
+          />
+          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+            <input
+              type="checkbox"
+              {...form.register('active')}
+              className="rounded"
+            />
+            {t('common.active')}
+          </label>
+        </form>
+      </Modal>
+    </div>
+  );
+};
+
+export default RolesPage;

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import useSales from '../hooks/useSales';
-import { showInfo } from '../../../components/Alerts/AlertsComponent';
 
 const SalesFilters: React.FC = () => {
   const {
@@ -10,19 +9,26 @@ const SalesFilters: React.FC = () => {
     resetSalesSearchState,
     limit,
   } = useSales();
-  const today = new Date().toISOString().slice(0, 10);
-  const [date, setDate] = useState<string>(today);
-  const [username, setUsername] = useState('');
-  const [dateIni, setDateIni] = useState<string>(today);
-  const [dateFin, setDateFin] = useState<string>(today);
+  //Agregar hora LOCAL para evitar desfases con UTC
+  //const today = new Date().toISOString().slice(0, 10);
+  const todayLocal = new Date();
+  todayLocal.setMinutes(
+    todayLocal.getMinutes() - todayLocal.getTimezoneOffset(),
+  );
 
-  const clearAll = (showToast = true) => {
-    setDate(today);
-    setDateIni(today);
-    setDateFin(today);
+  const todayLocalString = todayLocal.toISOString().slice(0, 10);
+
+  const [date, setDate] = useState<string>(todayLocalString);
+  const [username, setUsername] = useState('');
+  const [dateIni, setDateIni] = useState<string>(todayLocalString);
+  const [dateFin, setDateFin] = useState<string>(todayLocalString);
+
+  const clearAll = () => {
+    setDate(todayLocalString);
+    setDateIni(todayLocalString);
+    setDateFin(todayLocalString);
     setUsername('');
     resetSalesSearchState();
-    if (showToast) showInfo('Filtros', 'Se limpiaron los filtros');
   };
 
   const handleFetchByDate = async () => {
@@ -36,7 +42,7 @@ const SalesFilters: React.FC = () => {
         username: null,
       });
     } catch {
-      clearAll(false);
+      clearAll();
     }
   };
 
@@ -51,7 +57,7 @@ const SalesFilters: React.FC = () => {
         username: username || null,
       });
     } catch {
-      clearAll(false);
+      clearAll();
     }
   };
 
@@ -66,7 +72,7 @@ const SalesFilters: React.FC = () => {
         username: null,
       });
     } catch {
-      clearAll(false);
+      clearAll();
     }
   };
 

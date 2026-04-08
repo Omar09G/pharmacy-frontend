@@ -14,7 +14,7 @@ export const login = async (
   username: string,
   password: string,
 ): Promise<LoginData | undefined> => {
-  const res = await client.post('/login', { username, password });
+  const res = await client.post('/auth/login', { username, password });
   // backend may wrap response; try to return either res.data.data or res.data itself
   return (res.data && (res.data.data ?? res.data)) as LoginData | undefined;
 };

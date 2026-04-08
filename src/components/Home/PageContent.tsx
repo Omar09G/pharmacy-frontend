@@ -129,7 +129,7 @@ const AppContent: React.FC = () => {
 
           <MapContainer
             center={position}
-            zoom={13}
+            zoom={15}
             scrollWheelZoom={false}
             style={{ height: '400px', width: '100%' }} // Required: Map must have a height
           >

@@ -4,6 +4,7 @@ import useSales from '../hooks/useSales';
 import { showError } from '../../../components/Alerts/AlertsComponent';
 import productService from '../../product/services/productService';
 import useAuth from '../../auth/hooks/useAuth';
+import { ProductRequest } from '../../../components/Product/Utils/UtilsProduct';
 
 type Props = { onSaved?: (res?: unknown) => void };
 
@@ -32,7 +33,7 @@ const emptyForm = (): SalesRequestDTO => ({
   dateSale: null,
   discount: 0,
   idSaleDetl: 0,
-  iva: 0,
+  iva: 16.0,
   msg: null,
   paymentMethod: 'CASH',
   paymentStatus: 'PENDING',
@@ -51,10 +52,20 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
   const [barcode, setBarcode] = useState('');
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('CASH');
-  const [paymentStatus, setPaymentStatus] = useState('PENDING');
+  const [paymentStatus, setPaymentStatus] = useState('PAID');
   const [discount, setDiscount] = useState(0);
-  const [ivaPercent, setIvaPercent] = useState(0);
+  const [ivaPercent, setIvaPercent] = useState(16.0);
   const [cashReceived, setCashReceived] = useState(0);
+  // Search modal state
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<ProductRequest[] | null>(
+    null,
+  );
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchLimit] = useState(10);
+  const [searchTotal, setSearchTotal] = useState<number | null>(null);
 
   const subtotal = useMemo(
     () => cart.reduce((acc, item) => acc + item.quantity * item.price, 0),
@@ -154,11 +165,17 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
 
   const buildPayload = (): SalesRequestDTO => {
     const now = new Date();
-    const dateSale = now.toISOString().slice(0, 10);
+    //const dateSale = now.toISOString().slice(0, 10);
     const timeSale = now.toTimeString().slice(0, 8);
+
+    const dateSale = new Date();
+    dateSale.setMinutes(dateSale.getMinutes() - dateSale.getTimezoneOffset());
+
+    const dateSaleString = dateSale.toISOString().slice(0, 10);
+
     const details: SalesDetailRequestDTO[] = cart.map((item) => ({
       id: 0,
-      dateSale,
+      dateSale: dateSaleString,
       productCodeBar: item.productCodeBar,
       productCount: item.quantity,
       productId: item.productId,
@@ -169,7 +186,7 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
 
     return {
       ...emptyForm(),
-      dateSale,
+      dateSale: dateSaleString,
       timeSale,
       paymentMethod,
       paymentStatus,
@@ -182,17 +199,80 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
     };
   };
 
+  const handleSearchProducts = async (page = 1) => {
+    const q = searchQuery.trim();
+    if (!q) {
+      showError('Ingrese nombre del producto');
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+      const res = await productService.getProductDetails(
+        page,
+        searchLimit,
+        0,
+        q,
+      );
+      setSearchResults(res.items ?? []);
+      setSearchTotal(res.total ?? null);
+      setSearchPage(page);
+    } catch (err) {
+      console.error(err);
+      showError((err as Error)?.message ?? 'Error buscando productos');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const addProductFromSearch = (product: ProductRequest) => {
+    if (!product) return;
+    if ((product.productCount ?? 0) <= 0) {
+      showError('Producto sin existencia');
+      return;
+    }
+
+    setCart((prev) => {
+      const idx = prev.findIndex((p) => p.productId === product.productId);
+      if (idx >= 0) {
+        const copy = [...prev];
+        const nextQty = copy[idx].quantity + 1;
+        if (nextQty > (copy[idx].stock || 0)) {
+          showError('No hay producto en existencia');
+          return copy;
+        }
+        copy[idx] = {
+          ...copy[idx],
+          quantity: Math.min(nextQty, Math.max(1, copy[idx].stock || 1)),
+        };
+        return copy;
+      }
+
+      return [
+        ...prev,
+        {
+          productId: product.productId,
+          productCodeBar: product.productCodeBar,
+          productName: product.productName,
+          stock: product.productCount,
+          quantity: 1,
+          price: product.productPrice,
+        },
+      ];
+    });
+  };
+
   return (
-    <div className="w-full bg-white rounded-xl shadow border border-slate-200 p-4 md:p-5">
+    <div className="w-full bg-white rounded-xl shadow border border-slate-200 p-5 md:p-5 lg:p-6">
       <div className="flex items-center justify-between gap-3 mb-4">
         <h3 className="text-fuchsia-700 font-semibold text-lg">Nueva Venta</h3>
         <div className="text-sm text-slate-600">
           Usuario:{' '}
-          <span className="font-semibold">{user?.username ?? '-'}</span>
+          <span className="font-semibold ">{user?.username ?? '-'}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-1 mb-4">
         <input
           value={barcode}
           onChange={(e) => setBarcode(e.target.value)}
@@ -205,53 +285,356 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
           placeholder="Escanear código de barras"
           className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-fuchsia-300"
         />
-        <button
-          type="button"
-          onClick={() => void addProductByBarcode()}
-          className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition focus:outline-none focus:ring-2 focus:ring-fuchsia-300"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="inline-block w-4 h-4 mr-2 -mt-0.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={() => void addProductByBarcode()}
+            className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition focus:outline-none focus:ring-2 focus:ring-fuchsia-300"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16M4 12h16"
-            />
-          </svg>
-          Agregar
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="inline-block w-4 h-4 mr-2 -mt-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16M4 12h16"
+              />
+            </svg>
+            Agregar
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSearchModalOpen(true)}
+            title="Buscar producto por nombre"
+            className="bg-amber-400 hover:bg-amber-500 text-white font-semibold py-2 px-4 rounded-lg shadow-sm flex items-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="inline-block w-4 h-4 mr-2 -mt-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            Buscar
+          </button>
+        </div>
       </div>
 
-      <div className="overflow-x-auto border border-slate-200 rounded-lg">
-        <table className="w-full text-sm">
+      {searchModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl border border-slate-200">
+            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+              <h4 className="text-lg font-bold text-slate-900">
+                Buscar Productos
+              </h4>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchModalOpen(false);
+                  setSearchQuery('');
+                  setSearchResults(null);
+                }}
+                className="text-slate-500 hover:text-slate-700 flex items-center gap-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                Cerrar
+              </button>
+            </div>
+
+            <div className="p-5">
+              <div className="flex gap-2 mb-4">
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      void handleSearchProducts();
+                    }
+                  }}
+                  placeholder="Nombre del producto"
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => void handleSearchProducts()}
+                  className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  {searchLoading ? 'Buscando...' : 'Buscar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchModalOpen(false);
+                    setSearchQuery('');
+                    setSearchResults(null);
+                    setSearchPage(1);
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSearchResults(null);
+                    setSearchPage(1);
+                    setSearchTotal(null);
+                  }}
+                  className="bg-blue-400 hover:bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 10h11M3 6h11M3 14h7"
+                    />
+                  </svg>
+                  Limpiar
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-100 text-slate-700">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Código</th>
+                      <th className="px-3 py-2 text-left">Nombre</th>
+                      <th className="px-3 py-2 text-right">Existencia</th>
+                      <th className="px-3 py-2 text-right">Precio</th>
+                      <th className="px-3 py-2 text-center">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {!searchResults || searchResults.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="px-3 py-4 text-center text-slate-500"
+                        >
+                          {searchResults
+                            ? 'No se encontraron productos'
+                            : 'Use el campo para buscar productos'}
+                        </td>
+                      </tr>
+                    ) : (
+                      searchResults.map((p) => (
+                        <tr
+                          key={p.productId}
+                          className="border-t border-slate-100 hover:bg-slate-50"
+                        >
+                          <td className="px-3 py-2">{p.productCodeBar}</td>
+                          <td className="px-3 py-2">{p.productName}</td>
+                          <td className="px-3 py-2 text-right">
+                            {(p.productCount ?? 0).toFixed(2)}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            ${(p.productPrice ?? 0).toFixed(2)}
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                addProductFromSearch(p);
+                                setSearchModalOpen(false);
+                                setSearchQuery('');
+                                setSearchPage(1);
+                                setSearchResults(null);
+                              }}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-1.5 px-3 rounded-lg flex items-center gap-2"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 4v16m8-8H4"
+                                />
+                              </svg>
+                              Agregar
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {/* Pagination controls */}
+              <div className="mt-3 flex items-center justify-between">
+                <div className="text-sm text-slate-600">
+                  {searchTotal != null ? (
+                    <>
+                      Página {searchPage} de{' '}
+                      {Math.max(1, Math.ceil((searchTotal || 0) / searchLimit))}{' '}
+                      -Total: {searchTotal}
+                    </>
+                  ) : (
+                    <>
+                      {searchResults
+                        ? `${searchResults.length} resultados`
+                        : ''}
+                    </>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (searchPage > 1)
+                        void handleSearchProducts(searchPage - 1);
+                    }}
+                    disabled={searchPage <= 1}
+                    className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold py-1.5 px-3 rounded-lg disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                    Anterior
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const totalPages = searchTotal
+                        ? Math.ceil(searchTotal / searchLimit)
+                        : searchPage + 1;
+                      if (searchTotal == null || searchPage < totalPages)
+                        void handleSearchProducts(searchPage + 1);
+                    }}
+                    disabled={
+                      searchTotal != null &&
+                      searchPage >= Math.ceil((searchTotal || 0) / searchLimit)
+                    }
+                    className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold py-1.5 px-3 rounded-lg disabled:opacity-50 flex items-center gap-2"
+                  >
+                    Siguiente
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="w-full border border-slate-200 rounded-lg overflow-x-auto">
+        <table className="w-full text-sm font-semibold">
           <thead className="bg-slate-100 text-slate-700">
             <tr>
-              <th className="px-3 py-2 text-center text-fuchsia-400 font-semibold">
+              <th className="px-3 py-2 text-center text-fuchsia-500 font-bold">
                 Código de Barras
               </th>
-              <th className="px-3 py-2 text-center text-fuchsia-400 font-semibold">
+              <th className="px-3 py-2 text-center text-fuchsia-500 font-bold">
                 Nombre Producto
               </th>
-              <th className="px-3 py-2 text-center text-fuchsia-400 font-semibold">
+              <th className="px-3 py-2 text-center text-fuchsia-500 font-bold">
                 Cantidad
               </th>
-              <th className="px-3 py-2 text-center text-fuchsia-400 font-semibold">
+              <th className="px-3 py-2 text-center text-fuchsia-500 font-bold">
                 Existencia
               </th>
-              <th className="px-3 py-2 text-center text-fuchsia-400 font-semibold">
+              <th className="px-3 py-2 text-center text-fuchsia-500 font-bold">
                 Precio
               </th>
-              <th className="px-3 py-2 text-center text-fuchsia-400 font-semibold">
+              <th className="px-3 py-2 text-center text-fuchsia-500 font-bold">
                 Subtotal
               </th>
-              <th className="px-3 py-2 text-center text-fuchsia-400 font-semibold">
+              <th className="px-3 py-2 text-center text-fuchsia-500 font-bold">
                 Acción
               </th>
             </tr>
@@ -270,7 +653,7 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
             {cart.map((item) => (
               <tr
                 key={item.productId}
-                className="border-t border-slate-100 hover:bg-slate-50 transition "
+                className="border-t border-fuchsia-200 hover:bg-fuchsia-100 transition "
               >
                 <td className="px-3 py-2 text-center">{item.productCodeBar}</td>
                 <td className="px-3 py-2 text-center">{item.productName}</td>
@@ -287,19 +670,19 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
                   />
                 </td>
                 <td className="px-3 py-2 text-right">
-                  {Math.max(0, item.stock - item.quantity)}
+                  {Math.max(0, item.stock - item.quantity).toFixed(2)}
                 </td>
                 <td className="px-3 py-2 text-right">
                   ${item.price.toFixed(2)}
                 </td>
-                <td className="px-3 py-2 text-right font-medium">
+                <td className="px-3 py-2 text-right font-semibold">
                   ${(item.quantity * item.price).toFixed(2)}
                 </td>
-                <td className="px-3 py-2 text-right">
+                <td className="px-3 py-2 text-left">
                   <button
                     type="button"
                     onClick={() => removeItem(item.productId)}
-                    className="text-red-700 hover:bg-red-700 hover:text-white font-semibold py-2 px-4 rounded-lg transition flex items-center text-left"
+                    className="text-red-700 hover:bg-red-700 hover:text-white font-semibold py-2 px-4 rounded-lg transition flex items-left justify-left gap-2"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -321,21 +704,18 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
               </tr>
             ))}
           </tbody>
-          <tfoot className="bg-slate-50 border-t border-slate-200">
+          <tfoot className="bg-slate-50 border-t border-slate-200  transition font-semibold">
             <tr>
-              <td
-                colSpan={1}
-                className="px-3 py-3 text-1xl text-left font-semibold text-fuchsia-700"
-              >
+              <td className="px-3 py-3 text-1xl text-left font-semibold text-fuchsia-700">
                 Num: {cart.length}
               </td>
               <td
-                colSpan={5}
-                className="px-3 py-3 text-1xl text-right font-semibold text-fuchsia-700"
+                colSpan={4}
+                className="px-3 py-3 text-1xl text-right font-semibold text-fuchsia-700 "
               >
-                Sub Total
+                SUBTOTAL:
               </td>
-              <td className="px-3 py-3 text-1xl  text-right font-bold text-fuchsia-700">
+              <td className="px-3 py-3 text-1xl  text-right font-bold text-fuchsia-700 ">
                 ${subtotal.toFixed(2)}
               </td>
               <td className="px-3 py-3" />
@@ -351,11 +731,11 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
             // Clear cart, inputs and modal state
             setCart([]);
             setBarcode('');
-            setDiscount(0);
-            setIvaPercent(0);
-            setCashReceived(0);
+            setDiscount(0.0);
+            setIvaPercent(16.0);
+            setCashReceived(0.0);
             setPaymentMethod('CASH');
-            setPaymentStatus('PENDING');
+            setPaymentStatus('PAID');
             setCheckoutOpen(false);
           }}
           className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-sm transition focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
@@ -459,8 +839,8 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
                   onChange={(e) => setPaymentStatus(e.target.value)}
                   className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
                 >
-                  <option value="PENDING">Pendiente</option>
                   <option value="PAID">Pagada</option>
+                  <option value="PENDING">Pendiente</option>
                 </select>
               </label>
 
@@ -485,7 +865,9 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
                   type="number"
                   min={0}
                   value={ivaPercent}
-                  onChange={(e) => setIvaPercent(Number(e.target.value || 0))}
+                  onChange={(e) =>
+                    setIvaPercent(Number(e.target.value || 16.0))
+                  }
                   className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
                 />
               </label>
@@ -518,13 +900,13 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
                 </div>
                 <div>
                   <div className="text-xs text-slate-500">TOTAL</div>
-                  <div className="text-sm font-bold text-emerald-700">
+                  <div className="text-xl font-bold text-emerald-700">
                     ${total.toFixed(2)}
                   </div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500">CAMBIO</div>
-                  <div className="text-sm font-bold text-sky-700">
+                  <div className="text-xl font-bold text-sky-700">
                     ${changeAmount.toFixed(2)}
                   </div>
                 </div>
@@ -573,11 +955,11 @@ const SalesForm: React.FC<Props> = ({ onSaved }) => {
                       if (onSaved) onSaved(res);
                       setCart([]);
                       setBarcode('');
-                      setDiscount(0);
-                      setIvaPercent(0);
-                      setCashReceived(0);
+                      setDiscount(0.0);
+                      setIvaPercent(16.0);
+                      setCashReceived(0.0);
                       setPaymentMethod('CASH');
-                      setPaymentStatus('PENDING');
+                      setPaymentStatus('PAID');
                       setCheckoutOpen(false);
                     }
                   } catch (err) {

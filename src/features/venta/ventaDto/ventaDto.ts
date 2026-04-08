@@ -71,6 +71,7 @@ export type SalesDetailResponseDTO = {
   productCodeBar: string | null;
   productCount: number | null;
   productId: number;
+  productName: string | null;
   productPrice: number;
   timeSale: string | null;
   idSale: number;

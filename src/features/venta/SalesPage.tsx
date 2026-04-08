@@ -40,7 +40,7 @@ const SalesPage: React.FC = () => {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              Busqueda
+              Reporte de ventas
             </button>
           </div>
 
@@ -54,7 +54,9 @@ const SalesPage: React.FC = () => {
             <div className="fixed inset-0 z-40 bg-black/40 flex items-center justify-center p-4">
               <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl border border-slate-200">
                 <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-slate-900">Busqueda</h2>
+                  <h2 className="text-lg font-bold text-slate-900">
+                    Reporte de ventas
+                  </h2>
                   <button
                     type="button"
                     onClick={() => setHistoryOpen(false)}
