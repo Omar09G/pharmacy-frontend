@@ -16,6 +16,13 @@ export const roleApi = {
   getById: (id: number) =>
     api.get<ApiResponse<Role>>(`/role/${id}`).then((r) => r.data),
 
+  getByName: (name: string, page = 0, limit = 10, total = 0) =>
+    api
+      .get<
+        ApiResponse<Role[]>
+      >('/role/name', { params: { name, page, limit, total } })
+      .then((r) => r.data),
+
   create: (payload: RoleCreate) =>
     api.put<ApiResponse<Role>>('/role', payload).then((r) => r.data),
 
@@ -36,6 +43,21 @@ export const permissionApi = {
 
   getById: (id: number) =>
     api.get<ApiResponse<Permission>>(`/permission/${id}`).then((r) => r.data),
+
+  getByName: (name: string, page = 0, limit = 10, total = 0) => {
+    if (name.trim().length === 0) {
+      return api
+        .get<
+          ApiResponse<Permission[]>
+        >('/permission', { params: { page, limit, total } })
+        .then((r) => r.data);
+    }
+    return api
+      .get<
+        ApiResponse<Permission[]>
+      >('/permission/name', { params: { name, page, limit, total } })
+      .then((r) => r.data);
+  },
 
   create: (payload: PermissionCreate) =>
     api

@@ -33,7 +33,7 @@ interface Unit {
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   code: z.string().min(1, 'Requerido'),
-  precision: z.number().min(0, 'Requerido').max(10, 'Máximo 10'),
+  precision: z.coerce.number<number>().min(0, 'Requerido').max(100),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -58,7 +58,7 @@ const unitApiFn = {
 const UnitsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } = useCrudModal<Unit>();
 
@@ -174,7 +174,7 @@ const UnitsPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -211,7 +211,7 @@ const UnitsPage: React.FC = () => {
       >
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
           <Input
             label={t('config.unitName')}
@@ -223,14 +223,12 @@ const UnitsPage: React.FC = () => {
             {...form.register('code')}
             error={form.formState.errors.code?.message}
           />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="number"
-              {...form.register('precision')}
-              className="rounded"
-            />
-            {t('config.precision')}
-          </label>
+          <Input
+            type="number"
+            label={t('config.precision')}
+            {...form.register('precision')}
+            error={form.formState.errors.precision?.message}
+          />
         </form>
       </Modal>
     </div>

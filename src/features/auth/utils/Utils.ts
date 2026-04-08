@@ -4,11 +4,11 @@ export type LoginData = {
   tokenRefresh?: string;
   username?: string;
   name?: string;
-  id: string;
+  id: number;
 };
 
 export type User = {
-  id?: string;
+  id?: number;
   name?: string;
   username?: string;
   role?: string;

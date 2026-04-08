@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
@@ -17,29 +17,36 @@ import Pagination from '../../../components/ui/Pagination';
 import SearchInput from '../../../components/ui/SearchInput';
 import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
-import Badge from '../../../components/ui/Badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 
 const schema = z.object({
-  roleName: z.string().min(1, 'Requerido'),
+  name: z.string().min(1, 'Requerido'),
   description: z.string().catch(''),
-  active: z.boolean().catch(true),
 });
 type FormData = z.infer<typeof schema>;
 
 const RolesPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [total, setTotal] = useState(0);
   const { open, editing, openCreate, openEdit, close } = useCrudModal<Role>();
 
   const { data, isLoading } = useQuery({
     queryKey: ['roles', page, search],
-    queryFn: () => roleApi.getAll(page, DEFAULT_PAGE_SIZE),
+    queryFn: () =>
+      search.trim().length > 0
+        ? roleApi.getByName(search, page, DEFAULT_PAGE_SIZE, total)
+        : roleApi.getAll(page, DEFAULT_PAGE_SIZE, total),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
-  const total = data?.total ?? 0;
+
+  useEffect(() => {
+    if (typeof data?.total === 'number') {
+      setTotal(data.total);
+    }
+  }, [data?.total]);
 
   const form = useForm<FormData>({ resolver: zodResolver(schema) });
 
@@ -48,6 +55,7 @@ const RolesPage: React.FC = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['roles'] });
       showSuccess(t('roles.created'));
+      setTotal((prev) => prev + 1);
       close();
     },
     onError: () => showError(t('common.error')),
@@ -67,15 +75,19 @@ const RolesPage: React.FC = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['roles'] });
       showSuccess(t('roles.deleted'));
+      setTotal((prev) => Math.max(0, prev - 1));
     },
     onError: () => showError(t('common.error')),
   });
 
   const onSubmit = (d: FormData) => {
     if (editing) {
-      updateMut.mutate({ id: editing.id, data: d });
+      updateMut.mutate({
+        id: editing.id,
+        data: { ...d, createdAt: editing.createdAt },
+      });
     } else {
-      createMut.mutate({ id: 0, ...d } as RoleCreate);
+      createMut.mutate({ id: 0, ...d, createdAt: new Date() } as RoleCreate);
     }
   };
 
@@ -84,19 +96,18 @@ const RolesPage: React.FC = () => {
     setTimeout(
       () =>
         form.reset({
-          roleName: item.roleName,
-          description: item.description,
-          active: item.active,
+          name: item.name,
+          description: item.description || '',
         }),
       10,
     );
   };
   const handleDelete = async (item: Role) => {
-    const r = await confirmDelete(item.roleName);
+    const r = await confirmDelete(item.name);
     if (r.isConfirmed) deleteMut.mutate(item.id);
   };
   const handleCreate = () => {
-    form.reset({ roleName: '', description: '', active: true });
+    form.reset({ name: '', description: '' });
     openCreate();
   };
 
@@ -104,15 +115,6 @@ const RolesPage: React.FC = () => {
     { accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('roles.roleName') },
     { accessorKey: 'description', header: t('common.description') },
-    {
-      accessorKey: 'status',
-      header: t('common.status'),
-      cell: ({ getValue }) => (
-        <Badge color={getValue() ? 'green' : 'red'}>
-          {getValue() ? t('common.active') : t('common.inactive')}
-        </Badge>
-      ),
-    },
     {
       id: 'actions',
       header: t('common.actions'),
@@ -151,7 +153,7 @@ const RolesPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -192,21 +194,13 @@ const RolesPage: React.FC = () => {
         >
           <Input
             label={t('roles.roleName')}
-            {...form.register('roleName')}
-            error={form.formState.errors.roleName?.message}
+            {...form.register('name')}
+            error={form.formState.errors.name?.message}
           />
           <Input
             label={t('common.description')}
             {...form.register('description')}
           />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              {...form.register('active')}
-              className="rounded"
-            />
-            {t('common.active')}
-          </label>
         </form>
       </Modal>
     </div>

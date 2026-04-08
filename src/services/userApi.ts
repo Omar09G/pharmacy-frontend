@@ -1,6 +1,12 @@
 import api from '../api/axiosInstance';
 import type { ApiResponse } from '../utils/Utils';
-import type { User, UserCreate, UserUpdate } from '../models/user.model';
+import type {
+  User,
+  UserChangePassword,
+  UserChangeStatus,
+  UserCreate,
+  UserUpdate,
+} from '../models/user.model';
 
 export const userApi = {
   getAll: (page = 0, limit = 10, total = 0, search?: string) =>
@@ -22,16 +28,17 @@ export const userApi = {
   delete: (id: number) =>
     api.delete<ApiResponse<null>>(`/user/${id}`).then((r) => r.data),
 
-  changePassword: (
-    id: number,
-    payload: { oldPassword: string; newPassword: string },
-  ) =>
+  changePassword: (payload: { username: string; password: string }) =>
     api
-      .patch<ApiResponse<null>>(`/user/${id}/password`, payload)
+      .patch<ApiResponse<UserChangePassword>>(`/user/password`, payload)
       .then((r) => r.data),
 
-  changeStatus: (id: number, active: boolean) =>
+  changeStatus: (payload: {
+    username: string;
+    status: string;
+    updatedBy: number;
+  }) =>
     api
-      .patch<ApiResponse<null>>(`/user/${id}/status`, { active })
+      .patch<ApiResponse<UserChangeStatus>>(`/user/status`, payload)
       .then((r) => r.data),
 };

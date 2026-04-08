@@ -3,8 +3,6 @@ export interface PaymentMethod {
   name: string;
   methodType: string;
   active: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PaymentMethodCreate {

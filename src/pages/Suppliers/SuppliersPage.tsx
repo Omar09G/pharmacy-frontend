@@ -19,22 +19,23 @@ import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { nowUTC } from '../../utils/dateUtils';
 
 const schema = z.object({
-  companyName: z.string().min(1, 'Requerido'),
-  contactName: z.string().catch(''),
+  name: z.string().min(1, 'Requerido'),
+  contactPerson: z.string().catch(''),
   email: z.string().email().or(z.literal('')).catch(''),
   phone: z.string().catch(''),
   address: z.string().catch(''),
-  rfc: z.string().catch(''),
-  active: z.boolean().catch(true),
+  taxId: z.string().catch(''),
+  notes: z.string().catch(''),
 });
 type FormData = z.infer<typeof schema>;
 
 const SuppliersPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Supplier>();
@@ -75,9 +76,23 @@ const SuppliersPage: React.FC = () => {
   });
   const onSubmit = (d: FormData) => {
     if (editing) {
-      updateMut.mutate({ id: editing.id, data: d });
+      const updateData = {
+        name: d.name,
+        contactPerson: d.contactPerson,
+        email: d.email,
+        phone: d.phone,
+        address: d.address,
+        taxId: d.taxId,
+        notes: d.notes,
+        createdAt: nowUTC(),
+      };
+      updateMut.mutate({ id: editing.id, data: updateData });
     } else {
-      createMut.mutate({ id: 0, ...d } as SupplierCreate);
+      createMut.mutate({
+        id: 0,
+        createdAt: nowUTC(),
+        ...d,
+      } as SupplierCreate);
     }
   };
   const handleEdit = (item: Supplier) => {
@@ -85,48 +100,49 @@ const SuppliersPage: React.FC = () => {
     setTimeout(
       () =>
         form.reset({
-          companyName: item.companyName,
-          contactName: item.contactName,
+          name: item.name,
+          contactPerson: item.contactPerson,
           email: item.email,
           phone: item.phone,
           address: item.address,
-          rfc: item.rfc,
-          active: item.active,
+          taxId: item.taxId,
+          notes: item.notes,
         }),
       10,
     );
   };
   const handleDelete = async (item: Supplier) => {
-    const r = await confirmDelete(item.companyName);
+    const r = await confirmDelete(item.name);
     if (r.isConfirmed) deleteMut.mutate(item.id);
   };
   const handleCreate = () => {
     form.reset({
-      companyName: '',
-      contactName: '',
+      name: '',
+      contactPerson: '',
       email: '',
       phone: '',
       address: '',
-      rfc: '',
-      active: true,
+      taxId: '',
+      notes: '',
     });
     openCreate();
   };
 
   const columns: ColumnDef<Supplier>[] = [
     { accessorKey: 'id', header: 'ID', size: 60 },
-    { accessorKey: 'companyName', header: t('suppliers.companyName') },
-    { accessorKey: 'contactName', header: t('suppliers.contactName') },
+    { accessorKey: 'name', header: t('suppliers.name') },
+    { accessorKey: 'contactPerson', header: t('suppliers.contactPerson') },
     { accessorKey: 'phone', header: t('suppliers.phone') },
     {
-      accessorKey: 'active',
-      header: t('common.status'),
+      accessorKey: 'taxId',
+      header: t('suppliers.taxId'),
       cell: ({ getValue }) => (
         <Badge color={getValue() ? 'green' : 'red'}>
-          {getValue() ? t('common.active') : t('common.inactive')}
+          {getValue() as string}
         </Badge>
       ),
     },
+    { accessorKey: 'notes', header: t('suppliers.notes') },
     {
       id: 'actions',
       header: t('common.actions'),
@@ -165,7 +181,7 @@ const SuppliersPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -206,13 +222,13 @@ const SuppliersPage: React.FC = () => {
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <Input
-            label={t('suppliers.companyName')}
-            {...form.register('companyName')}
-            error={form.formState.errors.companyName?.message}
+            label={t('suppliers.name')}
+            {...form.register('name')}
+            error={form.formState.errors.name?.message}
           />
           <Input
-            label={t('suppliers.contactName')}
-            {...form.register('contactName')}
+            label={t('suppliers.contactPerson')}
+            {...form.register('contactPerson')}
           />
           <Input
             label={t('suppliers.email')}
@@ -221,15 +237,8 @@ const SuppliersPage: React.FC = () => {
           />
           <Input label={t('suppliers.phone')} {...form.register('phone')} />
           <Input label={t('suppliers.address')} {...form.register('address')} />
-          <Input label={t('suppliers.rfc')} {...form.register('rfc')} />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              {...form.register('active')}
-              className="rounded"
-            />
-            {t('common.active')}
-          </label>
+          <Input label={t('suppliers.taxId')} {...form.register('taxId')} />
+          <Input label={t('suppliers.notes')} {...form.register('notes')} />
         </form>
       </Modal>
     </div>

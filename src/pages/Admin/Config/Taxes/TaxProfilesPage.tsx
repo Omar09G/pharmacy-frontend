@@ -29,12 +29,14 @@ interface TaxProfile {
   name: string;
   rate: number;
   isInclusive: boolean;
+  description?: string;
 }
 
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   rate: z.coerce.number<number>().min(0, 'Requerido').max(100),
   isInclusive: z.boolean().catch(true),
+  description: z.string().optional(),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -61,7 +63,7 @@ const taxApiFn = {
 const TaxProfilesPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<TaxProfile>();
@@ -119,6 +121,7 @@ const TaxProfilesPage: React.FC = () => {
           name: item.name,
           rate: item.rate,
           isInclusive: item.isInclusive,
+          description: item.description,
         }),
       10,
     );
@@ -128,7 +131,7 @@ const TaxProfilesPage: React.FC = () => {
     if (r.isConfirmed) deleteMut.mutate(item.id);
   };
   const handleCreate = () => {
-    form.reset({ name: '', rate: 0, isInclusive: true });
+    form.reset({ name: '', rate: 0, isInclusive: true, description: '' });
     openCreate();
   };
 
@@ -139,6 +142,10 @@ const TaxProfilesPage: React.FC = () => {
       accessorKey: 'rate',
       header: t('config.taxRate'),
       cell: ({ getValue }) => `${Number(getValue() ?? 0).toFixed(2)}%`,
+    },
+    {
+      accessorKey: 'description',
+      header: t('config.taxDescription'),
     },
     {
       accessorKey: 'isInclusive',
@@ -187,7 +194,7 @@ const TaxProfilesPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -237,6 +244,11 @@ const TaxProfilesPage: React.FC = () => {
             step="0.01"
             {...form.register('rate')}
             error={form.formState.errors.rate?.message}
+          />
+          <Input
+            label={t('config.taxDescription')}
+            {...form.register('description')}
+            error={form.formState.errors.description?.message}
           />
           <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
             <input

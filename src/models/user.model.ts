@@ -5,7 +5,7 @@ export interface User {
   email: string;
   phone: string;
   role: string;
-  active: string;
+  status: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -18,7 +18,9 @@ export interface UserCreate {
   phone: string;
   password: string;
   role: string;
-  active: string;
+  status: string;
+  createdAt: string;
+  updatedBy: string;
 }
 
 export interface UserUpdate {
@@ -27,14 +29,17 @@ export interface UserUpdate {
   email: string;
   phone: string;
   role: string;
-  active: string;
+  status: string;
+  updatedBy: number;
 }
 
 export interface UserChangePassword {
-  oldPassword: string;
-  newPassword: string;
+  username: string;
+  password: string;
 }
 
 export interface UserChangeStatus {
-  active: string;
+  status: string;
+  username: string;
+  updatedBy: number;
 }

@@ -17,20 +17,20 @@ import Pagination from '../../components/ui/Pagination';
 import SearchInput from '../../components/ui/SearchInput';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
-import Badge from '../../components/ui/Badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import Select from '../../components/ui/Select';
 
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   description: z.string().catch(''),
-  active: z.boolean().catch(true),
+  parentId: z.coerce.number<number>().optional(),
 });
 type FormData = z.infer<typeof schema>;
 
 const CategoriesPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Category>();
@@ -44,6 +44,16 @@ const CategoriesPage: React.FC = () => {
   const total = data?.total ?? 0;
 
   const form = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  // Preload data
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoryApi.getAll(0, 100, 0),
+  });
+
+  const categoriesDetail: Category[] = Array.isArray(categoriesData?.data)
+    ? categoriesData.data
+    : [];
 
   const createMut = useMutation({
     mutationFn: (d: CategoryCreate) => categoryApi.create(d),
@@ -88,7 +98,7 @@ const CategoriesPage: React.FC = () => {
         form.reset({
           name: item.name,
           description: item.description,
-          active: item.active,
+          parentId: item.parentId,
         }),
       10,
     );
@@ -98,7 +108,7 @@ const CategoriesPage: React.FC = () => {
     if (r.isConfirmed) deleteMut.mutate(item.id);
   };
   const handleCreate = () => {
-    form.reset({ name: '', description: '', active: true });
+    form.reset({ name: '', description: '', parentId: undefined });
     openCreate();
   };
 
@@ -107,13 +117,8 @@ const CategoriesPage: React.FC = () => {
     { accessorKey: 'name', header: t('categories.categoryName') },
     { accessorKey: 'description', header: t('common.description') },
     {
-      accessorKey: 'active',
-      header: t('common.status'),
-      cell: ({ getValue }) => (
-        <Badge color={getValue() ? 'green' : 'red'}>
-          {getValue() ? t('common.active') : t('common.inactive')}
-        </Badge>
-      ),
+      accessorKey: 'parentId',
+      header: t('categories.parentCategory'),
     },
     {
       id: 'actions',
@@ -153,7 +158,7 @@ const CategoriesPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -192,7 +197,7 @@ const CategoriesPage: React.FC = () => {
       >
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="grid grid-cols-1 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <Input
             label={t('categories.categoryName')}
@@ -204,12 +209,15 @@ const CategoriesPage: React.FC = () => {
             {...form.register('description')}
           />
           <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              {...form.register('active')}
+            <Select
+              options={categoriesDetail.map((c) => ({
+                label: c.name,
+                value: c.id,
+              }))}
+              {...form.register('parentId')}
               className="rounded"
             />
-            {t('common.active')}
+            {t('categories.parentCategory')}
           </label>
         </form>
       </Modal>

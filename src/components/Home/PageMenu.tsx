@@ -7,6 +7,8 @@ const AppMenu: React.FC = () => {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
 
+  console.log('Current user in AppMenu:', user); // Agrega este log para verificar el usuario actual en el menú
+
   const [open, setOpen] = useState(false);
 
   return (

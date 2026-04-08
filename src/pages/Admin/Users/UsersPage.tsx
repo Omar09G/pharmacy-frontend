@@ -20,6 +20,8 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import Badge from '../../../components/ui/Badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { roleApi } from '../../../services/roleApi';
+import { useAuthStore } from '../../../store/authStore';
 
 const schema = z.object({
   fullName: z.string().min(1, 'Requerido'),
@@ -28,20 +30,16 @@ const schema = z.object({
   phone: z.string().catch(''),
   password: z.string().catch(''),
   role: z.string().catch('USER'),
-  active: z.string().catch('ACTIVE'),
+  status: z.string().catch('ACTIVE'),
 });
 type FormData = z.infer<typeof schema>;
 
-const roleOptions = [
-  { value: 'ADMIN', label: 'ADMIN' },
-  { value: 'USER', label: 'USER' },
-  { value: 'CUSTOMER', label: 'CUSTOMER' },
-];
-
 const UsersPage: React.FC = () => {
+  //Obtener ID de usuario actual para createdBy y updatedBy
+  const { user } = useAuthStore.getState();
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } = useCrudModal<User>();
 
@@ -50,6 +48,18 @@ const UsersPage: React.FC = () => {
     queryFn: () =>
       userApi.getAll(page, DEFAULT_PAGE_SIZE, 0, search || undefined),
   });
+
+  const { data: roleData } = useQuery({
+    queryKey: ['roles'],
+    queryFn: () => roleApi.getAll(0, 100, 0),
+  });
+
+  const roleOptions =
+    roleData?.data.map((r) => ({
+      value: r.name,
+      label: r.description || r.name,
+    })) || [];
+
   const items = Array.isArray(data?.data) ? data.data : [];
 
   const total = data?.total ?? 0;
@@ -87,9 +97,20 @@ const UsersPage: React.FC = () => {
   const onSubmit = (d: FormData) => {
     if (editing) {
       const { password: _pw, ...updatePayload } = d;
-      updateMut.mutate({ id: editing.id, data: updatePayload as UserUpdate });
+      const updatePay = updatePayload as UserUpdate;
+
+      const updateData: UserUpdate = {
+        ...updatePay,
+        updatedBy: user?.id || 1, // TODO: replace with actual current user
+      };
+
+      updateMut.mutate({ id: editing.id, data: updateData });
     } else {
-      createMut.mutate({ id: 0, ...d } as UserCreate);
+      createMut.mutate({
+        id: 0,
+        ...d,
+        createdAt: new Date().toISOString(),
+      } as UserCreate);
     }
   };
 
@@ -104,7 +125,7 @@ const UsersPage: React.FC = () => {
           phone: item.phone,
           password: '',
           role: item.role,
-          active: item.active,
+          status: item.status,
         }),
       10,
     );
@@ -120,8 +141,8 @@ const UsersPage: React.FC = () => {
       email: '',
       phone: '',
       password: '',
-      role: 'USER',
-      active: 'ACTIVE',
+      role: roleOptions.length > 0 ? roleOptions[0].value : 'USER',
+      status: 'ACTIVE',
     });
     openCreate();
   };
@@ -189,7 +210,7 @@ const UsersPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -262,12 +283,12 @@ const UsersPage: React.FC = () => {
           <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
             <input
               type="checkbox"
-              {...form.register('active')}
+              {...form.register('status')}
               className="rounded"
-              checked={form.watch('active') === 'ACTIVE'}
+              checked={form.watch('status') === 'ACTIVE'}
               onChange={(e) =>
                 form.setValue(
-                  'active',
+                  'status',
                   e.target.checked ? 'ACTIVE' : 'INACTIVE',
                 )
               }

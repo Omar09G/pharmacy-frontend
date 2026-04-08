@@ -1,33 +1,31 @@
 export interface Supplier {
   id: number;
-  companyName: string;
-  contactName: string;
-  email: string;
+  name: string;
+  taxId: string;
+  contactPerson: string;
   phone: string;
+  email: string;
   address: string;
-  rfc: string;
-  active: boolean;
+  notes: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface SupplierCreate {
-  id: 0;
-  companyName: string;
-  contactName: string;
-  email: string;
+  name: string;
+  taxId: string;
+  contactPerson: string;
   phone: string;
+  email: string;
   address: string;
-  rfc: string;
-  active: boolean;
+  notes: string;
+  createdAt: string;
 }
 
 export interface SupplierUpdate {
-  companyName: string;
-  contactName: string;
+  name: string;
+  taxId: string;
+  contactPerson: string;
   email: string;
   phone: string;
   address: string;
-  rfc: string;
-  active: boolean;
 }

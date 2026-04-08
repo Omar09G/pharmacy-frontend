@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const profile = await fetchProfile(token);
         if (profile) {
           setUser({
-            id: String(profile.id ?? profile.id ?? '0'),
+            id: profile.id ?? profile.id ?? 0,
             name: profile.name ?? profile.username,
             username: profile.username,
             role: profile.role,
@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setToken(data.token);
 
         setUser({
-          id: String(data.id ?? '0'),
+          id: data.id ?? 0,
           name: data.name ?? data.username,
           username: data.username,
           role: data.role,

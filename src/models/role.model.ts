@@ -1,17 +1,15 @@
 export interface Role {
   id: number;
-  roleName: string;
-  description: string;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
+  name: string;
+  description?: string;
+  createdAt: Date;
 }
 
 export interface RoleCreate {
   id: 0;
-  roleName: string;
-  description: string;
-  active: boolean;
+  name: string;
+  description?: string;
+  createdAt: Date;
 }
 
 export interface Permission {

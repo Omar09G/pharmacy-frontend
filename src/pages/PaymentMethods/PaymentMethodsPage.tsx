@@ -33,7 +33,7 @@ type FormData = z.infer<typeof schema>;
 const PaymentMethodsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<PaymentMethod>();
@@ -112,7 +112,7 @@ const PaymentMethodsPage: React.FC = () => {
   const columns: ColumnDef<PaymentMethod>[] = [
     { accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('paymentMethods.methodName') },
-    { accessorKey: 'methodType', header: t('common.description') },
+    { accessorKey: 'methodType', header: t('common.type') },
     {
       accessorKey: 'active',
       header: t('common.status'),
@@ -160,7 +160,7 @@ const PaymentMethodsPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -208,10 +208,7 @@ const PaymentMethodsPage: React.FC = () => {
             {...form.register('name')}
             error={form.formState.errors.name?.message}
           />
-          <Input
-            label={t('common.description')}
-            {...form.register('methodType')}
-          />
+          <Input label={t('common.type')} {...form.register('methodType')} />
           <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
             <input
               type="checkbox"

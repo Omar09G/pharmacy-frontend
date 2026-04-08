@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
@@ -28,17 +28,26 @@ type FormData = z.infer<typeof schema>;
 const PermissionsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [total, setTotal] = useState(0);
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Permission>();
 
   const { data, isLoading } = useQuery({
     queryKey: ['permissions', page, search],
-    queryFn: () => permissionApi.getAll(page, DEFAULT_PAGE_SIZE),
+    queryFn: () =>
+      search.trim().length > 0
+        ? permissionApi.getByName(search, page, DEFAULT_PAGE_SIZE, total)
+        : permissionApi.getAll(page, DEFAULT_PAGE_SIZE, total),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
-  const total = data?.total ?? 0;
+
+  useEffect(() => {
+    if (typeof data?.total === 'number') {
+      setTotal(data.total);
+    }
+  }, [data?.total]);
 
   const form = useForm<FormData>({ resolver: zodResolver(schema) });
 
@@ -47,6 +56,7 @@ const PermissionsPage: React.FC = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['permissions'] });
       showSuccess(t('permissions.created'));
+      setTotal((prev) => prev + 1);
       close();
     },
     onError: () => showError(t('common.error')),
@@ -66,6 +76,7 @@ const PermissionsPage: React.FC = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['permissions'] });
       showSuccess(t('permissions.deleted'));
+      setTotal((prev) => prev - 1);
     },
     onError: () => showError(t('common.error')),
   });
@@ -143,7 +154,7 @@ const PermissionsPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"

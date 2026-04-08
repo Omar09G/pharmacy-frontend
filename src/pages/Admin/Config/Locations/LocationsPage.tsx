@@ -28,14 +28,12 @@ interface Location {
   name: string;
   type: string;
   description: string;
-  active: boolean;
 }
 
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   type: z.string().min(1, 'Requerido'),
   description: z.string().catch(''),
-  active: z.boolean().catch(true),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -64,7 +62,7 @@ const locationApiFn = {
 const LocationsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Location>();
@@ -122,7 +120,6 @@ const LocationsPage: React.FC = () => {
           name: item.name,
           type: item.type,
           description: item.description,
-          active: item.active,
         }),
       10,
     );
@@ -136,7 +133,6 @@ const LocationsPage: React.FC = () => {
       name: '',
       type: '',
       description: '',
-      active: true,
     });
     openCreate();
   };
@@ -184,7 +180,7 @@ const LocationsPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -237,14 +233,6 @@ const LocationsPage: React.FC = () => {
             label={t('common.description')}
             {...form.register('description')}
           />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              {...form.register('active')}
-              className="rounded"
-            />
-            {t('common.active')}
-          </label>
         </form>
       </Modal>
     </div>
