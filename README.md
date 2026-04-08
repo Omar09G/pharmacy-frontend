@@ -1,199 +1,123 @@
-# **🚀 React + Vite + TypeScript + SWC + Tailwind Template**
+# Pharmacy Frontend
 
-A **modern React template** using **Vite**, **TypeScript**, **SWC (Speedy Web Compiler)**, and **Tailwind CSS** with a **best-practice folder structure** for scalable applications.
+Frontend de la aplicación "Pharmacy": interfaz administrativa y Punto de Venta (POS) construida con React + TypeScript y Vite.
 
-This template provides:  
-✅ **Vite** – Super-fast development & optimized builds.  
-✅ **TypeScript** – Type safety for better development experience.  
-✅ **SWC** – Lightning-fast TypeScript & JSX compilation (replaces Babel).  
-✅ **Tailwind CSS** – Utility-first styling for faster UI development.  
-✅ **Feature-Based Folder Structure** – Organized & scalable project structure.
+Estado: En desarrollo.
 
----
+## Características principales
 
-## **📌 Features**
+- Interfaz administrativa y POS (Point of Sale).
+- Gestión de productos, clientes, compras, ventas, proveedores y reportes.
+- Integración con backend REST (API propia).
 
-✔ **Vite** – Lightning-fast development server.  
-✔ **TypeScript** – Strong typing for scalable projects.  
-✔ **SWC Compiler** – Faster builds than Babel & `tsc`.  
-✔ **Tailwind CSS** – Simple and flexible styling.  
-✔ **React Router** – Pre-configured for navigation.  
-✔ **Reusable Components** – Organized structure with `/components`.  
-✔ **Global State Management** – Easily extendable with Redux or Zustand.  
-✔ **Optimized for Performance** – Uses Vite’s modern build system with SWC.
+## Tecnologías
 
----
+- React 19 + TypeScript
+- Vite (plugin `@vitejs/plugin-react-swc`)
+- Tailwind CSS, PostCSS
+- TanStack Query / Table, React Hook Form, Zod
+- Axios, Recharts, Zustand
+- ESLint, Prettier
 
-## **📂 Folder Structure**
+## Requisitos
 
-```
-/src
-  ├── /assets        # Static files (images, icons, fonts, global styles)
-  ├── /components    # Reusable UI components (Button, Modal, etc.)
-  ├── /features      # Feature-based components (Auth, User, Dashboard)
-  ├── /hooks         # Custom React hooks
-  ├── /layouts       # Layout components (Navbar, Sidebar, Footer)
-  ├── /pages         # Page components (Home, About, Dashboard)
-  ├── /routes        # Centralized routing
-  ├── /services      # API calls and external services
-  ├── /store         # Global state management (Redux, Zustand, or Context)
-  ├── /utils         # Utility functions (formatDate, debounce, etc.)
-  ├── App.tsx        # Main application component
-  ├── main.tsx       # Entry point for ReactDOM
-  ├── index.css      # Global styles
-  ├── tailwind.config.ts # Tailwind configuration
-```
+- Node 18+ (se recomienda Node 20)
+- npm 8+ / 9+
 
----
-
-## **📦 Installation & Setup**
-
-### **1️⃣ Clone the Repository**
+## Instalación y desarrollo
 
 ```bash
-git clone https://github.com/brunnoTripovichy/using-react-vite.git
-cd using-react-vite
-```
-
-### **2️⃣ Install Dependencies**
-
-```bash
+git clone https://github.com/Omar09G/pharmacy-frontend.git
+cd pharmacy-frontend
 npm install
-```
-
-### **3️⃣ Start the Development Server**
-
-```bash
 npm run dev
 ```
 
-Your app will be running at **http://localhost:5173/** 🚀
+Abrir `http://localhost:5173` en el navegador.
 
-### **4️⃣ Build for Production**
+## Scripts útiles
 
-```bash
-npm run build
-```
+- `npm run dev` — servidor de desarrollo (Vite)
+- `npm run build` — compila TypeScript y genera build de producción (`dist`)
+- `npm run lint` — ejecuta ESLint
+- `npm run preview` — vista previa del build (vite preview)
 
-This will generate an optimized production-ready build in the **`/dist`** folder.
+## Formateo y comprobaciones
 
----
-
-## **🚀 Why Use SWC Instead of Babel or `tsc`?**
-
-| Feature                | SWC                            | Babel                        | `tsc`                  |
-| ---------------------- | ------------------------------ | ---------------------------- | ---------------------- |
-| 🚀 **Speed**           | 🔥 **Super fast** (Rust-based) | 🐢 Slower (JavaScript-based) | 🐌 Slowest             |
-| 🔄 **Hot Reload**      | ✅ Yes                         | ✅ Yes                       | ❌ No                  |
-| 🏗 **Type Checking**    | ❌ No (`tsc --noEmit` needed)  | ❌ No                        | ✅ Yes                 |
-| 📦 **Bundle Size**     | ✅ Smaller                     | ❌ Larger                    | ❌ N/A (only compiles) |
-| 🔧 **Recommended For** | Performance-focused apps       | Legacy projects              | Type checking only     |
-
-📌 **Note:**  
-SWC **does not do type checking**. You still need to run TypeScript’s `tsc --noEmit` for type safety.
-
----
-
-## **🎨 Styling with Tailwind CSS**
-
-This template includes **Tailwind CSS** for efficient styling.  
-✔ Utility-first approach for faster development.  
-✔ Easily extendable with custom themes.
-
-🛠 Modify **`tailwind.config.ts`** to customize styles.
-
----
-
-## **📌 Routing with React Router**
-
-This template includes **React Router** for page navigation.  
-Routes are defined in **`/routes/AppRoutes.tsx`**.
-
-Example:
-
-```tsx
-import { Routes, Route } from 'react-router-dom';
-import MainLayout from '../layouts/MainLayout';
-import Home from '../pages/Home';
-import About from '../pages/About';
-
-function AppRoutes() {
-  return (
-    <Routes>
-      <Route path='/' element={<MainLayout />}>
-        <Route index element={<Home />} />
-        <Route path='about' element={<About />} />
-      </Route>
-    </Routes>
-  );
-}
-
-export default AppRoutes;
-```
-
----
-
-## **🛠 State Management (Optional)**
-
-This template supports:  
-✅ **Context API** (default)  
-✅ **Redux Toolkit** (can be added)  
-✅ **Zustand** (lightweight state management alternative)
-
-Modify `/store/` to integrate the state management of your choice.
-
----
-
-## **🌍 Deployment**
-
-Deploy the app using:
-
-### **Vercel**
+- Formatear con Prettier:
 
 ```bash
-vercel deploy
+npx prettier --write "src/**/*.{ts,tsx,css,mjs,json,html}"
 ```
 
-### **Netlify**
+- Comprobación de tipos:
 
 ```bash
-netlify deploy
+npx tsc -b --noEmit
 ```
 
-### **GitHub Pages**
+- Lint:
 
 ```bash
-npm run build
-npm run deploy
+npm run lint
 ```
 
----
+## URL del backend / Variables de entorno
 
-## **🙌 Contributing**
+Por defecto la URL base del API está en `src/utils/constants.ts`. Ahora se lee desde la variable de entorno Vite `VITE_API_BASE_URL` con un valor por defecto:
 
-Want to improve this template? Contributions are welcome!
+```ts
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/v1/api';
+```
 
-1. **Fork** this repository.
-2. **Create a branch:** `git checkout -b my-new-feature`
-3. **Commit changes:** `git commit -m "Add a cool feature"`
-4. **Push the branch:** `git push origin my-new-feature`
-5. **Open a Pull Request**
+Para usar una variable de entorno local copie el archivo de ejemplo y reinicie el servidor de desarrollo:
 
----
+```bash
+cp .env.example .env
+# editar .env según necesites (p. ej. cambiar VITE_API_BASE_URL)
+npm run dev
+```
 
-## **📜 License**
+La instancia de Axios se encuentra en [src/api/axiosInstance.ts](src/api/axiosInstance.ts) y añade el token de autenticación automáticamente.
 
-This project is **MIT licensed**. Feel free to use and modify it.
+## Docker (construir y ejecutar)
 
----
+- Construir imagen:
 
-## **🚀 Ready to Build?**
+```bash
+docker build -t pharmacy-frontend:latest .
+```
 
-This template is designed to help you **quickly start** a scalable React + TypeScript project with Vite & SWC.  
-If you found this useful, ⭐ **star the repo** and share it with others!
+- Ejecutar contenedor:
 
----
+```bash
+docker run -p 8080:80 pharmacy-frontend:latest
+```
 
-### **📩 Need Help?**
+El `Dockerfile` usa Nginx para servir la carpeta `dist` y copia `nginx.conf` desde el repositorio.
 
-Open an **issue** or reach out on **GitHub Discussions**. Let’s build something awesome together! 🚀
+## Estructura principal (resumen)
+
+- [src/components](src/components) — componentes reutilizables (UI)
+- [src/pages](src/pages) — vistas y páginas por ruta
+- [src/services](src/services) — llamadas al backend
+- [src/store](src/store) — estado local (Zustand)
+- [src/utils](src/utils) — utilidades y constantes
+- [src/api/axiosInstance.ts](src/api/axiosInstance.ts) — instancia de Axios con interceptores
+
+Para ver la estructura completa, revisa la carpeta [src](src).
+
+## Contribuir
+
+1. Fork del repositorio.
+2. Crear una rama: `git checkout -b feat/mi-cambio`.
+3. Hacer commits con mensajes claros.
+4. Formatear y validar (`prettier`, `tsc`, `eslint`).
+5. Abrir un Pull Request describiendo los cambios.
+
+## Ayuda / Contacto
+
+Repositorio: https://github.com/Omar09G/pharmacy-frontend
+
+Abre un issue para bugs o peticiones de mejora.

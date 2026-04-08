@@ -1,4 +1,6 @@
-export const API_BASE_URL = 'http://localhost:8080/v1/api';
+// Prefer Vite env variable `VITE_API_BASE_URL`. Falls back to localhost for development.
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/v1/api';
 export const DEFAULT_PAGE_SIZE = 10;
 export const TOTAL_PAGE_SIZE_OPTIONS = 0;
 export const ROLES = {
