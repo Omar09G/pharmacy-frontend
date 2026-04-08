@@ -16,22 +16,14 @@ export interface RoleCreate {
 
 export interface Permission {
   id: number;
-  permissionName: string;
-  resource: string;
-  action: string;
-  description: string;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
+  name: string;
+  description?: string;
 }
 
 export interface PermissionCreate {
   id: 0;
-  permissionName: string;
-  resource: string;
-  action: string;
-  description: string;
-  active: boolean;
+  name: string;
+  description?: string;
 }
 
 export interface RolePermission {

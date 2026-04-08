@@ -17,15 +17,11 @@ import Pagination from '../../../components/ui/Pagination';
 import SearchInput from '../../../components/ui/SearchInput';
 import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
-import Badge from '../../../components/ui/Badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 
 const schema = z.object({
-  permissionName: z.string().min(1, 'Requerido'),
-  resource: z.string().min(1, 'Requerido'),
-  action: z.string().min(1, 'Requerido'),
+  name: z.string().min(1, 'Requerido'),
   description: z.string().catch(''),
-  active: z.boolean().catch(true),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -87,26 +83,20 @@ const PermissionsPage: React.FC = () => {
     setTimeout(
       () =>
         form.reset({
-          permissionName: item.permissionName,
-          resource: item.resource,
-          action: item.action,
+          name: item.name,
           description: item.description,
-          active: item.active,
         }),
       10,
     );
   };
   const handleDelete = async (item: Permission) => {
-    const r = await confirmDelete(item.permissionName);
+    const r = await confirmDelete(item.name);
     if (r.isConfirmed) deleteMut.mutate(item.id);
   };
   const handleCreate = () => {
     form.reset({
-      permissionName: '',
-      resource: '',
-      action: '',
+      name: '',
       description: '',
-      active: true,
     });
     openCreate();
   };
@@ -115,16 +105,6 @@ const PermissionsPage: React.FC = () => {
     { accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('permissions.permissionName') },
     { accessorKey: 'description', header: t('permissions.resource') },
-    { accessorKey: 'action', header: t('permissions.action') },
-    {
-      accessorKey: 'status',
-      header: t('common.status'),
-      cell: ({ getValue }) => (
-        <Badge color={getValue() ? 'green' : 'red'}>
-          {getValue() ? t('common.active') : t('common.inactive')}
-        </Badge>
-      ),
-    },
     {
       id: 'actions',
       header: t('common.actions'),
@@ -209,31 +189,13 @@ const PermissionsPage: React.FC = () => {
         >
           <Input
             label={t('permissions.permissionName')}
-            {...form.register('permissionName')}
-            error={form.formState.errors.permissionName?.message}
-          />
-          <Input
-            label={t('permissions.resource')}
-            {...form.register('resource')}
-            error={form.formState.errors.resource?.message}
-          />
-          <Input
-            label={t('permissions.action')}
-            {...form.register('action')}
-            error={form.formState.errors.action?.message}
+            {...form.register('name')}
+            error={form.formState.errors.name?.message}
           />
           <Input
             label={t('common.description')}
             {...form.register('description')}
           />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              {...form.register('active')}
-              className="rounded"
-            />
-            {t('common.active')}
-          </label>
         </form>
       </Modal>
     </div>

@@ -33,24 +33,25 @@ const ProductForm: React.FC<Props> = ({ initial = {}, onCancel, onSave }) => {
         productDesc: initial.productDesc || '',
         productLote: initial.productLote || '',
       };
-      const current = {
-        productName: form.productName || '',
-        productCatalog: form.productCatalog || 0,
-        productCount: form.productCount || 0,
-        productCodeBar: form.productCodeBar || '',
-        productPrice: form.productPrice || 0,
-        productDesc: form.productDesc || '',
-        productLote: form.productLote || '',
-      };
-      const different = JSON.stringify(incoming) !== JSON.stringify(current);
-      if (different) {
-        setForm((s) => ({ ...s, ...(initial as ProductRequestDto) }));
-      }
+      setForm((prev) => {
+        const current = {
+          productName: prev.productName || '',
+          productCatalog: prev.productCatalog || 0,
+          productCount: prev.productCount || 0,
+          productCodeBar: prev.productCodeBar || '',
+          productPrice: prev.productPrice || 0,
+          productDesc: prev.productDesc || '',
+          productLote: prev.productLote || '',
+        };
+        const different = JSON.stringify(incoming) !== JSON.stringify(current);
+        if (!different) return prev;
+        return { ...prev, ...(initial as ProductRequestDto) };
+      });
     } catch (e) {
       console.warn('Error comparing form state with incoming initial data', e);
       // swallow potential stringify errors
     }
-    // only depend on `initial` reference so we guard against repeated setState
+    // state comparison is done inside setState callback to keep dependencies minimal and safe
   }, [initial]);
 
   const change = (k: keyof typeof form, v: textProduct) =>
