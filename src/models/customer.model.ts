@@ -3,13 +3,14 @@ export interface Customer {
   name: string;
   email: string;
   phone: string;
-  address: string;
-  rfc: string;
+  billingAddress: string;
+  documentId: string;
   creditLimit: number;
   balance: number;
-  active: boolean;
+  status: string;
   createdAt: string;
   updatedAt: string;
+  termsDays: number;
 }
 
 export interface CustomerCreate {
@@ -17,26 +18,42 @@ export interface CustomerCreate {
   name: string;
   email: string;
   phone: string;
-  address: string;
-  rfc: string;
+  billingAddress: string;
+  documentId: string;
   creditLimit: number;
-  active: boolean;
+  status: string;
+  termsDays: number;
 }
 
 export interface CustomerUpdate {
   name: string;
   email: string;
   phone: string;
-  address: string;
-  rfc: string;
+  billingAddress: string;
+  documentId: string;
   creditLimit: number;
-  active: boolean;
+  status: string;
+  termsDays: number;
 }
 
 export interface CustomerCreditAccount {
   id: number;
   customerId: number;
-  totalInvoiced: number;
-  totalPaid: number;
   balance: number;
+  limitAmount: number;
+  lastOverdueDate: string;
+}
+
+export interface CustomerCreditAccountCreate {
+  customerId: number;
+  balance: number;
+  limitAmount: number;
+  lastOverdueDate: string;
+}
+
+export interface CustomerCreditAccountUpdate {
+  customerId: number;
+  balance: number;
+  limitAmount: number;
+  lastOverdueDate: string;
 }

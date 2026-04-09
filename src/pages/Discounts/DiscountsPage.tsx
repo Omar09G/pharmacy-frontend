@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
@@ -19,22 +19,36 @@ import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { dateToUTC, nowUTC, utcToLocalInput } from '../../utils/dateUtils';
+import Select from '../../components/ui/Select';
+import { useAuthStore } from '../../store/authStore';
+import { categoryApi } from '../../services/categoryApi';
+import { Category } from '../../models/category.model';
 
 const schema = z.object({
+  code: z.string().optional(),
   name: z.string().min(1, 'Requerido'),
-  description: z.string().catch(''),
-  percentage: z.coerce.number<number>().min(0).max(100).catch(0),
-  value: z.coerce.number<number>().min(0).catch(0),
-  startDate: z.string().catch(''),
-  endDate: z.string().catch(''),
-  active: z.boolean().catch(true),
+  description: z.string().optional(),
+  discountType: z.string(),
+  value: z.coerce.number<number>().min(0, 'Requerido').max(100, 'Máximo 100'),
+  appliesTo: z.string(),
+  productId: z.coerce.number<number>().optional(),
+  categoryId: z.coerce.number<number>().optional(),
+  customerId: z.coerce.number<number>().optional(),
+  minQty: z.coerce.number<number>().optional(),
+  maxUses: z.coerce.number<number>().optional(),
+  priority: z.coerce.number<number>().optional(),
+  startAt: z.string().optional(),
+  endAt: z.string().optional(),
+  active: z.boolean().default(true),
 });
 type FormData = z.infer<typeof schema>;
 
 const DiscountsPage: React.FC = () => {
+  const { user } = useAuthStore.getState();
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Discount>();
@@ -46,7 +60,24 @@ const DiscountsPage: React.FC = () => {
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
 
-  const form = useForm<FormData>({ resolver: zodResolver(schema) });
+  //Categorias
+  const { data: categoriesData } = useQuery({
+    queryKey: ['pos-categories'],
+    queryFn: () => categoryApi.getAll(0, 100),
+  });
+
+  const categories: Category[] = Array.isArray(categoriesData?.data)
+    ? categoriesData.data
+    : [];
+
+  const categoryOptions = [
+    { label: '—', value: '' },
+    ...categories.map((c) => ({ label: c.name, value: c.id })),
+  ];
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema) as unknown as Resolver<FormData>,
+  });
 
   const createMut = useMutation({
     mutationFn: (d: DiscountCreate) => discountApi.create(d),
@@ -78,9 +109,34 @@ const DiscountsPage: React.FC = () => {
 
   const onSubmit = (d: FormData) => {
     if (editing) {
-      updateMut.mutate({ id: editing.id, data: d });
+      const starDate = dateToUTC(d.startAt as string);
+      const endDate = dateToUTC(d.endAt as string);
+
+      const payload = {
+        createdAt: nowUTC(),
+        createdBy: user?.id,
+        ...d,
+        startAt: starDate,
+        endAt: endDate,
+      };
+      updateMut.mutate({ id: editing.id, data: payload });
     } else {
-      createMut.mutate({ id: 0, ...d } as DiscountCreate);
+      // Convertir nuevamente las fechas a UTC para enviarlas al backend
+      const starDate = dateToUTC(d.startAt as string);
+      const endDate = dateToUTC(d.endAt as string);
+
+      console.log('Fechas convertidas a UTC:', { starDate, endDate });
+
+      const payload: DiscountCreate = {
+        id: 0,
+        createdAt: nowUTC(),
+        createdBy: user?.id,
+        ...d,
+        startAt: starDate,
+        endAt: endDate,
+      };
+
+      createMut.mutate(payload);
     }
   };
 
@@ -89,29 +145,46 @@ const DiscountsPage: React.FC = () => {
     setTimeout(
       () =>
         form.reset({
+          code: item.code,
           name: item.name,
           description: item.description,
-          percentage: item.percentage,
+          discountType: item.discountType,
           value: item.value,
-          startDate: item.startDate?.slice(0, 10) ?? '',
-          endDate: item.endDate?.slice(0, 10) ?? '',
+          appliesTo: item.appliesTo,
+          productId: item.productId,
+          categoryId: item.categoryId,
+          customerId: item.customerId,
+          minQty: item.minQty,
+          maxUses: item.maxUses,
+          priority: item.priority,
+          startAt: utcToLocalInput(item.startAt ?? '')?.slice(0, 10) ?? '',
+          endAt: utcToLocalInput(item.endAt ?? '')?.slice(0, 10) ?? '',
           active: item.active,
         }),
       10,
     );
   };
+
   const handleDelete = async (item: Discount) => {
     const r = await confirmDelete(item.name);
     if (r.isConfirmed) deleteMut.mutate(item.id);
   };
   const handleCreate = () => {
     form.reset({
+      code: '',
       name: '',
       description: '',
-      percentage: 0,
+      discountType: 'percentage',
       value: 0,
-      startDate: '',
-      endDate: '',
+      appliesTo: 'All',
+      productId: undefined,
+      categoryId: undefined,
+      customerId: undefined,
+      minQty: undefined,
+      maxUses: undefined,
+      priority: undefined,
+      startAt: undefined,
+      endAt: undefined,
       active: true,
     });
     openCreate();
@@ -121,24 +194,26 @@ const DiscountsPage: React.FC = () => {
     { accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('discounts.discountName') },
     {
-      accessorKey: 'percentage',
-      header: t('discounts.percentage'),
-      cell: ({ getValue }) => `${Number(getValue() ?? 0).toFixed(2)}%`,
+      accessorKey: 'code',
+      header: t('discounts.code'),
+      cell: ({ getValue }) => getValue() ?? '—',
     },
     {
       accessorKey: 'value',
       header: t('discounts.value'),
-      cell: ({ getValue }) => `$${Number(getValue() ?? 0).toFixed(2)}`,
+      cell: ({ getValue }) => `${Number(getValue() ?? 0).toFixed(2)}`,
     },
     {
       accessorKey: 'startAt',
       header: t('discounts.startDate'),
-      cell: ({ getValue }) => (getValue() as string)?.slice(0, 10) ?? '—',
+      cell: ({ getValue }) =>
+        utcToLocalInput(getValue() as string)?.slice(0, 10) ?? '—',
     },
     {
       accessorKey: 'endAt',
       header: t('discounts.endDate'),
-      cell: ({ getValue }) => (getValue() as string)?.slice(0, 10) ?? '—',
+      cell: ({ getValue }) =>
+        utcToLocalInput(getValue() as string)?.slice(0, 10) ?? '—',
     },
     {
       accessorKey: 'active',
@@ -187,7 +262,7 @@ const DiscountsPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -227,8 +302,13 @@ const DiscountsPage: React.FC = () => {
       >
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="grid grid-cols-5 md:grid-cols-2 gap-4"
         >
+          <Input
+            label={t('discounts.code')}
+            {...form.register('code')}
+            error={form.formState.errors.code?.message}
+          />
           <Input
             label={t('discounts.discountName')}
             {...form.register('name')}
@@ -239,10 +319,9 @@ const DiscountsPage: React.FC = () => {
             {...form.register('description')}
           />
           <Input
-            label={t('discounts.percentage')}
-            type="number"
+            label={t('discounts.discountType')}
             step="0.01"
-            {...form.register('percentage')}
+            {...form.register('discountType')}
           />
           <Input
             label={t('discounts.value')}
@@ -251,14 +330,41 @@ const DiscountsPage: React.FC = () => {
             {...form.register('value')}
           />
           <Input
+            label={t('discounts.appliesTo')}
+            {...form.register('appliesTo')}
+          />
+          <Select
+            label={t('discounts.category')}
+            {...form.register('categoryId')}
+            options={categoryOptions}
+          />
+          <Input
+            label={t('discounts.minQty')}
+            type="number"
+            step="0.01"
+            {...form.register('minQty')}
+          />
+          <Input
+            label={t('discounts.maxUses')}
+            type="number"
+            step="0.01"
+            {...form.register('maxUses')}
+          />
+          <Input
+            label={t('discounts.priority')}
+            type="number"
+            step="0.01"
+            {...form.register('priority')}
+          />
+          <Input
             label={t('discounts.startDate')}
             type="date"
-            {...form.register('startDate')}
+            {...form.register('startAt')}
           />
           <Input
             label={t('discounts.endDate')}
             type="date"
-            {...form.register('endDate')}
+            {...form.register('endAt')}
           />
           <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
             <input

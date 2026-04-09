@@ -95,7 +95,7 @@ const POSPage: React.FC = () => {
     searchTerm.length > 0
       ? products.filter((p) => {
           const q = searchTerm.toLowerCase();
-          const name = String(p.productName ?? '').toLowerCase();
+          const name = String(p.name ?? '').toLowerCase();
           const barcode = String(p.barcode ?? '').toLowerCase();
           return name.includes(q) || barcode.includes(q);
         })
@@ -104,7 +104,7 @@ const POSPage: React.FC = () => {
   const handleAddProduct = (p: Product) => {
     const item: Omit<CartItem, 'subtotal'> = {
       productId: p.id,
-      name: p.productName,
+      name: p.name,
       barcode: p.barcode,
       qty: 1,
       unitPrice: p.purchasePrice ?? 0,
@@ -205,7 +205,7 @@ const POSPage: React.FC = () => {
                   >
                     <div>
                       <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                        {p.productName}
+                        {p.name}
                       </span>
                       <span className="ml-2 text-xs text-neutral-500">
                         {p.barcode}
@@ -373,7 +373,7 @@ const POSPage: React.FC = () => {
                   <option value="">—</option>
                   {discounts.map((d) => (
                     <option key={d.id} value={d.id}>
-                      {d.value} ({d.percentage}%)
+                      {d.value} ({d.value}%)
                     </option>
                   ))}
                 </select>

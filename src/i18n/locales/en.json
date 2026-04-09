@@ -78,6 +78,7 @@
   },
   "products": {
     "title": "Products",
+    "sku": "SKU",
     "newProduct": "New Product",
     "editProduct": "Edit Product",
     "productName": "Product Name",
@@ -154,17 +155,32 @@
       "pending": "Pending"
     }
   },
+  "CustomerCreditAccount": {
+    "title": "Credit Account",
+    "customerId": "Customer ID",
+    "balance": "Balance",
+    "limitAmount": "Credit Limit",
+    "lastOverdueDate": "Last Overdue Date"
+  },
   "customers": {
     "title": "Customers",
     "newCustomer": "New Customer",
     "editCustomer": "Edit Customer",
     "fullName": "Full Name",
+    "termsDays": "Credit Days",
     "email": "Email",
     "phone": "Phone",
     "address": "Address",
     "rfc": "Tax ID",
     "creditLimit": "Credit Limit",
     "balance": "Balance",
+    "id": "ID",
+    "creditAccount": "Credit Account",
+    "createCredit": "Create Credit Account",
+    "creditBalance": "Credit Balance",
+    "creditCreated": "Credit account created successfully",
+    "creditUpdated": "Credit account updated successfully",
+    "creditDeleted": "Credit account deleted successfully",
     "created": "Customer created successfully",
     "updated": "Customer updated successfully",
     "deleted": "Customer deleted successfully"
@@ -267,6 +283,14 @@
   "discounts": {
     "title": "Discounts",
     "newDiscount": "New Discount",
+    "code": "Code",
+    "value": "Value",
+    "maxUses": "Max Uses",
+    "appliesTo": "Applies To",
+    "category": "Category",
+    "customer": "Customer",
+    "minQty": "Min Quantity",
+    "discountType": "Discount Type",
     "editDiscount": "Edit Discount",
     "discountName": "Discount Name",
     "percentage": "Percentage",

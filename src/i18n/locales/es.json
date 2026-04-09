@@ -78,6 +78,7 @@
   },
   "products": {
     "title": "Productos",
+    "sku": "SKU",
     "newProduct": "Nuevo Producto",
     "editProduct": "Editar Producto",
     "productName": "Nombre del Producto",
@@ -154,6 +155,13 @@
       "pending": "Pendiente"
     }
   },
+  "CustomerCreditAccount": {
+    "title": "Línea de Crédito",
+    "customerId": "ID del Cliente",
+    "balance": "Saldo",
+    "limitAmount": "Límite de Crédito",
+    "lastOverdueDate": "Última Fecha de Vencimiento"
+  },
   "customers": {
     "title": "Clientes",
     "newCustomer": "Nuevo Cliente",
@@ -163,8 +171,16 @@
     "phone": "Teléfono",
     "address": "Dirección",
     "rfc": "RFC",
+    "termsDays": "Días de Crédito",
     "creditLimit": "Límite de Crédito",
     "balance": "Saldo",
+    "id": "ID",
+    "creditAccount": "Línea de Crédito",
+    "createCredit": "Crear Línea de Crédito",
+    "creditBalance": "Saldo de la Línea",
+    "creditCreated": "Línea de crédito creada exitosamente",
+    "creditUpdated": "Línea de crédito actualizada exitosamente",
+    "creditDeleted": "Línea de crédito eliminada exitosamente",
     "created": "Cliente creado exitosamente",
     "updated": "Cliente actualizado exitosamente",
     "deleted": "Cliente eliminado exitosamente"
@@ -267,6 +283,14 @@
   "discounts": {
     "title": "Descuentos",
     "newDiscount": "Nuevo Descuento",
+    "code": "Código",
+    "value": "Valor",
+    "maxUses": "Usos Máximos",
+    "appliesTo": "Aplica a",
+    "category": "Categoría",
+    "customer": "Cliente",
+    "minQty": "Cantidad Mínima",
+    "discountType": "Tipo de Descuento",
     "editDiscount": "Editar Descuento",
     "discountName": "Nombre del Descuento",
     "percentage": "Porcentaje",

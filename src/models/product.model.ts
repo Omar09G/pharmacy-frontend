@@ -1,59 +1,74 @@
 export interface Product {
   id: number;
-  productName: string;
-  genericName: string;
+  sku?: string;
+  name: string;
   barcode: string;
-  presentation: string;
+  barcodeType?: string;
+  description?: string;
+  lotNumber?: string;
+  qtyOnHand: number;
+  expiryDate?: string;
+  purchaseId?: number;
+  priceType: string;
+  price: number;
+  brand?: string;
   categoryId: number;
-  categoryName?: string;
-  supplierId: number;
-  supplierName?: string;
-  purchasePrice: number;
-  sellingPrice: number;
-  minStock: number;
-  maxStock: number;
-  currentStock: number;
-  expirationDate: string;
-  requiresPrescription: boolean;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
+  unitId: number;
+  isSellable?: boolean;
+  trackBatches?: boolean;
+  taxProfileId?: number;
+  defaultCost?: number;
+  purchasePrice?: number;
+  wholesalePrice?: number;
+  salePrice: number;
+  defaultPrice: number;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }
 
 export interface ProductCreate {
   id: 0;
-  productName: string;
-  genericName: string;
+  sku?: string;
+  name: string;
   barcode: string;
-  presentation: string;
+  barcodeType?: string;
+  description?: string;
+  lotNumber?: string;
+  qtyOnHand: number;
+  expiryDate?: string;
+  purchaseId?: number;
+  priceType: string;
+  price: number;
+  brand?: string;
   categoryId: number;
-  supplierId: number;
-  purchasePrice: number;
-  sellingPrice: number;
-  minStock: number;
-  maxStock: number;
-  currentStock: number;
-  expirationDate: string;
-  requiresPrescription: boolean;
-  active: boolean;
+  unitId: number;
+  isSellable?: boolean;
+  trackBatches?: boolean;
+  taxProfileId?: number;
+  defaultCost?: number;
+  purchasePrice?: number;
+  wholesalePrice?: number;
+  salePrice: number;
+  defaultPrice: number;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }
 
 export interface AddProductRequest {
   id: 0;
-  productName: string;
-  genericName: string;
+  sku: string;
+  name: string;
   barcode: string;
-  presentation: string;
-  categoryId: number;
-  supplierId: number;
-  purchasePrice: number;
-  sellingPrice: number;
-  minStock: number;
-  maxStock: number;
-  currentStock: number;
-  expirationDate: string;
-  requiresPrescription: boolean;
-  active: boolean;
+  description: string;
+  qtyOnHand: string;
+  price: string;
+  taxProfileId: number;
+  purchasePrice: string;
+  wholesalePrice: string;
+  salePrice: string;
+  defaultPrice: string;
 }
 
 export interface AddProductResponse {

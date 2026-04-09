@@ -6,7 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
 import { customerApi } from '../../services/customerApi';
-import type { Customer, CustomerCreate } from '../../models/customer.model';
+import type {
+  Customer,
+  CustomerCreate,
+  CustomerCreditAccount,
+  CustomerCreditAccountCreate,
+} from '../../models/customer.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
 import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
@@ -18,26 +23,52 @@ import SearchInput from '../../components/ui/SearchInput';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  EyeIcon,
+  BanIcon,
+  SaveIcon,
+  PencilIcon,
+} from 'lucide-react';
+import { nowUTC } from '../../utils/dateUtils';
 
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   email: z.string().email('Email inválido').or(z.literal('')).catch(''),
   phone: z.string().catch(''),
-  address: z.string().catch(''),
-  rfc: z.string().catch(''),
+  billingAddress: z.string().catch(''),
+  documentId: z.string().catch(''),
   creditLimit: z.coerce.number<number>().min(0).catch(0),
-  active: z.boolean().catch(true),
+  status: z.string().catch('ACTIVE'),
+  termsDays: z.coerce.number<number>().min(0).catch(0),
 });
 type FormData = z.infer<typeof schema>;
+
+const schemaCredit = z.object({
+  customerId: z.coerce.number<number>().min(0).catch(0),
+  balance: z.coerce.number<number>().min(0).catch(0),
+  limitAmount: z.coerce.number<number>().min(0).catch(0),
+  lastOverdueDate: z.string().min(1, 'Requerido'),
+});
+type FormDataCredit = z.infer<typeof schemaCredit>;
 
 const CustomersPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Customer>();
+
+  const {
+    open: openCredit,
+    editing: editingCredit,
+    openCreate: openCreateCredit,
+    openEdit: openEditCredit,
+    close: closeCredit,
+  } = useCrudModal<CustomerCreditAccount>();
 
   const { data, isLoading } = useQuery({
     queryKey: ['customers', page, search],
@@ -48,6 +79,10 @@ const CustomersPage: React.FC = () => {
   const total = data?.total ?? 0;
 
   const form = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  const formCredit = useForm<FormDataCredit>({
+    resolver: zodResolver(schemaCredit),
+  });
 
   const createMut = useMutation({
     mutationFn: (d: CustomerCreate) => customerApi.create(d),
@@ -77,11 +112,51 @@ const CustomersPage: React.FC = () => {
     onError: () => showError(t('common.error')),
   });
 
+  const createMutCredit = useMutation({
+    mutationFn: (d: CustomerCreditAccountCreate) =>
+      customerApi.createCreditAccount(d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      showSuccess(t('customers.created'));
+      closeCredit();
+    },
+    onError: () => showError(t('common.error')),
+  });
+  const updateMutCredit = useMutation({
+    mutationFn: ({ id, data: d }: { id: number; data: FormDataCredit }) =>
+      customerApi.updateCreditAccount(id, d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      showSuccess(t('customers.updated'));
+      closeCredit();
+    },
+    onError: () => showError(t('common.error')),
+  });
+  const deleteMutCredit = useMutation({
+    mutationFn: (id: number) => customerApi.deleteCreditAccount(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      showSuccess(t('customers.deleted'));
+      closeCredit();
+    },
+    onError: () => showError(t('common.error')),
+  });
+
   const onSubmit = (d: FormData) => {
     if (editing) {
-      updateMut.mutate({ id: editing.id, data: d });
+      const updateData = { createdAt: nowUTC(), ...d };
+
+      updateMut.mutate({ id: editing.id, data: updateData });
     } else {
-      createMut.mutate({ id: 0, ...d } as CustomerCreate);
+      createMut.mutate({ id: 0, createdAt: nowUTC(), ...d } as CustomerCreate);
+    }
+  };
+
+  const onSubmitCredit = (d: FormDataCredit) => {
+    if (editingCredit) {
+      updateMutCredit.mutate({ id: editingCredit.id, data: d });
+    } else {
+      createMutCredit.mutate({ id: 0, ...d } as CustomerCreditAccountCreate);
     }
   };
 
@@ -93,14 +168,57 @@ const CustomersPage: React.FC = () => {
           name: item.name,
           email: item.email,
           phone: item.phone,
-          address: item.address,
-          rfc: item.rfc,
+          billingAddress: item.billingAddress,
+          documentId: item.documentId,
           creditLimit: item.creditLimit,
-          active: item.active,
+          status: item.status,
+          termsDays: item.termsDays,
         }),
       10,
     );
   };
+
+  const handleViewLinCredit = (item: Customer) => {
+    openCreateCredit();
+    customerApi
+      .getByIdCreditAccount(item.id)
+      .then((res) => {
+        handleEditCredit(res?.data);
+      })
+      .catch(() => {
+        handleCreateCredit(item.id);
+      });
+  };
+
+  const handleEditCredit = (item: CustomerCreditAccount) => {
+    openEditCredit(item);
+    setTimeout(
+      () =>
+        formCredit.reset({
+          customerId: item.customerId,
+          balance: item.balance,
+          limitAmount: item.limitAmount,
+          lastOverdueDate: item.lastOverdueDate,
+        }),
+      10,
+    );
+  };
+
+  const handleCreateCredit = (customerId: number) => {
+    formCredit.reset({
+      customerId,
+      balance: 0,
+      limitAmount: 0,
+      lastOverdueDate: new Date().toISOString().split('T')[0],
+    });
+    openCreateCredit();
+  };
+
+  const handleDeleteCredit = async (id: number) => {
+    const r = await confirmDelete(`Credit Account of Customer ID ${id}`);
+    if (r.isConfirmed) deleteMutCredit.mutate(id);
+  };
+
   const handleDelete = async (item: Customer) => {
     const r = await confirmDelete(item.name);
     if (r.isConfirmed) deleteMut.mutate(item.id);
@@ -110,10 +228,11 @@ const CustomersPage: React.FC = () => {
       name: '',
       email: '',
       phone: '',
-      address: '',
-      rfc: '',
+      billingAddress: '',
+      documentId: '',
       creditLimit: 0,
-      active: true,
+      status: 'ACTIVE',
+      termsDays: 15,
     });
     openCreate();
   };
@@ -123,19 +242,24 @@ const CustomersPage: React.FC = () => {
     { accessorKey: 'name', header: t('customers.name') },
     { accessorKey: 'email', header: t('customers.email') },
     { accessorKey: 'phone', header: t('customers.phone') },
+    { accessorKey: 'billingAddress', header: t('customers.address') },
+    { accessorKey: 'documentId', header: t('customers.rfc') },
     {
       accessorKey: 'creditLimit',
       header: t('customers.creditLimit'),
-      cell: ({ getValue }) => `$${(getValue() as number).toFixed(2)}`,
+      cell: ({ getValue }) => `$${Number(getValue()).toFixed(2)}`,
     },
     {
-      accessorKey: 'active',
+      accessorKey: 'status',
       header: t('common.status'),
-      cell: ({ getValue }) => (
-        <Badge color={getValue() ? 'green' : 'red'}>
-          {getValue() ? t('common.active') : t('common.inactive')}
-        </Badge>
-      ),
+      cell: ({ getValue }) => {
+        const status = getValue() as string;
+        return (
+          <Badge color={status === 'ACTIVE' ? 'green' : 'red'}>
+            {status === 'ACTIVE' ? t('common.active') : t('common.inactive')}
+          </Badge>
+        );
+      },
     },
     {
       id: 'actions',
@@ -156,6 +280,13 @@ const CustomersPage: React.FC = () => {
           >
             <Trash2 size={16} className="text-red-500" />
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleViewLinCredit(row.original)}
+          >
+            <EyeIcon size={16} className="text-blue-500" />
+          </Button>
         </div>
       ),
     },
@@ -175,7 +306,7 @@ const CustomersPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -227,22 +358,103 @@ const CustomersPage: React.FC = () => {
             error={form.formState.errors.email?.message}
           />
           <Input label={t('customers.phone')} {...form.register('phone')} />
-          <Input label={t('customers.address')} {...form.register('address')} />
-          <Input label={t('customers.rfc')} {...form.register('rfc')} />
+          <Input
+            label={t('customers.address')}
+            {...form.register('billingAddress')}
+          />
+          <Input label={t('customers.rfc')} {...form.register('documentId')} />
           <Input
             label={t('customers.creditLimit')}
             type="number"
             step="0.01"
             {...form.register('creditLimit')}
           />
+          <Input
+            label={t('customers.termsDays')}
+            type="number"
+            {...form.register('termsDays')}
+          />
           <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
             <input
               type="checkbox"
-              {...form.register('active')}
+              {...form.register('status')}
               className="rounded"
+              checked={form.watch('status') === 'ACTIVE'}
+              onChange={(e) =>
+                form.setValue(
+                  'status',
+                  e.target.checked ? 'ACTIVE' : 'INACTIVE',
+                )
+              }
             />
             {t('common.active')}
           </label>
+        </form>
+      </Modal>
+
+      <Modal
+        open={openCredit}
+        onClose={closeCredit}
+        title={t('customers.creditAccount')}
+        footer={
+          <>
+            <Button onClick={closeCredit} variant="ghost" size="sm">
+              <BanIcon size={16} className="text-blue-500" />
+            </Button>
+            <Button
+              onClick={() =>
+                handleDeleteCredit(formCredit.getValues().customerId)
+              }
+              variant="ghost"
+              size="sm"
+            >
+              <Trash2 size={16} className="text-red-500" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={formCredit.handleSubmit(onSubmitCredit)}
+              loading={createMutCredit.isPending || updateMutCredit.isPending}
+            >
+              {editingCredit ? (
+                <PencilIcon size={16} className="text-black-500" />
+              ) : (
+                <SaveIcon size={16} className="text-green-500" />
+              )}
+            </Button>
+          </>
+        }
+      >
+        <form
+          onSubmit={formCredit.handleSubmit(onSubmitCredit)}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          <Input
+            label={t('CustomerCreditAccount.customerId')}
+            {...formCredit.register('customerId')}
+            error={formCredit.formState.errors.customerId?.message}
+            disabled={true}
+          />
+
+          <Input
+            type="number"
+            label={t('CustomerCreditAccount.balance')}
+            {...formCredit.register('balance')}
+            error={formCredit.formState.errors.balance?.message}
+          />
+          <Input
+            type="number"
+            label={t('CustomerCreditAccount.limitAmount')}
+            {...formCredit.register('limitAmount')}
+            error={formCredit.formState.errors.limitAmount?.message}
+          />
+          <Input
+            type="date"
+            label={t('CustomerCreditAccount.lastOverdueDate')}
+            {...formCredit.register('lastOverdueDate')}
+            error={formCredit.formState.errors.lastOverdueDate?.message}
+          />
         </form>
       </Modal>
     </div>

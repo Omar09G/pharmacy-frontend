@@ -67,3 +67,9 @@ export function formatLocalFull(utcString: string): string {
       .find((p) => p.type === 'timeZoneName')?.value ?? tz;
   return `${format(local, 'dd/MM/yyyy HH:mm')} (${tzAbbr})`;
 }
+
+//Format YYYY-MM-DD to UTC string
+export function dateToUTC(dateString: string): string {
+  const d = parseISO(dateString);
+  return d.toISOString();
+}

@@ -17,24 +17,35 @@ import Pagination from '../../components/ui/Pagination';
 import SearchInput from '../../components/ui/SearchInput';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
-import Badge from '../../components/ui/Badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { nowUTC } from '../../utils/dateUtils';
 
 const schema = z.object({
-  productName: z.string().min(1, 'Requerido'),
-  genericName: z.string().catch(''),
+  sku: z.string().catch(''),
+  name: z.string().min(1, 'Requerido'),
   barcode: z.string().min(1, 'Requerido'),
-  presentation: z.string().catch(''),
-  categoryId: z.coerce.number<number>().catch(1),
-  supplierId: z.coerce.number<number>().catch(1),
-  purchasePrice: z.coerce.number<number>().min(0),
-  sellingPrice: z.coerce.number<number>().min(0),
-  minStock: z.coerce.number<number>().min(0).catch(0),
-  maxStock: z.coerce.number<number>().min(0).catch(100),
-  currentStock: z.coerce.number<number>().min(0).catch(0),
-  expirationDate: z.string().catch(''),
-  requiresPrescription: z.boolean().catch(false),
-  active: z.boolean().catch(true),
+  barcodeType: z.string().catch(''),
+  description: z.string().catch(''),
+  lotNumber: z.string().catch(''),
+  qtyOnHand: z.coerce.number<number>().min(0).catch(0),
+  expiryDate: z.string().catch(''),
+  purchaseId: z.coerce.number<number>().catch(0),
+  priceType: z.string().catch(''),
+  price: z.coerce.number<number>().min(0).catch(0),
+  brand: z.string().catch(''),
+  categoryId: z.coerce.number<number>().catch(0),
+  unitId: z.coerce.number<number>().catch(0),
+  isSellable: z.boolean().catch(false),
+  trackBatches: z.boolean().catch(false),
+  taxProfileId: z.coerce.number<number>().catch(0),
+  defaultCost: z.coerce.number<number>().catch(0),
+  purchasePrice: z.coerce.number<number>().catch(0),
+  wholesalePrice: z.coerce.number<number>().catch(0),
+  salePrice: z.coerce.number<number>().min(0).catch(0),
+  defaultPrice: z.coerce.number<number>().min(0).catch(0),
+  createdAt: z.string().catch(nowUTC()),
+  updatedAt: z.string().catch(''),
+  deletedAt: z.string().catch(''),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -42,7 +53,7 @@ type FormData = z.infer<typeof schema>;
 const ProductsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Product>();
@@ -92,7 +103,22 @@ const ProductsPage: React.FC = () => {
     if (editing) {
       updateMut.mutate({ id: editing.id, data: d });
     } else {
-      createMut.mutate({ id: 0, ...d } as AddProductRequest);
+      const payload: AddProductRequest = {
+        id: 0,
+        sku: d.sku || '',
+        name: d.name,
+        barcode: d.barcode || '',
+        description: d.description || '',
+        qtyOnHand: String(d.qtyOnHand ?? 0),
+        price: String(d.price ?? 0),
+        taxProfileId: d.taxProfileId ?? 0,
+        purchasePrice: String(d.purchasePrice ?? 0),
+        wholesalePrice: String(d.wholesalePrice ?? 0),
+        salePrice: String(d.salePrice ?? 0),
+        defaultPrice: String(d.defaultPrice ?? 0),
+      };
+
+      createMut.mutate(payload);
     }
   };
 
@@ -100,68 +126,86 @@ const ProductsPage: React.FC = () => {
     openEdit(p);
     setTimeout(() => {
       form.reset({
-        productName: p.productName,
-        genericName: p.genericName,
+        sku: p.sku,
+        name: p.name,
         barcode: p.barcode,
-        presentation: p.presentation,
+        barcodeType: p.barcodeType,
+        description: p.description,
+        lotNumber: p.lotNumber,
+        qtyOnHand: p.qtyOnHand,
+        expiryDate: p.expiryDate ? p.expiryDate.split('T')[0] : '',
+        purchaseId: p.purchaseId,
+        priceType: p.priceType,
+        price: p.price,
+        brand: p.brand,
         categoryId: p.categoryId,
-        supplierId: p.supplierId,
+        unitId: p.unitId,
+        isSellable: p.isSellable,
+        trackBatches: p.trackBatches,
+        taxProfileId: p.taxProfileId,
+        defaultCost: p.defaultCost,
         purchasePrice: p.purchasePrice,
-        sellingPrice: p.sellingPrice,
-        minStock: p.minStock,
-        maxStock: p.maxStock,
-        currentStock: p.currentStock,
-        expirationDate: p.expirationDate?.slice(0, 10) ?? '',
-        requiresPrescription: p.requiresPrescription,
-        active: p.active,
+        wholesalePrice: p.wholesalePrice,
+        salePrice: p.salePrice,
+        defaultPrice: p.defaultPrice,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+        deletedAt: p.deletedAt,
       });
     }, 10);
   };
 
   const handleDelete = async (p: Product) => {
-    const res = await confirmDelete(p.productName);
+    const res = await confirmDelete(p.name);
     if (res.isConfirmed) deleteMut.mutate(p.id);
   };
 
   const handleCreate = () => {
     form.reset({
-      productName: '',
-      genericName: '',
+      sku: '',
+      name: '',
       barcode: '',
-      presentation: '',
-      categoryId: 1,
-      supplierId: 1,
+      barcodeType: '',
+      description: '',
+      lotNumber: '',
+      qtyOnHand: 0,
+      expiryDate: '',
+      purchaseId: 0,
+      priceType: '',
+      price: 0,
+      brand: '',
+      categoryId: 0,
+      unitId: 0,
+      isSellable: false,
+      trackBatches: false,
+      taxProfileId: 0,
+      defaultCost: 0,
       purchasePrice: 0,
-      sellingPrice: 0,
-      minStock: 0,
-      maxStock: 100,
-      currentStock: 0,
-      expirationDate: '',
-      requiresPrescription: false,
-      active: true,
+      wholesalePrice: 0,
+      salePrice: 0,
+      defaultPrice: 0,
+      createdAt: nowUTC(),
+      updatedAt: '',
+      deletedAt: '',
     });
     openCreate();
   };
 
   const columns: ColumnDef<Product>[] = [
     { accessorKey: 'id', header: 'ID', size: 60 },
-    { accessorKey: 'productName', header: t('products.productName') },
+    { accessorKey: 'name', header: t('products.productName') },
     { accessorKey: 'barcode', header: t('products.barcode') },
     {
-      accessorKey: 'sellingPrice',
+      accessorKey: 'price',
       header: t('products.sellingPrice'),
-      cell: ({ getValue }) => `$${(getValue() as number).toFixed(2)}`,
+      cell: ({ getValue }) => `$${Number(getValue()).toFixed(2)}`,
     },
-    { accessorKey: 'currentStock', header: t('products.currentStock') },
     {
-      accessorKey: 'active',
-      header: t('common.status'),
-      cell: ({ getValue }) => (
-        <Badge color={getValue() ? 'green' : 'red'}>
-          {getValue() ? t('common.active') : t('common.inactive')}
-        </Badge>
-      ),
+      accessorKey: 'qtyOnHand',
+      header: t('products.currentStock'),
+      cell: ({ getValue }) => `${Number(getValue()).toFixed(0)}`,
     },
+
     {
       id: 'actions',
       header: t('common.actions'),
@@ -200,7 +244,7 @@ const ProductsPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -247,21 +291,18 @@ const ProductsPage: React.FC = () => {
         >
           <Input
             label={t('products.productName')}
-            {...form.register('productName')}
-            error={form.formState.errors.productName?.message}
+            {...form.register('name')}
+            error={form.formState.errors.name?.message}
           />
           <Input
-            label={t('products.genericName')}
-            {...form.register('genericName')}
+            label={t('products.sku')}
+            {...form.register('sku')}
+            error={form.formState.errors.sku?.message}
           />
           <Input
             label={t('products.barcode')}
             {...form.register('barcode')}
             error={form.formState.errors.barcode?.message}
-          />
-          <Input
-            label={t('products.presentation')}
-            {...form.register('presentation')}
           />
           <Input
             label={t('products.purchasePrice')}
@@ -273,44 +314,18 @@ const ProductsPage: React.FC = () => {
             label={t('products.sellingPrice')}
             type="number"
             step="0.01"
-            {...form.register('sellingPrice')}
-          />
-          <Input
-            label={t('products.minStock')}
-            type="number"
-            {...form.register('minStock')}
-          />
-          <Input
-            label={t('products.maxStock')}
-            type="number"
-            {...form.register('maxStock')}
+            {...form.register('price')}
           />
           <Input
             label={t('products.currentStock')}
             type="number"
-            {...form.register('currentStock')}
+            {...form.register('qtyOnHand')}
           />
           <Input
             label={t('products.expirationDate')}
             type="date"
-            {...form.register('expirationDate')}
+            {...form.register('expiryDate')}
           />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              {...form.register('requiresPrescription')}
-              className="rounded"
-            />
-            {t('products.requiresPrescription')}
-          </label>
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              {...form.register('active')}
-              className="rounded"
-            />
-            {t('common.active')}
-          </label>
         </form>
       </Modal>
     </div>
