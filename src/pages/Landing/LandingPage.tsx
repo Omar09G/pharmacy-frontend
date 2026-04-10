@@ -14,7 +14,7 @@ const LandingPage: React.FC = () => {
 
   const { data: productsData } = useQuery({
     queryKey: ['landing-products'],
-    queryFn: () => productApi.getAll(0, 8),
+    queryFn: () => productApi.getAll(0, 12),
   });
   const products: Product[] = Array.isArray(productsData?.data)
     ? productsData.data
@@ -46,7 +46,7 @@ const LandingPage: React.FC = () => {
   return (
     <div>
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20 md:py-32">
+      <section className="relative bg-linear-to-br from-blue-600 to-blue-800 text-white py-20 md:py-32">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
             {t('landing.hero')}
@@ -71,7 +71,7 @@ const LandingPage: React.FC = () => {
             </a>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-neutral-950" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-linear-to-t from-white dark:from-neutral-950" />
       </section>
 
       {/* Services */}
@@ -121,14 +121,12 @@ const LandingPage: React.FC = () => {
                     <Pill size={32} className="text-blue-400" />
                   </div>
                   <h3 className="font-semibold text-neutral-900 dark:text-white text-sm mb-1">
-                    {p.productName}
+                    {p.name}
                   </h3>
                   <p className="text-xs text-neutral-500 mb-2">
-                    {p.genericName || p.presentation}
+                    {p.description}
                   </p>
-                  <p className="text-lg font-bold text-blue-600">
-                    ${p.sellingPrice.toFixed(2)}
-                  </p>
+                  <p className="text-lg font-bold text-blue-600">${p.price}</p>
                 </div>
               ))}
             </div>

@@ -236,7 +236,27 @@
     "barcode": "Código de Barras",
     "qtyOnHand": "Existencia",
     "maxExpiryDate": "Próx. Caducidad",
-    "lastMovementAt": "Último Movimiento"
+    "lastMovementAt": "Últimos Movimientos",
+    "updateStock": "Actualizar Stock",
+    "getMovements": "Obtener Movimientos",
+    "adjustStock": "Ajustar Stock",
+    "lowStock": "Stock Bajo",
+    "updated": "Stock actualizado exitosamente",
+    "notFound": "Producto no encontrado",
+    "inventoryMovement": {
+      "id": "ID",
+      "productId": "ID del Producto",
+      "productName": "Nombre del Producto",
+      "locationId": "ID de Ubicación",
+      "locationName": "Nombre de Ubicación",
+      "movementType": "Tipo de Movimiento",
+      "quantity": "Cantidad",
+      "referenceId": "ID de Referencia",
+      "referenceType": "Tipo de Referencia",
+      "notes": "Notas",
+      "createdAt": "Creado En",
+      "saleId": "ID de Venta"
+    }
   },
   "auditLog": {
     "title": "Auditoría",

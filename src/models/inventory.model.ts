@@ -32,3 +32,26 @@ export interface InventoryStock {
   maxExpiryDate: string;
   lastMovementAt: string;
 }
+
+export interface ProductLotRequest {
+  productId: number;
+  lotNumber: string;
+  qtyOnHand: number;
+  expiryDate: string;
+  purchaseId: number;
+  createdAt: string;
+}
+
+export interface ProductLot {
+  id: number;
+  productId: number;
+  lotNumber: string;
+  qtyOnHand: number;
+  expiryDate: string;
+  purchaseId: number;
+  createdAt: string;
+}
+
+export interface ProductLotIdResponse {
+  id: number;
+}

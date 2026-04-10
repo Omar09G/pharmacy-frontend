@@ -236,7 +236,27 @@
     "barcode": "Barcode",
     "qtyOnHand": "Qty on Hand",
     "maxExpiryDate": "Next Expiry",
-    "lastMovementAt": "Last Movement"
+    "lastMovementAt": "Last Movements",
+    "updateStock": "Update Stock",
+    "getMovements": "Get Movements",
+    "lowStock": "Low Stock",
+    "adjustStock": "Adjust Stock",
+    "updated": "Stock updated successfully",
+    "notFound": "Product not found",
+    "inventoryMovement": {
+      "id": "ID",
+      "productId": "Product ID",
+      "productName": "Product Name",
+      "locationId": "Location ID",
+      "locationName": "Location Name",
+      "movementType": "Movement Type",
+      "quantity": "Quantity",
+      "referenceId": "Reference ID",
+      "referenceType": "Reference Type",
+      "notes": "Notes",
+      "createdAt": "Created At",
+      "saleId": "Sale ID"
+    }
   },
   "auditLog": {
     "title": "Audit Log",
