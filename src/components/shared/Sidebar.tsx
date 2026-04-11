@@ -26,6 +26,7 @@ import {
   MapPin,
   X,
   Pill,
+  BanknoteArrowUpIcon,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -74,6 +75,11 @@ const Sidebar: React.FC = () => {
       to: '/app/purchases',
       label: t('nav.purchases'),
       icon: <ShoppingBag size={20} />,
+    },
+    {
+      to: '/app/cash-in',
+      label: t('nav.cashIn'),
+      icon: <BanknoteArrowUpIcon size={20} />,
     },
     {
       to: '/app/discounts',

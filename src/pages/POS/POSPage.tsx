@@ -96,19 +96,35 @@ const POSPage: React.FC = () => {
       ? products.filter((p) => {
           const q = searchTerm.toLowerCase();
           const name = String(p.name ?? '').toLowerCase();
-          const barcode = String(p.barcode ?? '').toLowerCase();
+          const barcode = String(p.barcodesDetail?.barcode ?? '').toLowerCase();
           return name.includes(q) || barcode.includes(q);
         })
       : [];
 
   const handleAddProduct = (p: Product) => {
+    //Validar el nuero de Stock que tiene producto y que estan en Carrito, para no agregar mas de lo que hay en stock
+    const inCart = cart.find((c) => c.productId === p.id);
+    const stock = p.lotsDetail?.qtyOnHand ?? 0;
+    if (inCart && stock < inCart.qty + 1) {
+      showError(t('products.minStock'));
+      return;
+    }
+    if (!inCart && stock < 1) {
+      showError(t('products.minStock'));
+      return;
+    }
+
     const item: Omit<CartItem, 'subtotal'> = {
       productId: p.id,
       name: p.name,
-      barcode: p.barcode,
+      barcode: p.barcodesDetail?.barcode ?? '',
       qty: 1,
+      qtyOnHand: p.lotsDetail?.qtyOnHand ?? 0,
       unitPrice: p.purchasePrice ?? 0,
-      discountAmount: 0,
+      discount:
+        ((p.purchasePrice ?? 0) * (discounts[discountId ?? 0]?.value ?? 0)) /
+        100,
+      lotId: p.lotsDetail?.id,
     };
     addItem(item);
     setSearchTerm('');
@@ -152,9 +168,13 @@ const POSPage: React.FC = () => {
         id: 0,
         productId: c.productId,
         qty: c.qty,
+        qtyOnHand: c.qtyOnHand,
         unitPrice: c.unitPrice,
-        discountAmount: c.discountAmount,
+        discount: c.discount,
         lineTotal: c.subtotal,
+        saleId: 0,
+        taxAmount: 0,
+        lotId: c.lotId,
       })),
       paymentMethodId: paymentMethodId ?? 1,
       total: getTotal(),
@@ -208,7 +228,7 @@ const POSPage: React.FC = () => {
                         {p.name}
                       </span>
                       <span className="ml-2 text-xs text-neutral-500">
-                        {p.barcode}
+                        {p.barcodesDetail?.barcode ?? ''}
                       </span>
                     </div>
                     <span className="font-semibold text-blue-600">
@@ -240,6 +260,9 @@ const POSPage: React.FC = () => {
                       </th>
                       <th className="text-center py-2 px-3">
                         {t('common.quantity')}
+                      </th>
+                      <th className="text-center py-2 px-3">
+                        {t('products.maxStock')}
                       </th>
                       <th className="text-center py-2 px-3">
                         {t('pos.discountAmount')}
@@ -289,7 +312,10 @@ const POSPage: React.FC = () => {
                           </div>
                         </td>
                         <td className="py-2 px-3 text-center">
-                          ${Number(item.discountAmount ?? 0).toFixed(2)}
+                          {Number(item.qtyOnHand ?? 0).toFixed(1)}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          ${Number(item.discount ?? 0).toFixed(2)}
                         </td>
                         <td className="py-2 px-3 text-right font-medium">
                           ${Number(item.subtotal ?? 0).toFixed(2)}
@@ -370,10 +396,9 @@ const POSPage: React.FC = () => {
                   }
                   className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100"
                 >
-                  <option value="">—</option>
                   {discounts.map((d) => (
                     <option key={d.id} value={d.id}>
-                      {d.value} ({d.value}%)
+                      {d.value}% - {d.name}
                     </option>
                   ))}
                 </select>
@@ -401,7 +426,7 @@ const POSPage: React.FC = () => {
               <div className="flex justify-between text-sm text-neutral-600 dark:text-neutral-400">
                 <span>{t('pos.discount')}</span>
                 <span className="text-red-500">
-                  -${totalDiscount.toFixed(2)}
+                  -${Number(totalDiscount).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between text-lg font-bold text-neutral-900 dark:text-white border-t border-neutral-200 dark:border-neutral-700 pt-2">

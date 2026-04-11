@@ -38,7 +38,7 @@ const Topbar: React.FC = () => {
             <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
               {user?.fullName}
             </p>
-            <Badge color={user?.role === 'ADMIN' ? 'purple' : 'blue'}>
+            <Badge color={user?.role === 'ADMIN' ? 'green' : 'blue'}>
               {user?.role}
             </Badge>
           </div>

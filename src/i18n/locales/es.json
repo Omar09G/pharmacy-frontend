@@ -62,9 +62,10 @@
     "categories": "Categorías",
     "sales": "Ventas",
     "purchases": "Compras",
+    "cashIn": "Entrada de Dinero",
     "discounts": "Descuentos",
     "paymentMethods": "Métodos de Pago",
-    "cashJournal": "Caja",
+    "cashJournal": "Dinero en Caja",
     "inventory": "Inventario",
     "admin": "Administración",
     "users": "Usuarios",
@@ -220,7 +221,7 @@
     "deleted": "Método de pago eliminado exitosamente"
   },
   "cashJournal": {
-    "title": "Caja",
+    "title": "Dinero en Caja",
     "openJournal": "Abrir Caja",
     "openingAmount": "Monto de Apertura",
     "closingAmount": "Monto de Cierre",

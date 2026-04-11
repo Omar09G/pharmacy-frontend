@@ -4,9 +4,11 @@ export interface CartItem {
   productId: number;
   name: string;
   barcode: string;
+  lotId?: number;
   qty: number;
+  qtyOnHand: number;
   unitPrice: number;
-  discountAmount: number;
+  discount: number;
   subtotal: number;
 }
 
@@ -16,6 +18,8 @@ interface POSStore {
   discountId: number | null;
   paymentMethodId: number | null;
   notes: string;
+  error: string | null;
+  setError: (msg: string | null) => void;
   addItem: (item: Omit<CartItem, 'subtotal'>) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, qty: number) => void;
@@ -31,26 +35,37 @@ interface POSStore {
 }
 
 function calcSubtotal(item: Omit<CartItem, 'subtotal'>): number {
-  return item.qty * item.unitPrice - item.discountAmount;
+  return item.qty * item.unitPrice - item.discount;
 }
 
 export const usePOSStore = create<POSStore>((set, get) => ({
   cart: [],
+  error: null,
   customerId: null,
   discountId: null,
   paymentMethodId: null,
   notes: '',
 
+  setError: (msg) => set({ error: msg }),
+
   addItem: (item) => {
     const cart = get().cart;
     const existing = cart.find((c) => c.productId === item.productId);
+
     if (existing) {
+      if (item.qty > existing.qtyOnHand) {
+        set({
+          error: 'No se pueden agregar más registros al carrito por bajo stock',
+        });
+        return;
+      }
       set({
         cart: cart.map((c) =>
           c.productId === item.productId
             ? {
                 ...c,
                 qty: c.qty + item.qty,
+                qtyOnHand: c.qtyOnHand - item.qty,
                 subtotal: calcSubtotal({
                   ...c,
                   qty: c.qty + item.qty,
@@ -58,31 +73,81 @@ export const usePOSStore = create<POSStore>((set, get) => ({
               }
             : c,
         ),
+        error: null,
       });
     } else {
-      set({ cart: [...cart, { ...item, subtotal: calcSubtotal(item) }] });
+      if (item.qty > item.qtyOnHand) {
+        set({
+          error: 'No se pueden agregar más registros al carrito por bajo stock',
+        });
+        return;
+      }
+      set({
+        cart: [
+          ...cart,
+          {
+            ...item,
+            qtyOnHand: item.qtyOnHand - item.qty,
+            subtotal: calcSubtotal(item),
+          },
+        ],
+        error: null,
+      });
     }
   },
 
   removeItem: (productId) =>
-    set({ cart: get().cart.filter((c) => c.productId !== productId) }),
+    set({
+      cart: get().cart.filter((c) => c.productId !== productId),
+      error: null,
+    }),
 
   updateQuantity: (productId, qty) => {
+    const cart = get().cart;
+    const item = cart.find((c) => c.productId === productId);
+    if (!item) return;
+
     if (qty <= 0) {
-      set({ cart: get().cart.filter((c) => c.productId !== productId) });
+      set({ cart: cart.filter((c) => c.productId !== productId), error: null });
       return;
     }
-    set({
-      cart: get().cart.map((c) =>
-        c.productId === productId
-          ? {
-              ...c,
-              qty: qty,
-              subtotal: calcSubtotal({ ...c, qty: qty }),
-            }
-          : c,
-      ),
-    });
+
+    const delta = qty - item.qty;
+    if (delta > 0) {
+      // Increasing quantity: check available stock
+      if (delta > item.qtyOnHand) {
+        set({ error: 'No hay suficiente stock para esa cantidad' });
+        return;
+      }
+      set({
+        cart: cart.map((c) =>
+          c.productId === productId
+            ? {
+                ...c,
+                qty,
+                qtyOnHand: c.qtyOnHand - delta,
+                subtotal: calcSubtotal({ ...c, qty }),
+              }
+            : c,
+        ),
+        error: null,
+      });
+    } else if (delta < 0) {
+      // Decreasing quantity: restore stock
+      set({
+        cart: cart.map((c) =>
+          c.productId === productId
+            ? {
+                ...c,
+                qty,
+                qtyOnHand: c.qtyOnHand + Math.abs(delta),
+                subtotal: calcSubtotal({ ...c, qty }),
+              }
+            : c,
+        ),
+        error: null,
+      });
+    }
   },
 
   updateDiscount: (productId, discount) =>
@@ -91,11 +156,12 @@ export const usePOSStore = create<POSStore>((set, get) => ({
         c.productId === productId
           ? {
               ...c,
-              discountAmount: discount,
-              subtotal: calcSubtotal({ ...c, discountAmount: discount }),
+              discount: discount,
+              subtotal: calcSubtotal({ ...c, discount: discount }),
             }
           : c,
       ),
+      error: null,
     }),
 
   setCustomerId: (id) => set({ customerId: id }),
@@ -110,11 +176,11 @@ export const usePOSStore = create<POSStore>((set, get) => ({
       discountId: null,
       paymentMethodId: null,
       notes: '',
+      error: null,
     }),
 
   getTotal: () => get().cart.reduce((sum, c) => sum + c.subtotal, 0),
   getSubtotal: () =>
     get().cart.reduce((sum, c) => sum + c.qty * c.unitPrice, 0),
-  getTotalDiscount: () =>
-    get().cart.reduce((sum, c) => sum + c.discountAmount, 0),
+  getTotalDiscount: () => get().cart.reduce((sum, c) => sum + c.discount, 0),
 }));

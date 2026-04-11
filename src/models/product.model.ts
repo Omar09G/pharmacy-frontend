@@ -1,79 +1,103 @@
 export interface Product {
   id: number;
-  sku?: string;
+  sku: string;
   name: string;
-  barcode: string;
-  barcodeType?: string;
-  description?: string;
-  lotNumber?: string;
-  qtyOnHand: number;
-  expiryDate?: string;
-  purchaseId?: number;
-  priceType: string;
-  price: number;
-  brand?: string;
+  description: string;
+  brand: string;
   categoryId: number;
   unitId: number;
-  isSellable?: boolean;
-  trackBatches?: boolean;
-  taxProfileId?: number;
-  defaultCost?: number;
-  purchasePrice?: number;
-  wholesalePrice?: number;
+  isSellable: boolean;
+  trackBatches: boolean;
+  taxProfileId: number;
+  defaultCost: number;
+  purchasePrice: number;
+  wholesalePrice: number;
   salePrice: number;
   defaultPrice: number;
-  createdAt?: string;
-  updatedAt?: string;
-  deletedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
+  pricesDetail?: ProductPrice;
+  lotsDetail?: ProductLot;
+  barcodesDetail?: ProductBarcode;
 }
 
 export interface ProductCreate {
-  id: 0;
-  sku?: string;
-  name: string;
-  barcode: string;
-  barcodeType?: string;
-  description?: string;
-  lotNumber?: string;
-  qtyOnHand: number;
-  expiryDate?: string;
-  purchaseId?: number;
-  priceType: string;
-  price: number;
-  brand?: string;
-  categoryId: number;
-  unitId: number;
-  isSellable?: boolean;
-  trackBatches?: boolean;
-  taxProfileId?: number;
-  defaultCost?: number;
-  purchasePrice?: number;
-  wholesalePrice?: number;
-  salePrice: number;
-  defaultPrice: number;
-  createdAt?: string;
-  updatedAt?: string;
-  deletedAt?: string;
-}
-
-export interface AddProductRequest {
-  id: 0;
   sku: string;
   name: string;
-  barcode: string;
   description: string;
-  qtyOnHand: string;
-  price: string;
+  brand: string;
+  categoryId: number;
+  unitId: number;
+  isSellable: boolean;
+  trackBatches: boolean;
   taxProfileId: number;
-  purchasePrice: string;
-  wholesalePrice: string;
-  salePrice: string;
-  defaultPrice: string;
+  defaultCost: number;
+  purchasePrice: number;
+  wholesalePrice: number;
+  salePrice: number;
+  defaultPrice: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
+  pricesDetail?: ProductPriceCreate;
+  lotsDetail?: ProductLotCreate;
+  barcodesDetail?: ProductBarcodeCreate;
 }
 
-export interface AddProductResponse {
+export type ProductUpdate = Partial<Product>;
+
+export interface ProductPrice {
   id: number;
-  productName: string;
+  productId: number;
+  priceType: string;
+  price: number;
+  startsAt: string;
+  endsAt: string;
+  createdAt: string;
+}
+
+export type ProductPriceCreate = Omit<ProductPrice, 'id' | 'productId'>;
+
+export type ProductPriceUpdate = Partial<ProductPriceCreate>;
+
+export interface ProductLot {
+  id: number;
+  productId: number;
+  lotNumber: string;
+  qtyOnHand: number;
+  expiryDate: string;
+  purchaseId: number;
+  createdAt: string;
+}
+
+export type ProductLotCreate = Omit<ProductLot, 'id' | 'productId'>;
+
+export type ProductLotUpdate = Partial<ProductLotCreate>;
+
+export interface ProductBarcode {
+  id: number;
+  productId: number;
   barcode: string;
-  sellingPrice: number;
+  barcodeType: string;
+  createdAt: string;
+}
+
+export type ProductBarcodeCreate = Omit<ProductBarcode, 'id' | 'productId'>;
+
+export type ProductBarcodeUpdate = Partial<ProductBarcodeCreate>;
+
+export interface UnitDetail {
+  id: number;
+  name: string;
+  code: string;
+  precision: number;
+}
+
+export interface TaxProfileDetail {
+  id: number;
+  name: string;
+  rate: number;
+  isInclusive: boolean;
+  description?: string;
 }

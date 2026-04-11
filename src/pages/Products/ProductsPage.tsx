@@ -6,7 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
 import { productApi } from '../../services/productApi';
-import type { Product, AddProductRequest } from '../../models/product.model';
+import type {
+  Product,
+  ProductCreate,
+  TaxProfileDetail,
+  UnitDetail,
+} from '../../models/product.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
 import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
@@ -17,8 +22,14 @@ import Pagination from '../../components/ui/Pagination';
 import SearchInput from '../../components/ui/SearchInput';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { nowUTC } from '../../utils/dateUtils';
+import Badge from '../../components/ui/Badge';
+import { categoryApi } from '../../services/categoryApi';
+import { Category } from '../../models/category.model';
+import Select from '../../components/ui/Select';
+import { purchaseApi } from '../../services/purchaseApi';
+import { Purchase } from '../../models/purchase.model';
 
 const schema = z.object({
   sku: z.string().catch(''),
@@ -28,24 +39,17 @@ const schema = z.object({
   description: z.string().catch(''),
   lotNumber: z.string().catch(''),
   qtyOnHand: z.coerce.number<number>().min(0).catch(0),
-  expiryDate: z.string().catch(''),
   purchaseId: z.coerce.number<number>().catch(0),
   priceType: z.string().catch(''),
   price: z.coerce.number<number>().min(0).catch(0),
   brand: z.string().catch(''),
   categoryId: z.coerce.number<number>().catch(0),
   unitId: z.coerce.number<number>().catch(0),
-  isSellable: z.boolean().catch(false),
-  trackBatches: z.boolean().catch(false),
   taxProfileId: z.coerce.number<number>().catch(0),
   defaultCost: z.coerce.number<number>().catch(0),
   purchasePrice: z.coerce.number<number>().catch(0),
   wholesalePrice: z.coerce.number<number>().catch(0),
-  salePrice: z.coerce.number<number>().min(0).catch(0),
   defaultPrice: z.coerce.number<number>().min(0).catch(0),
-  createdAt: z.string().catch(nowUTC()),
-  updatedAt: z.string().catch(''),
-  deletedAt: z.string().catch(''),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -55,8 +59,7 @@ const ProductsPage: React.FC = () => {
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const { open, editing, openCreate, openEdit, close } =
-    useCrudModal<Product>();
+  const { open, editing, openCreate, close } = useCrudModal<Product>();
 
   const { data, isLoading } = useQuery({
     queryKey: ['products', page, search],
@@ -67,10 +70,46 @@ const ProductsPage: React.FC = () => {
   const products = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
 
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoryApi.getAll(0, 100, 0),
+  });
+
+  const categoriesDetail: Category[] = Array.isArray(categoriesData?.data)
+    ? categoriesData.data
+    : [];
+
+  const { data: unitData } = useQuery({
+    queryKey: ['units'],
+    queryFn: () => productApi.getAllUnits(0, 100, 0),
+  });
+
+  const unitsDetail: UnitDetail[] = Array.isArray(unitData?.data)
+    ? unitData.data
+    : [];
+
+  const { data: taxData } = useQuery({
+    queryKey: ['taxProfiles'],
+    queryFn: () => productApi.getAllTaxProfiles(0, 100, 0),
+  });
+
+  const taxProfilesDetail: TaxProfileDetail[] = Array.isArray(taxData?.data)
+    ? taxData.data
+    : [];
+
+  const { data: purchaseData } = useQuery({
+    queryKey: ['purchases'],
+    queryFn: () => purchaseApi.getAll(0, 100, 0),
+  });
+
+  const purchasesDetail: Purchase[] = Array.isArray(purchaseData?.data)
+    ? purchaseData.data
+    : [];
+
   const form = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const createMut = useMutation({
-    mutationFn: (d: AddProductRequest) => productApi.create(d),
+    mutationFn: (d: ProductCreate) => productApi.create(d),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['products'] });
       showSuccess(t('products.created'));
@@ -103,56 +142,36 @@ const ProductsPage: React.FC = () => {
     if (editing) {
       updateMut.mutate({ id: editing.id, data: d });
     } else {
-      const payload: AddProductRequest = {
-        id: 0,
-        sku: d.sku || '',
-        name: d.name,
-        barcode: d.barcode || '',
-        description: d.description || '',
-        qtyOnHand: String(d.qtyOnHand ?? 0),
-        price: String(d.price ?? 0),
-        taxProfileId: d.taxProfileId ?? 0,
-        purchasePrice: String(d.purchasePrice ?? 0),
-        wholesalePrice: String(d.wholesalePrice ?? 0),
-        salePrice: String(d.salePrice ?? 0),
-        defaultPrice: String(d.defaultPrice ?? 0),
+      const payload: ProductCreate = {
+        ...d,
+        isSellable: false,
+        trackBatches: false,
+        createdAt: nowUTC(),
+        updatedAt: nowUTC(),
+        deletedAt: nowUTC(),
+        salePrice: d.price,
+        pricesDetail: {
+          priceType: d.priceType,
+          price: d.price,
+          startsAt: nowUTC(),
+          endsAt: nowUTC(),
+          createdAt: nowUTC(),
+        },
+        lotsDetail: {
+          lotNumber: d.lotNumber,
+          qtyOnHand: d.qtyOnHand,
+          expiryDate: nowUTC().split('T')[0], // This should be set based on form input if you want to track expiry
+          purchaseId: d.purchaseId,
+          createdAt: nowUTC(),
+        },
+        barcodesDetail: {
+          barcode: d.barcode,
+          barcodeType: d.barcodeType,
+          createdAt: nowUTC(),
+        },
       };
-
       createMut.mutate(payload);
     }
-  };
-
-  const handleEdit = (p: Product) => {
-    openEdit(p);
-    setTimeout(() => {
-      form.reset({
-        sku: p.sku,
-        name: p.name,
-        barcode: p.barcode,
-        barcodeType: p.barcodeType,
-        description: p.description,
-        lotNumber: p.lotNumber,
-        qtyOnHand: p.qtyOnHand,
-        expiryDate: p.expiryDate ? p.expiryDate.split('T')[0] : '',
-        purchaseId: p.purchaseId,
-        priceType: p.priceType,
-        price: p.price,
-        brand: p.brand,
-        categoryId: p.categoryId,
-        unitId: p.unitId,
-        isSellable: p.isSellable,
-        trackBatches: p.trackBatches,
-        taxProfileId: p.taxProfileId,
-        defaultCost: p.defaultCost,
-        purchasePrice: p.purchasePrice,
-        wholesalePrice: p.wholesalePrice,
-        salePrice: p.salePrice,
-        defaultPrice: p.defaultPrice,
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
-        deletedAt: p.deletedAt,
-      });
-    }, 10);
   };
 
   const handleDelete = async (p: Product) => {
@@ -169,24 +188,20 @@ const ProductsPage: React.FC = () => {
       description: '',
       lotNumber: '',
       qtyOnHand: 0,
-      expiryDate: '',
-      purchaseId: 0,
+      purchaseId:
+        purchasesDetail.length > 0
+          ? purchasesDetail[purchasesDetail.length - 1].id
+          : 0,
       priceType: '',
       price: 0,
       brand: '',
-      categoryId: 0,
-      unitId: 0,
-      isSellable: false,
-      trackBatches: false,
-      taxProfileId: 0,
+      categoryId: categoriesDetail.length > 0 ? categoriesDetail[0].id : 0,
+      unitId: unitsDetail.length > 0 ? unitsDetail[0].id : 0,
+      taxProfileId: taxProfilesDetail.length > 0 ? taxProfilesDetail[0].id : 0,
       defaultCost: 0,
       purchasePrice: 0,
       wholesalePrice: 0,
-      salePrice: 0,
       defaultPrice: 0,
-      createdAt: nowUTC(),
-      updatedAt: '',
-      deletedAt: '',
     });
     openCreate();
   };
@@ -194,14 +209,25 @@ const ProductsPage: React.FC = () => {
   const columns: ColumnDef<Product>[] = [
     { accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('products.productName') },
-    { accessorKey: 'barcode', header: t('products.barcode') },
+    { accessorKey: 'barcodesDetail.barcode', header: t('products.barcode') },
     {
-      accessorKey: 'price',
-      header: t('products.sellingPrice'),
-      cell: ({ getValue }) => `$${Number(getValue()).toFixed(2)}`,
+      accessorKey: 'pricesDetail.price',
+      header: t('common.price'),
+      cell: ({ getValue }) => {
+        const reason = `$${Number(getValue()).toFixed(2)}` as string;
+        return <Badge color="green">{reason}</Badge>;
+      },
     },
     {
-      accessorKey: 'qtyOnHand',
+      accessorKey: 'salePrice',
+      header: t('products.sellingPrice'),
+      cell: ({ getValue }) => {
+        const reason = `$${Number(getValue()).toFixed(2)}` as string;
+        return <Badge color="blue">{reason}</Badge>;
+      },
+    },
+    {
+      accessorKey: 'lotsDetail.qtyOnHand',
       header: t('products.currentStock'),
       cell: ({ getValue }) => `${Number(getValue()).toFixed(0)}`,
     },
@@ -211,13 +237,6 @@ const ProductsPage: React.FC = () => {
       header: t('common.actions'),
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEdit(row.original)}
-          >
-            <Pencil size={16} />
-          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -262,7 +281,7 @@ const ProductsPage: React.FC = () => {
         open={open}
         onClose={close}
         title={editing ? t('products.editProduct') : t('products.newProduct')}
-        size="lg"
+        size="xl"
         footer={
           <>
             <Button
@@ -287,7 +306,7 @@ const ProductsPage: React.FC = () => {
       >
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="grid grid-cols-5 md:grid-cols-2 gap-4"
         >
           <Input
             label={t('products.productName')}
@@ -321,10 +340,38 @@ const ProductsPage: React.FC = () => {
             type="number"
             {...form.register('qtyOnHand')}
           />
-          <Input
-            label={t('products.expirationDate')}
-            type="date"
-            {...form.register('expiryDate')}
+          <Select
+            label={t('products.category')}
+            options={categoriesDetail.map((c) => ({
+              label: c.name,
+              value: c.id,
+            }))}
+            {...form.register('categoryId')}
+          />
+
+          <Select
+            label={t('config.units')}
+            options={unitsDetail.map((c) => ({
+              label: c.name,
+              value: c.id,
+            }))}
+            {...form.register('unitId')}
+          />
+          <Select
+            label={t('config.units')}
+            options={taxProfilesDetail.map((c) => ({
+              label: c.name,
+              value: c.id,
+            }))}
+            {...form.register('taxProfileId')}
+          />
+          <Select
+            label={t('purchases.invoiceNumber')}
+            options={purchasesDetail.map((c) => ({
+              label: `${c.invoiceNo}`,
+              value: c.id,
+            }))}
+            {...form.register('purchaseId')}
           />
         </form>
       </Modal>
