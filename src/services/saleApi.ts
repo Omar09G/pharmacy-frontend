@@ -1,6 +1,6 @@
 import api from '../api/axiosInstance';
 import type { ApiResponse } from '../utils/Utils';
-import type { Sale, AddSaleRequest } from '../models/sale.model';
+import type { Sale, AddSaleRequest, SaleItem } from '../models/sale.model';
 
 export const saleApi = {
   getAll: (page = 0, limit = 10, total = 0) =>
@@ -29,4 +29,11 @@ export const saleApi = {
 
   cancel: (id: number) =>
     api.patch<ApiResponse<null>>(`/add_sale/${id}`, {}).then((r) => r.data),
+
+  getSaleDetails: (saleId: number, page = 0, limit = 1000, total = 0) =>
+    api
+      .get<
+        ApiResponse<SaleItem[]>
+      >(`/sale_item`, { params: { page, limit, total, saleId } })
+      .then((r) => r.data),
 };

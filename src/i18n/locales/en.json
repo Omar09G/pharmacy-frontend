@@ -228,7 +228,15 @@
     "closedAt": "Closed At",
     "notes": "Notes",
     "journalOpened": "Journal opened successfully",
-    "journalClosed": "Journal closed successfully"
+    "journalClosed": "Journal closed successfully",
+    "nameJournal": "Journal Name",
+    "openedBy": "Opened By",
+    "closedBy": "Closed By",
+    "descriptionJournal": "Journal Description",
+    "description": {
+      "open": "Open a new cash journal at the start of the day to track all cash transactions.",
+      "close": "Close the cash journal at the end of the day to calculate total cash flow and reconcile with physical cash."
+    }
   },
   "inventory": {
     "title": "Inventory",

@@ -1,43 +1,59 @@
 export interface Purchase {
   id: number;
   supplierId: number;
-  supplierName?: string;
-  userId: number;
-  userName?: string;
-  date: string;
   invoiceNo: string;
+  date: string;
   subtotal: number;
   taxTotal: number;
   total: number;
-  notes: string;
   status: string;
   createdAt: string;
-  updatedAt: string;
+  createdBy: number;
 }
 
 export interface PurchaseItem {
   id: 0;
+  purchaseId: number;
   productId: number;
-  productName?: string;
-  quantity: number;
+  lotId?: number;
+  qty: number;
   unitCost: number;
-  subtotal: number;
+  discount?: number;
+  taxAmount?: number;
+  lineTotal: number;
 }
 
 export interface PurchasePayment {
   id: 0;
-  paymentMethodId: number;
+  purchaseId: number;
   amount: number;
-  reference: string;
+  methodId?: number;
+  paidAt: string;
+  reference?: string;
+}
+
+export interface PurchasePaymentCreate {
+  purchaseId: number;
+  amount: number;
+  methodId?: number;
+  paidAt: string;
+  reference?: string;
 }
 
 export interface PurchaseCreate {
-  id: 0;
   supplierId: number;
-  userId: number;
-  date: string;
   invoiceNo: string;
-  notes: string;
-  items: PurchaseItem[];
-  payment: PurchasePayment;
+  date: string;
+  subtotal: number;
+  taxTotal: number;
+  total: number;
+  status: string;
+  createdAt: string;
+  createdBy: number;
+  payment: PurchasePaymentCreate;
+}
+
+export interface PurchaseUpdate {
+  id: number;
+  status: string;
 }

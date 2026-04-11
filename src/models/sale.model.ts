@@ -18,11 +18,15 @@ export interface Sale {
 
 export interface SaleItem {
   id: 0;
+  saleId: number;
   productId: number;
+  lotId?: number;
   productName?: string;
   qty: number;
   unitPrice: number;
-  discountAmount: number;
+  discount: number;
+  taxAmount: number;
+  lineTotal: number;
 }
 
 export interface SalePayment {

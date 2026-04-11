@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { type ColumnDef } from '@tanstack/react-table';
 import { saleApi } from '../../services/saleApi';
-import type { Sale } from '../../models/sale.model';
+import type { Sale, SaleItem } from '../../models/sale.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
 import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
 import { formatLocal } from '../../utils/dateUtils';
@@ -13,13 +13,17 @@ import DataTable from '../../components/ui/DataTable';
 import Pagination from '../../components/ui/Pagination';
 import SearchInput from '../../components/ui/SearchInput';
 import Badge from '../../components/ui/Badge';
-import { Trash2 } from 'lucide-react';
+import { EyeIcon, Trash2 } from 'lucide-react';
+import Modal from '../../components/ui/Modal';
+import { useCrudModal } from '../../hooks/useCrudModal';
 
 const SalesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const { open, openCreate, close } = useCrudModal<Sale>();
+  const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['sales', page, search],
@@ -49,9 +53,41 @@ const SalesPage: React.FC = () => {
     return 'gray';
   };
 
+  const handleViewDetails = (item: Sale) => {
+    saleApi.getSaleDetails(item.id).then((res) => {
+      const items = res.data;
+      setSaleItems(items);
+    });
+    openCreate();
+  };
+
+  const columnsSaleItem: ColumnDef<SaleItem>[] = [
+    { accessorKey: 'productId', header: t('products.productName') },
+    { accessorKey: 'qty', header: t('sales.items') },
+    {
+      accessorKey: 'unitPrice',
+      header: t('common.price'),
+      cell: ({ getValue }) => `$${Number(getValue() ?? 0).toFixed(2)}`,
+    },
+    {
+      accessorKey: 'discount',
+      header: t('pos.discount'),
+      cell: ({ getValue }) => `$${Number(getValue() ?? 0).toFixed(2)}`,
+    },
+    {
+      accessorKey: 'taxAmount',
+      header: t('pos.tax'),
+      cell: ({ getValue }) => `$${Number(getValue() ?? 0).toFixed(2)}`,
+    },
+    {
+      accessorKey: 'lineTotal',
+      header: t('pos.subtotal'),
+      cell: ({ getValue }) => `$${Number(getValue() ?? 0).toFixed(2)}`,
+    },
+  ];
+
   const columns: ColumnDef<Sale>[] = [
     { accessorKey: 'id', header: 'ID', size: 60 },
-    { accessorKey: 'customerId', header: t('sales.customer') },
     {
       accessorKey: 'date',
       header: t('sales.saleDate'),
@@ -70,21 +106,31 @@ const SalesPage: React.FC = () => {
       header: t('common.status'),
       cell: ({ getValue }) => {
         const s = getValue() as string;
-        return <Badge color={statusColor(s)}>{s}</Badge>;
+        return <Badge color={statusColor(s)}>{s.toUpperCase()}</Badge>;
       },
     },
     {
       id: 'actions',
       header: t('common.actions'),
       cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleCancel(row.original)}
-          disabled={row.original.status === 'cancelled'}
-        >
-          <Trash2 size={16} className="text-red-500" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleViewDetails(row.original)}
+            disabled={row.original.status === 'cancelled'}
+          >
+            <EyeIcon size={16} className="text-blue-500" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleCancel(row.original)}
+            disabled={row.original.status === 'cancelled'}
+          >
+            <Trash2 size={16} className="text-red-500" />
+          </Button>
+        </div>
       ),
     },
   ];
@@ -100,7 +146,7 @@ const SalesPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -113,6 +159,21 @@ const SalesPage: React.FC = () => {
           onPageChange={setPage}
         />
       </Card>
+      <Modal open={open} onClose={close} title={t('sales.detail')} size="xl">
+        <Card className="w-full">
+          <DataTable
+            columns={columnsSaleItem}
+            data={saleItems}
+            loading={isLoading}
+          />
+          <Pagination
+            page={page}
+            totalItems={saleItems.length}
+            pageSize={DEFAULT_PAGE_SIZE}
+            onPageChange={setPage}
+          />
+        </Card>
+      </Modal>
     </div>
   );
 };

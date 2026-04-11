@@ -6,11 +6,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
 import { cashApi } from '../../services/cashApi';
-import type { CashJournal } from '../../models/cash.model';
+import type {
+  CashJournal,
+  CashJournalUpdate,
+  CreateCashJournal,
+} from '../../models/cash.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
 import { showSuccess, showError } from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
-import { formatLocal } from '../../utils/dateUtils';
+import { formatLocal, nowUTC } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
@@ -19,18 +23,22 @@ import SearchInput from '../../components/ui/SearchInput';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
-import { Plus } from 'lucide-react';
+import { PencilIcon, Plus } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 const openSchema = z.object({
   openingAmount: z.coerce.number<number>().min(0, 'Requerido'),
-  notes: z.string().catch(''),
+  name: z.string().min(1, 'Requerido'),
+  description: z.string(),
+  status: z.string().default('OPEN'),
 });
 type OpenFormData = z.infer<typeof openSchema>;
 
 const CashJournalPage: React.FC = () => {
+  const { user } = useAuthStore.getState();
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { open, openCreate, close } = useCrudModal<CashJournal>();
 
@@ -41,14 +49,10 @@ const CashJournalPage: React.FC = () => {
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
 
-  const form = useForm<OpenFormData>({ resolver: zodResolver(openSchema) });
+  const form = useForm({ resolver: zodResolver(openSchema) });
 
   const openMut = useMutation({
-    mutationFn: (d: OpenFormData) =>
-      cashApi.openJournal({
-        openingAmount: d.openingAmount,
-        notes: d.notes ?? '',
-      }),
+    mutationFn: (payload: CreateCashJournal) => cashApi.openJournal(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['cashJournals'] });
       showSuccess(t('cashJournal.journalOpened'));
@@ -58,13 +62,8 @@ const CashJournalPage: React.FC = () => {
   });
 
   const closeMut = useMutation({
-    mutationFn: ({
-      id,
-      closingAmount,
-    }: {
-      id: number;
-      closingAmount: number;
-    }) => cashApi.closeJournal(id, { closingAmount, notes: '' }),
+    mutationFn: (payload: CashJournalUpdate) =>
+      cashApi.closeJournal(payload.id, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['cashJournals'] });
       showSuccess(t('cashJournal.journalClosed'));
@@ -72,25 +71,47 @@ const CashJournalPage: React.FC = () => {
     onError: () => showError(t('common.error')),
   });
 
+  const onSubmitCancelJournal = (d: CashJournal) => {
+    const payload: CashJournalUpdate = {
+      id: d.id, // El ID se establecerá en el botón de cerrar
+      closedAt: nowUTC(),
+      closedBy: user?.id,
+      status: 'CLOSED',
+    };
+
+    closeMut.mutate(payload);
+  };
+
+  const onSubmitJournal = (d: OpenFormData) => {
+    const payload: CreateCashJournal = {
+      name: d.name,
+      description: d.description,
+      openingAmount: d.openingAmount,
+      openedAt: nowUTC(),
+      closedAt: null,
+      openedBy: user?.id ?? 0,
+      status: 'OPEN',
+      createdAt: nowUTC(),
+    };
+
+    openMut.mutate(payload);
+  };
+
   const handleOpen = () => {
-    form.reset({ openingAmount: 0, notes: '' });
+    form.reset({ openingAmount: 0, name: '', description: '', status: 'OPEN' });
     openCreate();
   };
 
   const columns: ColumnDef<CashJournal>[] = [
     { accessorKey: 'id', header: 'ID', size: 60 },
     {
+      accessorKey: 'name',
+      header: t('cashJournal.nameJournal'),
+    },
+    {
       accessorKey: 'openingAmount',
       header: t('cashJournal.openingAmount'),
       cell: ({ getValue }) => `$${Number(getValue() ?? 0).toFixed(2)}`,
-    },
-    {
-      accessorKey: 'closingAmount',
-      header: t('cashJournal.closingAmount'),
-      cell: ({ getValue }) => {
-        const v = getValue();
-        return v != null ? `$${Number(v).toFixed(2)}` : '—';
-      },
     },
     {
       accessorKey: 'status',
@@ -124,12 +145,11 @@ const CashJournalPage: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() =>
-              closeMut.mutate({ id: row.original.id, closingAmount: 0 })
-            }
+            onClick={() => onSubmitCancelJournal(row.original)}
             loading={closeMut.isPending}
           >
-            {t('common.close')}
+            <PencilIcon size={16} className="text-red-500" />{' '}
+            {t('common.confirm')}
           </Button>
         ) : null,
     },
@@ -149,7 +169,7 @@ const CashJournalPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -173,7 +193,7 @@ const CashJournalPage: React.FC = () => {
               {t('common.cancel')}
             </Button>
             <Button
-              onClick={form.handleSubmit((d) => openMut.mutate(d))}
+              onClick={form.handleSubmit(onSubmitJournal)}
               loading={openMut.isPending}
             >
               {t('common.confirm')}
@@ -182,9 +202,17 @@ const CashJournalPage: React.FC = () => {
         }
       >
         <form
-          onSubmit={form.handleSubmit((d) => openMut.mutate(d))}
+          onSubmit={form.handleSubmit(onSubmitJournal)}
           className="grid grid-cols-1 gap-4"
         >
+          <Input
+            label={t('cashJournal.nameJournal')}
+            {...form.register('name')}
+          />
+          <Input
+            label={t('cashJournal.descriptionJournal')}
+            {...form.register('description')}
+          />
           <Input
             label={t('cashJournal.openingAmount')}
             type="number"
@@ -192,7 +220,12 @@ const CashJournalPage: React.FC = () => {
             {...form.register('openingAmount')}
             error={form.formState.errors.openingAmount?.message}
           />
-          <Input label={t('cashJournal.notes')} {...form.register('notes')} />
+          <Input
+            label={t('common.status')}
+            {...form.register('status')}
+            error={form.formState.errors.status?.message}
+            disabled={true}
+          />
         </form>
       </Modal>
     </div>

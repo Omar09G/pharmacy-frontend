@@ -228,7 +228,11 @@
     "closedAt": "Cierre",
     "notes": "Notas",
     "journalOpened": "Caja abierta exitosamente",
-    "journalClosed": "Caja cerrada exitosamente"
+    "journalClosed": "Caja cerrada exitosamente",
+    "nameJournal": "Nombre de Caja",
+    "openedBy": "Abierta por",
+    "closedBy": "Cerrada por",
+    "descriptionJournal": "Descripción de la caja"
   },
   "inventory": {
     "title": "Inventario",

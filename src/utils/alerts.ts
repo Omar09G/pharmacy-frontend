@@ -35,6 +35,22 @@ function getAlertTheme(): AlertTheme {
   return darkTheme;
 }
 
+export function confirmUpdate(name: string) {
+  const theme = getAlertTheme();
+  return Swal.fire({
+    title: '¿Actualizar registro?',
+    html: `<p style="color:${theme.mutedText}">Se actualizará <strong style="color:#f87171">${name}</strong> de forma permanente.</p>`,
+    icon: 'warning',
+    iconColor: '#ef4444',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: theme.cancelButtonColor,
+    confirmButtonText: 'Sí, actualizar',
+    cancelButtonText: 'Cancelar',
+    ...theme.popup,
+  });
+}
+
 export function confirmDelete(name: string) {
   const theme = getAlertTheme();
   return Swal.fire({

@@ -6,9 +6,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
 import { purchaseApi } from '../../services/purchaseApi';
-import type { Purchase, PurchaseCreate } from '../../models/purchase.model';
+import type {
+  Purchase,
+  PurchaseCreate,
+  PurchaseUpdate,
+} from '../../models/purchase.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
+import {
+  showSuccess,
+  showError,
+  confirmDelete,
+  confirmUpdate,
+} from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -20,23 +29,29 @@ import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import Select from '../../components/ui/Select';
+import { supplierApi } from '../../services/supplierApi';
+import { paymentMethodApi } from '../../services/paymentMethodApi';
+import { useAuthStore } from '../../store/authStore';
+import { nowUTC } from '../../utils/dateUtils';
 
 const schema = z.object({
   supplierId: z.coerce.number<number>().min(1, 'Requerido'),
-  date: z.string().min(1, 'Requerido'),
   invoiceNo: z.string().catch(''),
-  notes: z.string().catch(''),
-  status: z.string().catch(''),
+  subtotal: z.coerce.number<number>().min(0, 'Requerido'),
+  taxTotal: z.coerce.number<number>().min(0, 'Requerido'),
+  total: z.coerce.number<number>().min(0, 'Requerido'),
+  status: z.string().catch('PENDING'),
+  methodId: z.coerce.number<number>().min(1, 'Requerido'),
 });
 type FormData = z.infer<typeof schema>;
 
 const PurchasesPage: React.FC = () => {
+  const { user } = useAuthStore.getState();
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const { open, editing, openCreate, openEdit, close } =
-    useCrudModal<Purchase>();
+  const { open, openCreate, close } = useCrudModal<Purchase>();
 
   const { data, isLoading } = useQuery({
     queryKey: ['purchases', page, search],
@@ -46,6 +61,32 @@ const PurchasesPage: React.FC = () => {
   const total = data?.total ?? 0;
 
   const form = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  //Carga de proveedores para el select
+  const { data: suppliersData } = useQuery({
+    queryKey: ['suppliers', 1, ''],
+    queryFn: () => supplierApi.getAll(1, 1000, 0), // Carga los primeros 1000 proveedores
+  });
+
+  const suppliers = Array.isArray(suppliersData?.data)
+    ? suppliersData.data
+    : [];
+
+  //Carga de métodos de pago para el select
+  const { data: paymentMethodsData } = useQuery({
+    queryKey: ['paymentMethods'],
+    queryFn: () => paymentMethodApi.getAll(1, 1000, 0), // Carga los primeros 1000 métodos de pago
+  });
+  const paymentMethods = Array.isArray(paymentMethodsData?.data)
+    ? paymentMethodsData.data
+    : [];
+
+  //Carga de IVA para el select
+  const { data: taxData } = useQuery({
+    queryKey: ['taxes'],
+    queryFn: () => purchaseApi.getAllTax(1, 1000, 0), // Carga los primeros 1000 impuestos
+  });
+  const taxes = Array.isArray(taxData?.data) ? taxData.data : [];
 
   const createMut = useMutation({
     mutationFn: (d: PurchaseCreate) => purchaseApi.create(d),
@@ -57,7 +98,7 @@ const PurchasesPage: React.FC = () => {
     onError: () => showError(t('common.error')),
   });
   const updateMut = useMutation({
-    mutationFn: ({ id, data: d }: { id: number; data: Partial<Purchase> }) =>
+    mutationFn: ({ id, data: d }: { id: number; data: PurchaseUpdate }) =>
       purchaseApi.update(id, d),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['purchases'] });
@@ -76,44 +117,45 @@ const PurchasesPage: React.FC = () => {
   });
 
   const onSubmit = (d: FormData) => {
-    if (editing) {
-      updateMut.mutate({ id: editing.id, data: d });
-    } else {
-      createMut.mutate({
-        id: 0,
-        userId: 0,
-        items: [],
-        payment: { id: 0, paymentMethodId: 1, amount: 0, reference: '' },
-        ...d,
-      } as PurchaseCreate);
-    }
+    const payload: PurchaseCreate = {
+      ...d,
+      createdAt: new Date().toISOString(),
+      date: new Date().toISOString(),
+      createdBy: user?.id || 0, // Aquí deberías usar el ID del usuario actual
+      payment: {
+        amount: d.total,
+        methodId: d.methodId,
+        paidAt: new Date().toISOString(),
+        purchaseId: 0, // Este campo se actualizará en el backend con el ID de la compra creada
+      },
+    };
+    createMut.mutate(payload);
   };
 
-  const handleEdit = (item: Purchase) => {
-    openEdit(item);
-    setTimeout(
-      () =>
-        form.reset({
-          supplierId: item.supplierId,
-          date: item.date?.slice(0, 10) ?? '',
-          invoiceNo: item.invoiceNo,
-          notes: item.notes,
-          status: item.status,
-        }),
-      10,
+  const handleEdit = async (item: Purchase) => {
+    const payload: PurchaseUpdate = {
+      id: item.id,
+      status: item.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED',
+    };
+    const r = await confirmUpdate(
+      `#${item.id} a estado ${item.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED'}`,
     );
+    if (r.isConfirmed) updateMut.mutate({ id: item.id, data: payload });
   };
+
   const handleDelete = async (item: Purchase) => {
     const r = await confirmDelete(`#${item.id}`);
     if (r.isConfirmed) deleteMut.mutate(item.id);
   };
   const handleCreate = () => {
     form.reset({
-      supplierId: 0,
-      date: '',
+      supplierId: suppliers.length > 0 ? suppliers[0].id : 0,
       invoiceNo: '',
-      notes: '',
-      status: '',
+      subtotal: 0,
+      taxTotal: taxes.length > 0 ? taxes[0].rate : 0,
+      total: 0,
+      methodId: paymentMethods.length > 0 ? paymentMethods[0].id : 0,
+      status: 'PENDING',
     });
     openCreate();
   };
@@ -136,9 +178,7 @@ const PurchasesPage: React.FC = () => {
       accessorKey: 'status',
       header: t('common.status'),
       cell: ({ getValue }) => (
-        <Badge
-          color={(getValue() as string) === 'COMPLETED' ? 'green' : 'gray'}
-        >
+        <Badge color={(getValue() as string) === 'COMPLETED' ? 'green' : 'red'}>
           {getValue() as string}
         </Badge>
       ),
@@ -148,13 +188,16 @@ const PurchasesPage: React.FC = () => {
       header: t('common.actions'),
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEdit(row.original)}
-          >
-            <Pencil size={16} />
-          </Button>
+          {row.original.status === 'PENDING' ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEdit(row.original)}
+            >
+              <Pencil size={16} />
+            </Button>
+          ) : null}
+
           <Button
             variant="ghost"
             size="sm"
@@ -181,7 +224,7 @@ const PurchasesPage: React.FC = () => {
         <SearchInput
           onSearch={(v) => {
             setSearch(v);
-            setPage(0);
+            setPage(1);
           }}
           placeholder={t('common.search')}
           className="mb-4 max-w-sm"
@@ -198,9 +241,7 @@ const PurchasesPage: React.FC = () => {
       <Modal
         open={open}
         onClose={close}
-        title={
-          editing ? t('purchases.editPurchase') : t('purchases.newPurchase')
-        }
+        title={t('purchases.newPurchase')}
         footer={
           <>
             <Button variant="secondary" onClick={() => form.reset()}>
@@ -222,28 +263,78 @@ const PurchasesPage: React.FC = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
-          <Input
+          <Select
             label={t('purchases.supplierId')}
-            type="number"
+            options={suppliers.map((s) => ({
+              label: s.name,
+              value: s.id,
+            }))}
             {...form.register('supplierId')}
             error={form.formState.errors.supplierId?.message}
-            disabled={!!editing}
           />
           <Input
             label={t('purchases.purchaseDate')}
+            value={nowUTC().slice(0, 10)}
             type="date"
-            {...form.register('date')}
-            error={form.formState.errors.date?.message}
-            disabled={!!editing}
+            disabled={true}
           />
           <Input
             label={t('purchases.invoiceNumber')}
             {...form.register('invoiceNo')}
-            disabled={!!editing}
           />
-          <Input label={t('purchases.notes')} {...form.register('notes')} />
+          <Input
+            label={t('pos.subtotal')}
+            type="number"
+            {...form.register('subtotal')}
+            error={form.formState.errors.subtotal?.message}
+            onChange={(e) => {
+              const subtotal = parseFloat(e.target.value) || 0;
+
+              const taxRate =
+                taxes.length > 0
+                  ? parseFloat(
+                      form.getValues('taxTotal') as unknown as string,
+                    ) || 0
+                  : 0;
+              form.setValue('total', subtotal + subtotal * taxRate);
+            }}
+          />
           <Select
-            label={t('commons.status')}
+            label={t('pos.tax')}
+            options={taxes.map((t) => ({
+              label: `${t.rate}%`,
+              value: `${t.rate}`,
+            }))}
+            {...form.register('taxTotal')}
+            error={form.formState.errors.taxTotal?.message}
+            onChange={(e) => {
+              const subtotal =
+                parseFloat(form.getValues('subtotal') as unknown as string) ||
+                0;
+              const taxRate =
+                taxes.length > 0 ? parseFloat(e.target.value) || 0 : 0;
+              form.setValue('total', subtotal + subtotal * taxRate);
+            }}
+          />
+
+          <Input
+            label={t('common.total')}
+            type="number"
+            {...form.register('total')}
+            error={form.formState.errors.total?.message}
+            disabled={true}
+          />
+          <Select
+            label={t('paymentMethods.title')}
+            {...form.register('methodId')}
+            options={paymentMethods.map((m) => ({
+              label: m.name,
+              value: m.id,
+            }))}
+            error={form.formState.errors.methodId?.message}
+          ></Select>
+          <Select
+            label={t('common.status')}
             {...form.register('status')}
             options={[
               { label: t('purchases.status.completed'), value: 'COMPLETED' },

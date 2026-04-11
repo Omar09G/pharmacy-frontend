@@ -1,6 +1,11 @@
 import api from '../api/axiosInstance';
 import type { ApiResponse } from '../utils/Utils';
-import type { CashJournal, CashEntry } from '../models/cash.model';
+import type {
+  CashJournal,
+  CashEntry,
+  CreateCashJournal,
+  CashJournalUpdate,
+} from '../models/cash.model';
 
 export const cashApi = {
   getJournals: (page = 0, limit = 10, total = 0) =>
@@ -15,17 +20,14 @@ export const cashApi = {
       .get<ApiResponse<CashJournal>>(`/cash_journal/${id}`)
       .then((r) => r.data),
 
-  openJournal: (payload: { openingAmount: number; notes: string }) =>
+  openJournal: (payload: CreateCashJournal) =>
     api
       .put<ApiResponse<CashJournal>>('/cash_journal', { id: 0, ...payload })
       .then((r) => r.data),
 
-  closeJournal: (
-    id: number,
-    payload: { closingAmount: number; notes: string },
-  ) =>
+  closeJournal: (id: number, payload: CashJournalUpdate) =>
     api
-      .patch<ApiResponse<CashJournal>>(`/cash_journal/${id}/close`, payload)
+      .patch<ApiResponse<CashJournal>>(`/cash_journal/${id}`, payload)
       .then((r) => r.data),
 
   getEntries: (journalId: number, page = 0, limit = 20) =>

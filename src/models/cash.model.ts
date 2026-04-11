@@ -12,14 +12,15 @@ export interface CashEntry {
 
 export interface CashJournal {
   id: number;
+  name: string;
+  description?: string;
   openingAmount: number;
-  closingAmount: number;
   openedAt: string;
   closedAt: string | null;
-  userId: number;
-  userName?: string;
+  openedBy: number;
+  closedBy?: number;
   status: 'OPEN' | 'CLOSED';
-  notes: string;
+  createdAt: string;
 }
 
 export interface CashJournalBalance {
@@ -28,4 +29,22 @@ export interface CashJournalBalance {
   inflow: number;
   outflow: number;
   balance: number;
+}
+export interface CashJournalUpdate {
+  id: number;
+  closedAt: string | null;
+  closedBy?: number;
+  status: 'OPEN' | 'CLOSED';
+}
+
+export interface CreateCashJournal {
+  name: string;
+  description?: string;
+  openingAmount: number;
+  openedAt: string;
+  closedAt: string | null;
+  openedBy: number;
+  closedBy?: number;
+  status: 'OPEN' | 'CLOSED';
+  createdAt: string;
 }
