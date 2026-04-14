@@ -136,7 +136,7 @@ const TaxProfilesPage: React.FC = () => {
   };
 
   const columns: ColumnDef<TaxProfile>[] = [
-    { accessorKey: 'id', header: 'ID', size: 60 },
+    //{ accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('config.taxName') },
     {
       accessorKey: 'rate',

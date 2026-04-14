@@ -66,4 +66,5 @@ export interface AddSaleRequest {
   status: string;
   isCredit: boolean;
   createdAt: string;
+  paymentAmountAt: number;
 }

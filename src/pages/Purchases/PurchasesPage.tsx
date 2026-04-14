@@ -119,13 +119,13 @@ const PurchasesPage: React.FC = () => {
   const onSubmit = (d: FormData) => {
     const payload: PurchaseCreate = {
       ...d,
-      createdAt: new Date().toISOString(),
-      date: new Date().toISOString(),
+      createdAt: nowUTC(),
+      date: nowUTC(),
       createdBy: user?.id || 0, // Aquí deberías usar el ID del usuario actual
       payment: {
         amount: d.total,
         methodId: d.methodId,
-        paidAt: new Date().toISOString(),
+        paidAt: nowUTC(),
         purchaseId: 0, // Este campo se actualizará en el backend con el ID de la compra creada
       },
     };

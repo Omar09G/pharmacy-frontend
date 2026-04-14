@@ -114,10 +114,10 @@ const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Daily sales chart */}
         <Card title={t('dashboard.dailySales')}>
-          <div className="h-64">
+          <div className="h-64 w-full">
             <ResponsiveContainer
               width="100%"
-              height="100%"
+              height={256}
               minWidth={0}
               minHeight={0}
             >
@@ -141,10 +141,10 @@ const DashboardPage: React.FC = () => {
 
         {/* Top products */}
         <Card title={t('dashboard.topProducts')}>
-          <div className="h-64">
+          <div className="h-64 w-full">
             <ResponsiveContainer
               width="100%"
-              height="100%"
+              height={256}
               minWidth={0}
               minHeight={0}
             >

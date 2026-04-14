@@ -138,7 +138,7 @@ const LocationsPage: React.FC = () => {
   };
 
   const columns: ColumnDef<Location>[] = [
-    { accessorKey: 'id', header: 'ID', size: 60 },
+    //{ accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('config.locationName') },
     { accessorKey: 'type', header: t('config.locationType') },
     { accessorKey: 'description', header: t('common.description') },

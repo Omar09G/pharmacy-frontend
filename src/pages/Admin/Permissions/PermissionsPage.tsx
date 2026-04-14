@@ -113,7 +113,7 @@ const PermissionsPage: React.FC = () => {
   };
 
   const columns: ColumnDef<Permission>[] = [
-    { accessorKey: 'id', header: 'ID', size: 60 },
+    // { accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('permissions.permissionName') },
     { accessorKey: 'description', header: t('permissions.resource') },
     {

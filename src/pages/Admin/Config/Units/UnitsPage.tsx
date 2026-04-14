@@ -129,7 +129,7 @@ const UnitsPage: React.FC = () => {
   };
 
   const columns: ColumnDef<Unit>[] = [
-    { accessorKey: 'id', header: 'ID', size: 60 },
+    //{ accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('config.unitName') },
     { accessorKey: 'code', header: t('config.unitAbbreviation') },
     {

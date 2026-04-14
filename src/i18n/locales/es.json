@@ -9,6 +9,7 @@
     "clear": "Limpiar",
     "close": "Cerrar",
     "confirm": "Confirmar",
+    "confirmAndPrint": "Confirmar e imprimir",
     "back": "Volver",
     "next": "Siguiente",
     "previous": "Anterior",
@@ -120,7 +121,10 @@
     "notes": "Notas",
     "reference": "Referencia",
     "unitPrice": "P. Unitario",
-    "discountAmount": "Descuento"
+    "discountAmount": "Descuento",
+    "change": "Cambio",
+    "cashPayment": "Pago con $",
+    "enterAmount": "Ingrese el monto recibido"
   },
   "sales": {
     "title": "Ventas",

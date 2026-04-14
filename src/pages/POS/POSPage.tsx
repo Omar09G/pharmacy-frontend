@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { productApi } from '../../services/productApi';
@@ -27,7 +27,11 @@ import {
   Minus,
   CreditCard,
   DollarSign,
+  TicketIcon,
 } from 'lucide-react';
+import Input from '../../components/ui/Input';
+import { useReactToPrint } from 'react-to-print';
+import ReceiptPrint from '../../components/ReceiptPrint';
 
 const POSPage: React.FC = () => {
   const { t } = useTranslation();
@@ -50,11 +54,33 @@ const POSPage: React.FC = () => {
     getTotal,
     getSubtotal,
     getTotalDiscount,
+    //Agregar setPayAmountAt al store y aqui para manejar el monto que se paga en efectivo o con tarjeta, para mostrar el cambio al cliente
+    setPayAmountAt,
+    getPayAmountAt,
+    getMethodName,
   } = usePOSStore();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const receiptRef = useRef<HTMLDivElement | null>(null);
+  const [printAfterSuccess, setPrintAfterSuccess] = useState(false);
+  const [printData, setPrintData] = useState<{
+    items: Partial<CartItem>[];
+    subtotal: number;
+    total: number;
+    totalDiscount: number;
+    customerName?: string;
+    notes?: string;
+    paymentMethod?: string;
+    reference?: string;
+    createdAt?: string;
+  } | null>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: receiptRef,
+    onAfterPrint: () => setPrintData(null),
+  });
 
   // Preload data
   const { data: productsData } = useQuery({
@@ -74,22 +100,69 @@ const POSPage: React.FC = () => {
     queryFn: () => discountApi.getAll(0, 50, 0, true),
   });
 
-  const products: Product[] = Array.isArray(productsData?.data)
-    ? productsData.data
-    : [];
-  const customers: Customer[] = Array.isArray(customersData?.data)
-    ? customersData.data
-    : [];
-  const payMethods: PaymentMethod[] = Array.isArray(payMethodsData?.data)
-    ? payMethodsData.data
-    : [];
-  const discounts: Discount[] = Array.isArray(discountsData?.data)
-    ? discountsData.data
-    : [];
+  const products: Product[] = useMemo(
+    () => (Array.isArray(productsData?.data) ? productsData.data : []),
+    [productsData?.data],
+  );
+  const customers: Customer[] = useMemo(
+    () => (Array.isArray(customersData?.data) ? customersData.data : []),
+    [customersData?.data],
+  );
+  const payMethods: PaymentMethod[] = useMemo(
+    () => (Array.isArray(payMethodsData?.data) ? payMethodsData.data : []),
+    [payMethodsData?.data],
+  );
+  const discounts: Discount[] = useMemo(
+    () => (Array.isArray(discountsData?.data) ? discountsData.data : []),
+    [discountsData?.data],
+  );
 
   useEffect(() => {
     searchRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (customerId === null && customers.length > 0) {
+      const defaultCustomer = customers.find(
+        (c) => c.name === 'Publico en General',
+      );
+      if (defaultCustomer) {
+        setCustomerId(defaultCustomer.id);
+      } else {
+        setCustomerId(customers[0].id);
+      }
+    }
+
+    if (paymentMethodId === null && payMethods.length > 0) {
+      const defaultMethod = payMethods.find((m) => m.name === 'Efectivo');
+      if (defaultMethod) {
+        setPaymentMethodId(defaultMethod.id);
+      } else {
+        setPaymentMethodId(payMethods[0].id);
+      }
+    }
+
+    if (discountId === null && discounts.length > 0) {
+      const defaultDiscount = discounts.find((d) => Number(d.value) === 0);
+      if (defaultDiscount) {
+        setDiscountId(defaultDiscount.id);
+        return;
+      }
+      setDiscountId(discounts[0].id);
+    }
+  }, [
+    customerId,
+    customers,
+    paymentMethodId,
+    payMethods,
+    discountId,
+    discounts,
+    setCustomerId,
+    setPaymentMethodId,
+    setDiscountId,
+  ]);
+
+  //Inicializar los SET de Customer, PaymentMethod y Discount con el primer valor de cada uno para evitar errores al crear la venta, ya que el backend espera un valor numerico y no null
 
   const filteredProducts =
     searchTerm.length > 0
@@ -140,8 +213,21 @@ const POSPage: React.FC = () => {
           ? (res.data as { id: number }).id
           : '';
       showSuccess(`${t('pos.saleSuccess')} ${t('pos.folio')}: ${folio}`);
-      clearCart();
       setShowConfirm(false);
+
+      if (printAfterSuccess) {
+        // give React a moment to render the hidden receipt
+        setTimeout(() => {
+          try {
+            handlePrint();
+          } catch (err) {
+            console.error('print error', err);
+          }
+          setPrintAfterSuccess(false);
+        }, 200);
+      }
+
+      clearCart();
     },
     onError: () => showError(t('common.error')),
   });
@@ -151,12 +237,11 @@ const POSPage: React.FC = () => {
       showError(t('pos.emptyCart'));
       return;
     }
-    const total = getTotal();
-    const res = await confirmSale(total);
-    if (res.isConfirmed) setShowConfirm(true);
+
+    setShowConfirm(true);
   };
 
-  const handleConfirmSale = () => {
+  const handleConfirmSale = async () => {
     const payload: AddSaleRequest = {
       id: 0,
       customerId: customerId ?? 1,
@@ -185,8 +270,34 @@ const POSPage: React.FC = () => {
       discountTotal: getTotalDiscount(),
       isCredit: false,
       createdAt: nowUTC(),
+      paymentAmountAt: getPayAmountAt(),
     };
-    saleMut.mutate(payload);
+
+    const res = await confirmSale(payload.total);
+    if (res.isConfirmed) {
+      saleMut.mutate(payload);
+    }
+  };
+
+  const handleConfirmAndPrintSale = async () => {
+    setPrintData({
+      items: cart.map((c) => ({
+        name: c.name,
+        qty: c.qty,
+        unitPrice: c.unitPrice,
+        subtotal: c.subtotal,
+      })),
+      subtotal,
+      total,
+      totalDiscount,
+      customerName: customers.find((c) => c.id === customerId)?.name,
+      notes,
+      paymentMethod: getMethodName() ?? '',
+      reference: 'EFECTIVO',
+      createdAt: new Date().toLocaleString(),
+    });
+    setPrintAfterSuccess(true);
+    await handleConfirmSale();
   };
 
   const subtotal = getSubtotal();
@@ -465,16 +576,39 @@ const POSPage: React.FC = () => {
             <Button variant="secondary" onClick={() => setShowConfirm(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleConfirmSale} loading={saleMut.isPending}>
+            <Button
+              onClick={handleConfirmSale}
+              loading={saleMut.isPending}
+              variant="tertiary"
+              disabled={
+                getMethodName() === 'Efectivo' && getPayAmountAt() < total
+              }
+            >
               <DollarSign size={16} /> {t('common.confirm')}
+            </Button>
+            <Button
+              onClick={handleConfirmAndPrintSale}
+              loading={saleMut.isPending}
+              disabled={
+                getMethodName() === 'Efectivo' && getPayAmountAt() < total
+              }
+            >
+              <TicketIcon size={16} /> {t('common.confirmAndPrint')}
             </Button>
           </>
         }
       >
         <div className="space-y-4">
+          {customerId && (
+            <p className="text-sm text-neutral-500">
+              <Badge color="blue">{t('pos.customer')}</Badge>{' '}
+              {customers.find((c) => c.id === customerId)?.name}
+            </p>
+          )}
           <h3 className="font-medium text-neutral-900 dark:text-neutral-100">
             {t('sales.items')}
           </h3>
+
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-500">
@@ -513,19 +647,62 @@ const POSPage: React.FC = () => {
               <span>{t('pos.discount')}</span>
               <span>-${Number(totalDiscount ?? 0).toFixed(2)}</span>
             </div>
+            <div className="flex justify-end text-xl font-bold text-green-600">
+              <span className="justify-end">=</span>
+            </div>
             <div className="flex justify-between text-xl font-bold text-green-600">
               <span>{t('pos.totalToPay')}</span>
               <span>${Number(total ?? 0).toFixed(2)}</span>
             </div>
+
+            {getMethodName() == 'Efectivo' && (
+              <div>
+                <div className="flex justify-between text-xl font-bold text-blue-600">
+                  <span>{t('pos.change') + ':'}</span>
+                  <span>
+                    $
+                    {(
+                      Number(getPayAmountAt() ?? 0) - Number(total ?? 0)
+                    ).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-          {customerId && (
-            <p className="text-sm text-neutral-500">
-              <Badge color="blue">{t('pos.customer')}</Badge>{' '}
-              {customers.find((c) => c.id === customerId)?.name}
-            </p>
+
+          {getMethodName() == 'Efectivo' && (
+            <div className="flex items-center justify-between text-xl text-gray-600 gap-3">
+              <label className="font-bold">{t('pos.enterAmount')}</label>
+              <div className="w-32">
+                <Input
+                  className="text-right text-xl font-bold"
+                  type="number"
+                  placeholder={t('pos.enterAmount')}
+                  onChange={(e) => setPayAmountAt(Number(e.target.value))}
+                />
+              </div>
+            </div>
           )}
         </div>
       </Modal>
+      {/* Hidden receipt for printing */}
+      <div style={{ display: 'none' }}>
+        {printData && (
+          <ReceiptPrint
+            ref={receiptRef}
+            storeName="Mi Tienda"
+            items={printData.items ?? []}
+            subtotal={printData.subtotal}
+            total={printData.total}
+            totalDiscount={printData.totalDiscount}
+            customerName={printData.customerName}
+            notes={printData.notes}
+            paymentMethod={printData.paymentMethod}
+            reference={printData.reference}
+            createdAt={printData.createdAt}
+          />
+        )}
+      </div>
     </div>
   );
 };

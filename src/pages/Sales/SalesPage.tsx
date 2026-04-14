@@ -166,12 +166,6 @@ const SalesPage: React.FC = () => {
             data={saleItems}
             loading={isLoading}
           />
-          <Pagination
-            page={page}
-            totalItems={saleItems.length}
-            pageSize={DEFAULT_PAGE_SIZE}
-            onPageChange={setPage}
-          />
         </Card>
       </Modal>
     </div>

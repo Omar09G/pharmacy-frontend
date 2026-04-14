@@ -30,7 +30,7 @@ const schema = z.object({
   phone: z.string().catch(''),
   password: z.string().catch(''),
   role: z.string().catch('USER'),
-  status: z.string().catch('ACTIVE'),
+  status: z.string().min(1, 'Requerido').catch(''),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -64,7 +64,9 @@ const UsersPage: React.FC = () => {
 
   const total = data?.total ?? 0;
 
-  const form = useForm<FormData>({ resolver: zodResolver(schema) });
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
 
   const createMut = useMutation({
     mutationFn: (d: UserCreate) => userApi.create(d),
@@ -101,9 +103,9 @@ const UsersPage: React.FC = () => {
 
       const updateData: UserUpdate = {
         ...updatePay,
-        updatedBy: user?.id || 1, // TODO: replace with actual current user
+        status: updatePay.status,
+        updatedBy: user?.id || 1,
       };
-
       updateMut.mutate({ id: editing.id, data: updateData });
     } else {
       createMut.mutate({
@@ -148,7 +150,7 @@ const UsersPage: React.FC = () => {
   };
 
   const columns: ColumnDef<User>[] = [
-    { accessorKey: 'id', header: 'ID', size: 60 },
+    // { accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'fullName', header: t('users.fullName') },
     { accessorKey: 'username', header: t('users.username') },
     { accessorKey: 'email', header: t('users.email') },
@@ -280,21 +282,15 @@ const UsersPage: React.FC = () => {
             options={roleOptions}
             {...form.register('role')}
           />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              {...form.register('status')}
-              className="rounded"
-              checked={form.watch('status') === 'ACTIVE'}
-              onChange={(e) =>
-                form.setValue(
-                  'status',
-                  e.target.checked ? 'ACTIVE' : 'INACTIVE',
-                )
-              }
-            />
-            {t('common.active')}
-          </label>
+
+          <Select
+            {...form.register('status')}
+            label={t('common.active')}
+            options={[
+              { value: 'ACTIVE', label: t('common.active') },
+              { value: 'INACTIVE', label: t('common.inactive') },
+            ]}
+          />
         </form>
       </Modal>
     </div>

@@ -9,6 +9,7 @@
     "clear": "Clear",
     "close": "Close",
     "confirm": "Confirm",
+    "confirmAndPrint": "Confirm and Print",
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
@@ -107,6 +108,7 @@
     "emptyCart": "Cart is empty",
     "customer": "Customer",
     "selectCustomer": "Select customer",
+    "change": "Change",
     "paymentMethod": "Payment Method",
     "selectPayment": "Select payment method",
     "discount": "Discount",
@@ -120,7 +122,9 @@
     "notes": "Notes",
     "reference": "Reference",
     "unitPrice": "Unit Price",
-    "discountAmount": "Discount"
+    "discountAmount": "Discount",
+    "cashPayment": "Cash Payment",
+    "enterAmount": "Enter the amount received"
   },
   "sales": {
     "title": "Sales",

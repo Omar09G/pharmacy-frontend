@@ -18,6 +18,7 @@ import SearchInput from '../../../components/ui/SearchInput';
 import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { nowUTC } from '../../../utils/dateUtils';
 
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
@@ -87,7 +88,8 @@ const RolesPage: React.FC = () => {
         data: { ...d, createdAt: editing.createdAt },
       });
     } else {
-      createMut.mutate({ id: 0, ...d, createdAt: new Date() } as RoleCreate);
+      const createdAt = nowUTC();
+      createMut.mutate({ id: 0, ...d, createdAt } as RoleCreate);
     }
   };
 
@@ -112,7 +114,7 @@ const RolesPage: React.FC = () => {
   };
 
   const columns: ColumnDef<Role>[] = [
-    { accessorKey: 'id', header: 'ID', size: 60 },
+    // { accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'name', header: t('roles.roleName') },
     { accessorKey: 'description', header: t('common.description') },
     {

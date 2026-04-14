@@ -17,6 +17,7 @@ interface POSStore {
   customerId: number | null;
   discountId: number | null;
   paymentMethodId: number | null;
+  payAmountAt: number;
   notes: string;
   error: string | null;
   setError: (msg: string | null) => void;
@@ -28,10 +29,13 @@ interface POSStore {
   setDiscountId: (id: number | null) => void;
   setPaymentMethodId: (id: number | null) => void;
   setNotes: (notes: string) => void;
+  setPayAmountAt: (amount: number) => void;
   clearCart: () => void;
   getTotal: () => number;
   getSubtotal: () => number;
   getTotalDiscount: () => number;
+  getPayAmountAt: () => number;
+  getMethodName: () => string | null;
 }
 
 function calcSubtotal(item: Omit<CartItem, 'subtotal'>): number {
@@ -45,6 +49,7 @@ export const usePOSStore = create<POSStore>((set, get) => ({
   discountId: null,
   paymentMethodId: null,
   notes: '',
+  payAmountAt: 0,
 
   setError: (msg) => set({ error: msg }),
 
@@ -168,6 +173,7 @@ export const usePOSStore = create<POSStore>((set, get) => ({
   setDiscountId: (id) => set({ discountId: id }),
   setPaymentMethodId: (id) => set({ paymentMethodId: id }),
   setNotes: (notes) => set({ notes }),
+  setPayAmountAt: (amount) => set({ payAmountAt: amount }),
 
   clearCart: () =>
     set({
@@ -183,4 +189,16 @@ export const usePOSStore = create<POSStore>((set, get) => ({
   getSubtotal: () =>
     get().cart.reduce((sum, c) => sum + c.qty * c.unitPrice, 0),
   getTotalDiscount: () => get().cart.reduce((sum, c) => sum + c.discount, 0),
+  getPayAmountAt: () => get().payAmountAt,
+  getMethodName: () => {
+    const methodId = get().paymentMethodId;
+    if (!methodId) return null;
+    // Aquí podrías mapear los IDs a nombres de métodos de pago
+    const methodMap: Record<number, string> = {
+      6: 'Efectivo',
+      7: 'Tarjeta de Crédito',
+      // Agrega más métodos según tu aplicación
+    };
+    return methodMap[methodId] || 'Desconocido';
+  },
 }));

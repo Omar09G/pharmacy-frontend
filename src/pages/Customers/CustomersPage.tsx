@@ -209,7 +209,7 @@ const CustomersPage: React.FC = () => {
       customerId,
       balance: 0,
       limitAmount: 0,
-      lastOverdueDate: new Date().toISOString().split('T')[0],
+      lastOverdueDate: nowUTC().split('T')[0],
     });
     openCreateCredit();
   };

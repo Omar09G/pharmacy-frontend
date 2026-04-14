@@ -2,14 +2,14 @@ export interface Role {
   id: number;
   name: string;
   description?: string;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export interface RoleCreate {
   id: 0;
   name: string;
   description?: string;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export interface Permission {

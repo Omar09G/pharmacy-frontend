@@ -8,7 +8,7 @@ import type {
   ProductLot,
 } from '../../models/inventory.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { formatLocal } from '../../utils/dateUtils';
+import { formatLocal, nowUTC } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
 import Pagination from '../../components/ui/Pagination';
@@ -39,7 +39,7 @@ const InventoryPage: React.FC = () => {
     qtyOnHand: z.coerce.number<number>().min(0).catch(0),
     expiryDate: z.string().catch(''),
     purchaseId: z.coerce.number<number>().min(0).catch(0),
-    createdAt: z.string().catch(new Date().toISOString()),
+    createdAt: z.string().catch(nowUTC()),
   });
   type FormDataStock = z.infer<typeof schema>;
 
@@ -63,9 +63,7 @@ const InventoryPage: React.FC = () => {
         id,
         {
           ...d,
-          expiryDate: d.expiryDate
-            ? new Date(d.expiryDate).toISOString().split('T')[0]
-            : new Date().toISOString().split('T')[0],
+          expiryDate: d.expiryDate ? nowUTC().split('T')[0] : d.expiryDate,
         },
         typeOperation,
       ),
@@ -87,7 +85,7 @@ const InventoryPage: React.FC = () => {
     } else {
       updateMutStock.mutate({
         id: d.id,
-        data: { ...d, createdAt: new Date().toISOString() },
+        data: { ...d, createdAt: nowUTC() },
 
         typeOperation: typeOperation || '',
       });
