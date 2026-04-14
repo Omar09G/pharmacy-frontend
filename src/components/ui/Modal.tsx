@@ -46,11 +46,19 @@ const Modal: React.FC<ModalProps> = ({
 
   if (!open) return null;
 
+  const titleId = title ? 'modal-title' : undefined;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
       <div
         className={cn(
@@ -62,11 +70,15 @@ const Modal: React.FC<ModalProps> = ({
       >
         {title && (
           <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2
+              id={titleId}
+              className="text-lg font-semibold text-neutral-900 dark:text-neutral-100"
+            >
               {title}
             </h2>
             <button
               onClick={onClose}
+              aria-label="Cerrar"
               className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500"
             >
               <X size={20} />

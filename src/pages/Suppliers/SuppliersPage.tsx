@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
@@ -23,12 +23,12 @@ import { nowUTC } from '../../utils/dateUtils';
 
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
-  contactPerson: z.string().catch(''),
-  email: z.string().email().or(z.literal('')).catch(''),
-  phone: z.string().catch(''),
-  address: z.string().catch(''),
-  taxId: z.string().catch(''),
-  notes: z.string().catch(''),
+  contactPerson: z.string().default(''),
+  email: z.string().email().or(z.literal('')).default(''),
+  phone: z.string().default(''),
+  address: z.string().default(''),
+  taxId: z.string().default(''),
+  notes: z.string().default(''),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -46,7 +46,9 @@ const SuppliersPage: React.FC = () => {
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
-  const form = useForm<FormData>({ resolver: zodResolver(schema) });
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema) as unknown as Resolver<FormData>,
+  });
   const createMut = useMutation({
     mutationFn: (d: SupplierCreate) => supplierApi.create(d),
     onSuccess: () => {

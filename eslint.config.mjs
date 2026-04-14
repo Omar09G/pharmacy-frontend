@@ -3,7 +3,6 @@ import globals from 'globals';
 import prettier from 'eslint-plugin-prettier';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
-import reactRedux from 'eslint-plugin-react-redux';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
@@ -28,13 +27,11 @@ export default tseslint.config(
     plugins: {
       react,
       'react-hooks': reactHooks,
-      'react-redux': reactRedux,
       'react-refresh': reactRefresh,
       prettier,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      ...reactRedux.configs.recommended.rules,
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

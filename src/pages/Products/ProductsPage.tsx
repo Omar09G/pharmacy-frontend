@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
@@ -32,24 +32,25 @@ import { purchaseApi } from '../../services/purchaseApi';
 import { Purchase } from '../../models/purchase.model';
 
 const schema = z.object({
-  sku: z.string().catch(''),
+  sku: z.string().default(''),
   name: z.string().min(1, 'Requerido'),
   barcode: z.string().min(1, 'Requerido'),
-  barcodeType: z.string().catch(''),
-  description: z.string().catch(''),
-  lotNumber: z.string().catch(''),
-  qtyOnHand: z.coerce.number<number>().min(0).catch(0),
-  purchaseId: z.coerce.number<number>().catch(0),
-  priceType: z.string().catch(''),
-  price: z.coerce.number<number>().min(0).catch(0),
-  brand: z.string().catch(''),
-  categoryId: z.coerce.number<number>().catch(0),
-  unitId: z.coerce.number<number>().catch(0),
-  taxProfileId: z.coerce.number<number>().catch(0),
-  defaultCost: z.coerce.number<number>().catch(0),
-  purchasePrice: z.coerce.number<number>().catch(0),
-  wholesalePrice: z.coerce.number<number>().catch(0),
-  defaultPrice: z.coerce.number<number>().min(0).catch(0),
+  barcodeType: z.string().default(''),
+  description: z.string().default(''),
+  lotNumber: z.string().default(''),
+  qtyOnHand: z.coerce.number<number>().min(0, 'Mínimo 0'),
+  purchaseId: z.coerce.number<number>().default(0),
+  priceType: z.string().default(''),
+  price: z.coerce.number<number>().min(0, 'Mínimo 0'),
+  brand: z.string().default(''),
+  categoryId: z.coerce.number<number>().min(1, 'Seleccione categoría'),
+  unitId: z.coerce.number<number>().min(1, 'Seleccione unidad'),
+  taxProfileId: z.coerce.number<number>().default(0),
+  defaultCost: z.coerce.number<number>().min(0, 'Mínimo 0'),
+  purchasePrice: z.coerce.number<number>().min(0, 'Mínimo 0'),
+  wholesalePrice: z.coerce.number<number>().min(0, 'Mínimo 0'),
+  defaultPrice: z.coerce.number<number>().min(0, 'Mínimo 0'),
+  expiryDate: z.string().min(1, 'Fecha de expiración requerida'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -106,7 +107,9 @@ const ProductsPage: React.FC = () => {
     ? purchaseData.data
     : [];
 
-  const form = useForm<FormData>({ resolver: zodResolver(schema) });
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema) as unknown as Resolver<FormData>,
+  });
 
   const createMut = useMutation({
     mutationFn: (d: ProductCreate) => productApi.create(d),
@@ -160,7 +163,7 @@ const ProductsPage: React.FC = () => {
         lotsDetail: {
           lotNumber: d.lotNumber,
           qtyOnHand: d.qtyOnHand,
-          expiryDate: nowUTC().split('T')[0], // This should be set based on form input if you want to track expiry
+          expiryDate: d.expiryDate,
           purchaseId: d.purchaseId,
           createdAt: nowUTC(),
         },
@@ -202,6 +205,7 @@ const ProductsPage: React.FC = () => {
       purchasePrice: 0,
       wholesalePrice: 0,
       defaultPrice: 0,
+      expiryDate: '',
     });
     openCreate();
   };
@@ -339,6 +343,12 @@ const ProductsPage: React.FC = () => {
             label={t('products.currentStock')}
             type="number"
             {...form.register('qtyOnHand')}
+          />
+          <Input
+            label={t('products.expiryDate') || 'Fecha de expiración'}
+            type="date"
+            {...form.register('expiryDate')}
+            error={form.formState.errors.expiryDate?.message}
           />
           <Select
             label={t('products.category')}

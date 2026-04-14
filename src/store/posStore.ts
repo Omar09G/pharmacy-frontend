@@ -35,7 +35,6 @@ interface POSStore {
   getSubtotal: () => number;
   getTotalDiscount: () => number;
   getPayAmountAt: () => number;
-  getMethodName: () => string | null;
 }
 
 function calcSubtotal(item: Omit<CartItem, 'subtotal'>): number {
@@ -181,6 +180,7 @@ export const usePOSStore = create<POSStore>((set, get) => ({
       customerId: null,
       discountId: null,
       paymentMethodId: null,
+      payAmountAt: 0,
       notes: '',
       error: null,
     }),
@@ -190,15 +190,4 @@ export const usePOSStore = create<POSStore>((set, get) => ({
     get().cart.reduce((sum, c) => sum + c.qty * c.unitPrice, 0),
   getTotalDiscount: () => get().cart.reduce((sum, c) => sum + c.discount, 0),
   getPayAmountAt: () => get().payAmountAt,
-  getMethodName: () => {
-    const methodId = get().paymentMethodId;
-    if (!methodId) return null;
-    // Aquí podrías mapear los IDs a nombres de métodos de pago
-    const methodMap: Record<number, string> = {
-      6: 'Efectivo',
-      7: 'Tarjeta de Crédito',
-      // Agrega más métodos según tu aplicación
-    };
-    return methodMap[methodId] || 'Desconocido';
-  },
 }));

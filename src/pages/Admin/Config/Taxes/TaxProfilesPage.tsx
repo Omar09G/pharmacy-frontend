@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
@@ -35,7 +35,7 @@ interface TaxProfile {
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   rate: z.coerce.number<number>().min(0, 'Requerido').max(100),
-  isInclusive: z.boolean().catch(true),
+  isInclusive: z.boolean().default(true),
   description: z.string().optional(),
 });
 type FormData = z.infer<typeof schema>;
@@ -75,7 +75,9 @@ const TaxProfilesPage: React.FC = () => {
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
 
-  const form = useForm<FormData>({ resolver: zodResolver(schema) });
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema) as unknown as Resolver<FormData>,
+  });
 
   const createMut = useMutation({
     mutationFn: (d: FormData) => taxApiFn.create(d),

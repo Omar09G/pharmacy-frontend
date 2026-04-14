@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
@@ -33,7 +33,7 @@ interface Location {
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   type: z.string().min(1, 'Requerido'),
-  description: z.string().catch(''),
+  description: z.string().default(''),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -74,7 +74,9 @@ const LocationsPage: React.FC = () => {
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
 
-  const form = useForm<FormData>({ resolver: zodResolver(schema) });
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema) as unknown as Resolver<FormData>,
+  });
 
   const createMut = useMutation({
     mutationFn: (d: FormData) => locationApiFn.create(d),

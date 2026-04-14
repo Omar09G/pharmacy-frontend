@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
@@ -36,20 +36,20 @@ import { nowUTC } from '../../utils/dateUtils';
 
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
-  email: z.string().email('Email inválido').or(z.literal('')).catch(''),
-  phone: z.string().catch(''),
-  billingAddress: z.string().catch(''),
-  documentId: z.string().catch(''),
-  creditLimit: z.coerce.number<number>().min(0).catch(0),
-  status: z.string().catch('ACTIVE'),
-  termsDays: z.coerce.number<number>().min(0).catch(0),
+  email: z.string().email('Email inválido').or(z.literal('')).default(''),
+  phone: z.string().default(''),
+  billingAddress: z.string().default(''),
+  documentId: z.string().default(''),
+  creditLimit: z.coerce.number<number>().min(0, 'Mínimo 0').default(0),
+  status: z.string().default('ACTIVE'),
+  termsDays: z.coerce.number<number>().min(0, 'Mínimo 0').default(0),
 });
 type FormData = z.infer<typeof schema>;
 
 const schemaCredit = z.object({
-  customerId: z.coerce.number<number>().min(0).catch(0),
-  balance: z.coerce.number<number>().min(0).catch(0),
-  limitAmount: z.coerce.number<number>().min(0).catch(0),
+  customerId: z.coerce.number<number>().min(0).default(0),
+  balance: z.coerce.number<number>().min(0).default(0),
+  limitAmount: z.coerce.number<number>().min(0).default(0),
   lastOverdueDate: z.string().min(1, 'Requerido'),
 });
 type FormDataCredit = z.infer<typeof schemaCredit>;
@@ -78,10 +78,12 @@ const CustomersPage: React.FC = () => {
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
 
-  const form = useForm<FormData>({ resolver: zodResolver(schema) });
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema) as unknown as Resolver<FormData>,
+  });
 
   const formCredit = useForm<FormDataCredit>({
-    resolver: zodResolver(schemaCredit),
+    resolver: zodResolver(schemaCredit) as unknown as Resolver<FormDataCredit>,
   });
 
   const createMut = useMutation({

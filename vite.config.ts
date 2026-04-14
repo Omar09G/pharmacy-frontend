@@ -21,7 +21,7 @@ export default defineConfig({
     proxy: {
       // Proxy any request starting with /api to the backend server
       '/api': {
-        target: process.env.BACKEND_URL || 'http://localhost:8000',
+        target: process.env.BACKEND_URL || 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
         // keep the /api prefix so front and backend paths align; remove "rewrite" if backend expects it

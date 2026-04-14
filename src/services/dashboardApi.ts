@@ -1,3 +1,4 @@
+import api from '../api/axiosInstance';
 import type {
   SalesDailySummary,
   DailyCashCut,
@@ -7,7 +8,7 @@ import type {
   CashJournalBalance,
 } from '../models/dashboard.model';
 
-const MOCK_ENABLED = true;
+const MOCK_ENABLED = import.meta.env.VITE_MOCK_DASHBOARD === 'true';
 
 // ---------- Mock data generators ----------
 function mockDailySales(): SalesDailySummary[] {
@@ -135,39 +136,36 @@ function mockCashJournalBalance(): CashJournalBalance {
 export const dashboardApi = {
   getDailySales: async (): Promise<SalesDailySummary[]> => {
     if (MOCK_ENABLED) return mockDailySales();
-    return [];
+    const r = await api.get<SalesDailySummary[]>('/dashboard/daily-sales');
+    return r.data;
   },
   getBestSellers: async (): Promise<BestSeller30d[]> => {
     if (MOCK_ENABLED) return mockBestSellers();
-    return [];
+    const r = await api.get<BestSeller30d[]>('/dashboard/best-sellers');
+    return r.data;
   },
   getOverdueInvoices: async (): Promise<CustomerInvoiceAging[]> => {
     if (MOCK_ENABLED) return mockOverdueInvoices();
-    return [];
+    const r = await api.get<CustomerInvoiceAging[]>(
+      '/dashboard/overdue-invoices',
+    );
+    return r.data;
   },
   getLowStock: async (): Promise<DashboardInventoryStock[]> => {
     if (MOCK_ENABLED) return mockLowStock();
-    return [];
+    const r = await api.get<DashboardInventoryStock[]>('/dashboard/low-stock');
+    return r.data;
   },
   getCashCut: async (): Promise<DailyCashCut> => {
     if (MOCK_ENABLED) return mockCashCut();
-    return {
-      day: '',
-      salesCash: 0,
-      salesNonCash: 0,
-      cashEntriesIn: 0,
-      cashEntriesOut: 0,
-      netCash: 0,
-    };
+    const r = await api.get<DailyCashCut>('/dashboard/cash-cut');
+    return r.data;
   },
   getCashJournalBalance: async (): Promise<CashJournalBalance> => {
     if (MOCK_ENABLED) return mockCashJournalBalance();
-    return {
-      journalId: 0,
-      openingAmount: 0,
-      inflow: 0,
-      outflow: 0,
-      balance: 0,
-    };
+    const r = await api.get<CashJournalBalance>(
+      '/dashboard/cash-journal-balance',
+    );
+    return r.data;
   },
 };

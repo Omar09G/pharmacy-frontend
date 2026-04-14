@@ -9,7 +9,7 @@ import { saleApi } from '../../services/saleApi';
 import { usePOSStore, type CartItem } from '../../store/posStore';
 import { useAuthStore } from '../../store/authStore';
 import { nowUTC } from '../../utils/dateUtils';
-import { showSuccess, showError, confirmSale } from '../../utils/alerts';
+import { showSuccess, showError } from '../../utils/alerts';
 import type { Product } from '../../models/product.model';
 import type { Customer } from '../../models/customer.model';
 import type { PaymentMethod } from '../../models/payment-method.model';
@@ -57,7 +57,6 @@ const POSPage: React.FC = () => {
     //Agregar setPayAmountAt al store y aqui para manejar el monto que se paga en efectivo o con tarjeta, para mostrar el cambio al cliente
     setPayAmountAt,
     getPayAmountAt,
-    getMethodName,
   } = usePOSStore();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -195,7 +194,8 @@ const POSPage: React.FC = () => {
       qtyOnHand: p.lotsDetail?.qtyOnHand ?? 0,
       unitPrice: p.purchasePrice ?? 0,
       discount:
-        ((p.purchasePrice ?? 0) * (discounts[discountId ?? 0]?.value ?? 0)) /
+        ((p.purchasePrice ?? 0) *
+          (discounts.find((d) => d.id === discountId)?.value ?? 0)) /
         100,
       lotId: p.lotsDetail?.id,
     };
@@ -264,7 +264,7 @@ const POSPage: React.FC = () => {
       paymentMethodId: paymentMethodId ?? 1,
       total: getTotal(),
       taxTotal: 0,
-      reference: 'EFECTIVO',
+      reference: methodName ?? 'EFECTIVO',
       status: 'completed',
       subtotal: getSubtotal(),
       discountTotal: getTotalDiscount(),
@@ -273,10 +273,7 @@ const POSPage: React.FC = () => {
       paymentAmountAt: getPayAmountAt(),
     };
 
-    const res = await confirmSale(payload.total);
-    if (res.isConfirmed) {
-      saleMut.mutate(payload);
-    }
+    saleMut.mutate(payload);
   };
 
   const handleConfirmAndPrintSale = async () => {
@@ -292,8 +289,8 @@ const POSPage: React.FC = () => {
       totalDiscount,
       customerName: customers.find((c) => c.id === customerId)?.name,
       notes,
-      paymentMethod: getMethodName() ?? '',
-      reference: 'EFECTIVO',
+      paymentMethod: methodName ?? '',
+      reference: methodName ?? 'EFECTIVO',
       createdAt: new Date().toLocaleString(),
     });
     setPrintAfterSuccess(true);
@@ -303,6 +300,11 @@ const POSPage: React.FC = () => {
   const subtotal = getSubtotal();
   const totalDiscount = getTotalDiscount();
   const total = getTotal();
+
+  const methodName = useMemo(
+    () => payMethods.find((m) => m.id === paymentMethodId)?.name ?? null,
+    [payMethods, paymentMethodId],
+  );
 
   return (
     <div className="space-y-4">
@@ -405,6 +407,7 @@ const POSPage: React.FC = () => {
                               onClick={() =>
                                 updateQuantity(item.productId, item.qty - 1)
                               }
+                              aria-label="Disminuir cantidad"
                               className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
                             >
                               <Minus size={14} />
@@ -416,6 +419,7 @@ const POSPage: React.FC = () => {
                               onClick={() =>
                                 updateQuantity(item.productId, item.qty + 1)
                               }
+                              aria-label="Aumentar cantidad"
                               className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
                             >
                               <Plus size={14} />
@@ -434,6 +438,7 @@ const POSPage: React.FC = () => {
                         <td className="py-2 px-3">
                           <button
                             onClick={() => removeItem(item.productId)}
+                            aria-label="Eliminar producto"
                             className="text-red-500 hover:text-red-600"
                           >
                             <Trash2 size={16} />
@@ -580,18 +585,14 @@ const POSPage: React.FC = () => {
               onClick={handleConfirmSale}
               loading={saleMut.isPending}
               variant="tertiary"
-              disabled={
-                getMethodName() === 'Efectivo' && getPayAmountAt() < total
-              }
+              disabled={methodName === 'Efectivo' && getPayAmountAt() < total}
             >
               <DollarSign size={16} /> {t('common.confirm')}
             </Button>
             <Button
               onClick={handleConfirmAndPrintSale}
               loading={saleMut.isPending}
-              disabled={
-                getMethodName() === 'Efectivo' && getPayAmountAt() < total
-              }
+              disabled={methodName === 'Efectivo' && getPayAmountAt() < total}
             >
               <TicketIcon size={16} /> {t('common.confirmAndPrint')}
             </Button>
@@ -655,7 +656,7 @@ const POSPage: React.FC = () => {
               <span>${Number(total ?? 0).toFixed(2)}</span>
             </div>
 
-            {getMethodName() == 'Efectivo' && (
+            {methodName === 'Efectivo' && (
               <div>
                 <div className="flex justify-between text-xl font-bold text-blue-600">
                   <span>{t('pos.change') + ':'}</span>
@@ -670,7 +671,7 @@ const POSPage: React.FC = () => {
             )}
           </div>
 
-          {getMethodName() == 'Efectivo' && (
+          {methodName === 'Efectivo' && (
             <div className="flex items-center justify-between text-xl text-gray-600 gap-3">
               <label className="font-bold">{t('pos.enterAmount')}</label>
               <div className="w-32">

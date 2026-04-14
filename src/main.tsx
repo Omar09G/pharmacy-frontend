@@ -6,7 +6,10 @@ import App from './App.tsx';
 import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/authStore';
-import { AuthProvider } from './features/auth/store/AuthProvider.tsx';
+import { initSentry, setSentryUser } from './config/sentry';
+
+// Initialize Sentry before anything else
+initSentry();
 
 // Apply saved theme before first render
 const savedUI = JSON.parse(localStorage.getItem('pharmacy_ui') || '{}');
@@ -15,9 +18,13 @@ if (savedUI?.state?.theme === 'dark') {
 }
 
 // Restore session on load
-const { token } = useAuthStore.getState();
+const { token, user } = useAuthStore.getState();
 if (token) {
   useAuthStore.getState().restoreSession();
+}
+// Set Sentry user context if already logged in
+if (user) {
+  setSentryUser(user);
 }
 
 const queryClient = new QueryClient({
@@ -34,9 +41,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <App />
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

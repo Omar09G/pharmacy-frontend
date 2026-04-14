@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/constants';
+import { setSentryUser } from '../config/sentry';
 
 export interface AuthUser {
   id: number;
@@ -13,6 +14,7 @@ export interface AuthUser {
 interface AuthState {
   user: AuthUser | null;
   token: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -20,6 +22,7 @@ interface AuthState {
   logout: () => void;
   setError: (error: string | null) => void;
   restoreSession: () => Promise<void>;
+  refreshSession: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -27,6 +30,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
       loading: false,
       error: null,
@@ -43,18 +47,21 @@ export const useAuthStore = create<AuthState>()(
           );
           const data = res.data?.data ?? res.data;
           if (data?.token) {
+            const user = {
+              id: Number(data.id ?? 0),
+              fullName: data.name ?? data.fullName ?? data.username,
+              username: data.username,
+              role: data.role,
+            };
             set({
               token: data.token,
-              user: {
-                id: Number(data.id ?? 0),
-                fullName: data.name ?? data.username,
-                username: data.username,
-                role: data.role,
-              },
+              refreshToken: data.refreshToken ?? null,
+              user,
               isAuthenticated: true,
               loading: false,
               error: null,
             });
+            setSentryUser(user);
           } else {
             set({ loading: false, error: 'No token returned from server' });
           }
@@ -69,7 +76,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        set({ user: null, token: null, isAuthenticated: false, error: null });
+        set({
+          user: null,
+          token: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          error: null,
+        });
+        setSentryUser(null);
       },
 
       setError: (error) => set({ error }),
@@ -87,7 +101,7 @@ export const useAuthStore = create<AuthState>()(
             set({
               user: {
                 id: Number(data.id ?? 0),
-                fullName: data.name ?? data.username,
+                fullName: data.name ?? data.fullName ?? data.username,
                 username: data.username,
                 role: data.role,
               },
@@ -98,6 +112,7 @@ export const useAuthStore = create<AuthState>()(
             set({
               user: null,
               token: null,
+              refreshToken: null,
               isAuthenticated: false,
               loading: false,
             });
@@ -106,9 +121,33 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: null,
             token: null,
+            refreshToken: null,
             isAuthenticated: false,
             loading: false,
           });
+        }
+      },
+
+      refreshSession: async () => {
+        const { refreshToken } = get();
+        if (!refreshToken) return false;
+        try {
+          const res = await axios.post(
+            `${API_BASE_URL}/auth/refresh`,
+            { refreshToken },
+            { headers: { 'Content-Type': 'application/json' } },
+          );
+          const data = res.data?.data ?? res.data;
+          if (data?.token) {
+            set({
+              token: data.token,
+              refreshToken: data.refreshToken ?? refreshToken,
+            });
+            return true;
+          }
+          return false;
+        } catch {
+          return false;
         }
       },
     }),
@@ -116,6 +155,7 @@ export const useAuthStore = create<AuthState>()(
       name: 'pharmacy_auth',
       partialize: (state) => ({
         token: state.token,
+        refreshToken: state.refreshToken,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),

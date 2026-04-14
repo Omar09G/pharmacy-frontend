@@ -8,6 +8,7 @@ import LoadingSpinner from './components/ui/LoadingSpinner';
 // Lazy-loaded pages
 const LandingPage = lazy(() => import('./pages/Landing/LandingPage'));
 const LoginPage = lazy(() => import('./pages/Auth/LoginPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFound/NotFoundPage'));
 const DashboardPage = lazy(() => import('./pages/Dashboard/DashboardPage'));
 const POSPage = lazy(() => import('./pages/POS/POSPage'));
 const ProductsPage = lazy(() => import('./pages/Products/ProductsPage'));
@@ -142,8 +143,8 @@ const App: React.FC = () => {
           element={<Navigate to="/app/dashboard" replace />}
         />
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Catch-all — 404 */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
   );

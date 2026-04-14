@@ -11,9 +11,6 @@ export const saleApi = {
   getById: (id: number) =>
     api.get<ApiResponse<Sale>>(`/sale/${id}`).then((r) => r.data),
 
-  getDetailById: (id: number) =>
-    api.get<ApiResponse<Sale>>(`/sale/${id}`).then((r) => r.data),
-
   getByDate: (date: string, page = 0, limit = 10, total = 0) =>
     api
       .get<

@@ -126,7 +126,9 @@ const LandingPage: React.FC = () => {
                   <p className="text-xs text-neutral-500 mb-2">
                     {p.description}
                   </p>
-                  <p className="text-lg font-bold text-blue-600">${p.price}</p>
+                  <p className="text-lg font-bold text-blue-600">
+                    ${p.defaultPrice}
+                  </p>
                 </div>
               ))}
             </div>

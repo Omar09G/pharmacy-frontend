@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
@@ -26,11 +26,11 @@ import { useAuthStore } from '../../../store/authStore';
 const schema = z.object({
   fullName: z.string().min(1, 'Requerido'),
   username: z.string().min(1, 'Requerido'),
-  email: z.string().email('Email inválido').or(z.literal('')).catch(''),
-  phone: z.string().catch(''),
-  password: z.string().catch(''),
-  role: z.string().catch('USER'),
-  status: z.string().min(1, 'Requerido').catch(''),
+  email: z.string().email('Email inválido').or(z.literal('')).default(''),
+  phone: z.string().default(''),
+  password: z.string().default(''),
+  role: z.string().default('USER'),
+  status: z.string().min(1, 'Requerido'),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -65,7 +65,7 @@ const UsersPage: React.FC = () => {
   const total = data?.total ?? 0;
 
   const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as unknown as Resolver<FormData>,
   });
 
   const createMut = useMutation({

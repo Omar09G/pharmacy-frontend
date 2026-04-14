@@ -17,7 +17,7 @@ import { BanIcon, PencilIcon, Plus, SaveIcon } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
 import { z } from 'zod';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import { showError, showSuccess } from '../../utils/alerts';
@@ -44,7 +44,7 @@ const InventoryPage: React.FC = () => {
   type FormDataStock = z.infer<typeof schema>;
 
   const formDataStock = useForm<FormDataStock>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as unknown as Resolver<FormDataStock>,
   });
 
   const { open, editing, openCreate, close } = useCrudModal<ProductLot>();
