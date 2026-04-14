@@ -15,7 +15,7 @@ export const productApi = {
     api
       .get<
         ApiResponse<Product[]>
-      >('/product', { params: { page, limit, total, ...(search ? { productName: search } : {}) } })
+      >('/product', { params: { page, limit, total, ...(search ? { name: search } : {}) } })
       .then((r) => r.data),
 
   getById: (id: number) =>

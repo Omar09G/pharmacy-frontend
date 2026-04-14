@@ -53,7 +53,7 @@ const DashboardPage: React.FC = () => {
   const cashCuts = cashCutRes?.data;
   const cashBalances = cashBalanceRes?.data;
 
-  const todaySales = dailySales?.[dailySales.length - 1];
+  const todaySales = dailySales?.[0];
   const todayCashCut = cashCuts?.[0];
   const firstCashBalance = cashBalances?.[0];
   const kpis = [

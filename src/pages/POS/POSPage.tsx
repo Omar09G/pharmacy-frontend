@@ -84,7 +84,7 @@ const POSPage: React.FC = () => {
   // Preload data
   const { data: productsData } = useQuery({
     queryKey: ['pos-products'],
-    queryFn: () => productApi.getAll(0, 100),
+    queryFn: () => productApi.getAll(0, 1000),
   });
   const { data: customersData } = useQuery({
     queryKey: ['pos-customers'],
@@ -226,6 +226,24 @@ const POSPage: React.FC = () => {
           setPrintAfterSuccess(false);
         }, 200);
       }
+      //Actualiza totales de QTY de Productos en el store para que al agregar un producto al carrito, se actualice el stock disponible de lo que esta en Cart, sin necesidad de recargar la pagina
+      qc.setQueryData(['pos-products'], (old: typeof productsData) => {
+        if (!old?.data || !Array.isArray(old.data)) return old;
+        return {
+          ...old,
+          data: old.data.map((p: Product) => {
+            const soldItem = cart.find((i) => i.productId === p.id);
+            if (!soldItem) return p;
+            return {
+              ...p,
+              lotsDetail: {
+                ...p.lotsDetail,
+                qtyOnHand: (p.lotsDetail?.qtyOnHand ?? 0) - soldItem.qty,
+              },
+            };
+          }),
+        };
+      });
 
       clearCart();
     },
@@ -323,6 +341,11 @@ const POSPage: React.FC = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && filteredProducts.length > 0) {
+                    handleAddProduct(filteredProducts[0]);
+                  }
+                }}
                 placeholder={t('pos.scanBarcode')}
                 className="w-full pl-10 pr-4 py-3 text-lg rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-blue-500"
                 autoFocus
@@ -330,7 +353,7 @@ const POSPage: React.FC = () => {
             </div>
             {filteredProducts.length > 0 && (
               <div className="mt-2 max-h-48 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-lg divide-y divide-neutral-100 dark:divide-neutral-700">
-                {filteredProducts.slice(0, 10).map((p) => (
+                {filteredProducts.slice(0, 100).map((p) => (
                   <button
                     key={p.id}
                     onClick={() => handleAddProduct(p)}
@@ -680,6 +703,13 @@ const POSPage: React.FC = () => {
                   type="number"
                   placeholder={t('pos.enterAmount')}
                   onChange={(e) => setPayAmountAt(Number(e.target.value))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (getPayAmountAt() >= total) {
+                        handleConfirmSale();
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>
