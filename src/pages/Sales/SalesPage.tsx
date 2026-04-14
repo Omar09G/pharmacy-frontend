@@ -6,12 +6,12 @@ import { saleApi } from '../../services/saleApi';
 import type { Sale, SaleItem } from '../../models/sale.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
 import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
-import { formatLocal } from '../../utils/dateUtils';
+import { formatLocal, getCurrentDate } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
 import Pagination from '../../components/ui/Pagination';
-import SearchInput from '../../components/ui/SearchInput';
+import DateRangeInput from '../../components/ui/DateRangeInput';
 import Badge from '../../components/ui/Badge';
 import { EyeIcon, Trash2 } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
@@ -21,13 +21,15 @@ const SalesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [dateInit, setDateInit] = useState(getCurrentDate());
+  const [dateEnd, setDateEnd] = useState(getCurrentDate());
   const { open, openCreate, close } = useCrudModal<Sale>();
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['sales', page, search],
-    queryFn: () => saleApi.getAll(page, DEFAULT_PAGE_SIZE),
+    queryKey: ['sales', page, dateInit, dateEnd],
+    queryFn: () =>
+      saleApi.getAll(page, DEFAULT_PAGE_SIZE, 0, dateInit, dateEnd),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -56,13 +58,17 @@ const SalesPage: React.FC = () => {
   const handleViewDetails = (item: Sale) => {
     saleApi.getSaleDetails(item.id).then((res) => {
       const items = res.data;
+
       setSaleItems(items);
     });
     openCreate();
   };
 
   const columnsSaleItem: ColumnDef<SaleItem>[] = [
-    { accessorKey: 'productId', header: t('products.productName') },
+    {
+      accessorKey: 'productName',
+      header: t('products.productName'),
+    },
     { accessorKey: 'qty', header: t('sales.items') },
     {
       accessorKey: 'unitPrice',
@@ -143,13 +149,20 @@ const SalesPage: React.FC = () => {
         </h1>
       </div>
       <Card>
-        <SearchInput
-          onSearch={(v) => {
-            setSearch(v);
+        <DateRangeInput
+          dateInit={dateInit}
+          dateEnd={dateEnd}
+          onDateInitChange={(v) => {
+            setDateInit(v);
             setPage(1);
           }}
-          placeholder={t('common.search')}
-          className="mb-4 max-w-sm"
+          onDateEndChange={(v) => {
+            setDateEnd(v);
+            setPage(1);
+          }}
+          labelInit={t('common.dateFrom')}
+          labelEnd={t('common.dateTo')}
+          className="mb-4"
         />
         <DataTable columns={columns} data={items} loading={isLoading} />
         <Pagination

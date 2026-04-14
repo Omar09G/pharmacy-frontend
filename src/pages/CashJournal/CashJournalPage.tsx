@@ -14,12 +14,12 @@ import type {
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
 import { showSuccess, showError } from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
-import { formatLocal, nowUTC } from '../../utils/dateUtils';
+import { formatLocal, getCurrentDate, nowUTC } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
 import Pagination from '../../components/ui/Pagination';
-import SearchInput from '../../components/ui/SearchInput';
+import DateRangeInput from '../../components/ui/DateRangeInput';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
@@ -39,12 +39,14 @@ const CashJournalPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [dateInit, setDateInit] = useState(getCurrentDate());
+  const [dateEnd, setDateEnd] = useState(getCurrentDate());
   const { open, openCreate, close } = useCrudModal<CashJournal>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['cashJournals', page, search],
-    queryFn: () => cashApi.getJournals(page, DEFAULT_PAGE_SIZE),
+    queryKey: ['cashJournals', page, dateInit, dateEnd],
+    queryFn: () =>
+      cashApi.getJournals(page, DEFAULT_PAGE_SIZE, 0, dateInit, dateEnd),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -166,13 +168,20 @@ const CashJournalPage: React.FC = () => {
         </Button>
       </div>
       <Card>
-        <SearchInput
-          onSearch={(v) => {
-            setSearch(v);
+        <DateRangeInput
+          dateInit={dateInit}
+          dateEnd={dateEnd}
+          onDateInitChange={(v) => {
+            setDateInit(v);
             setPage(1);
           }}
-          placeholder={t('common.search')}
-          className="mb-4 max-w-sm"
+          onDateEndChange={(v) => {
+            setDateEnd(v);
+            setPage(1);
+          }}
+          labelInit={t('common.dateFrom')}
+          labelEnd={t('common.dateTo')}
+          className="mb-4"
         />
         <DataTable columns={columns} data={items} loading={isLoading} />
         <Pagination

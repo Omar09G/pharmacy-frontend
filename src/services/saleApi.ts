@@ -1,11 +1,20 @@
 import api from '../api/axiosInstance';
 import type { ApiResponse } from '../utils/Utils';
 import type { Sale, AddSaleRequest, SaleItem } from '../models/sale.model';
+import { getCurrentDate } from '../utils/dateUtils';
 
 export const saleApi = {
-  getAll: (page = 0, limit = 10, total = 0) =>
+  getAll: (
+    page = 0,
+    limit = 10,
+    total = 0,
+    dateInit: string = getCurrentDate(),
+    dateEnd: string = getCurrentDate(),
+  ) =>
     api
-      .get<ApiResponse<Sale[]>>('/sale', { params: { page, limit, total } })
+      .get<
+        ApiResponse<Sale[]>
+      >('/sale', { params: { page, limit, total, dateInit, dateEnd } })
       .then((r) => r.data),
 
   getById: (id: number) =>
@@ -22,7 +31,7 @@ export const saleApi = {
     api.get<ApiResponse<Sale[]>>('/sale', { params }).then((r) => r.data),
 
   create: (payload: AddSaleRequest) =>
-    api.put<ApiResponse<Sale>>('/add_sale', payload).then((r) => r.data),
+    api.post<ApiResponse<Sale>>('/add_sale', payload).then((r) => r.data),
 
   cancel: (id: number) =>
     api.patch<ApiResponse<null>>(`/add_sale/${id}`, {}).then((r) => r.data),

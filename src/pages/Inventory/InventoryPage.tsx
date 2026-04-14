@@ -8,10 +8,11 @@ import type {
   ProductLot,
 } from '../../models/inventory.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { formatLocal, nowUTC } from '../../utils/dateUtils';
+import { formatLocal, getCurrentDate, nowUTC } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
 import Pagination from '../../components/ui/Pagination';
+import DateRangeInput from '../../components/ui/DateRangeInput';
 import Button from '../../components/ui/Button';
 import { BanIcon, PencilIcon, Plus, SaveIcon } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
@@ -26,7 +27,8 @@ const InventoryPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [dateInit, setDateInit] = useState(getCurrentDate());
+  const [dateEnd, setDateEnd] = useState(getCurrentDate());
   const [operationType, setOperationType] = useState<
     'update' | 'adjust' | 'lowStock'
   >('update');
@@ -114,9 +116,9 @@ const InventoryPage: React.FC = () => {
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: ['inventory', page, search],
+    queryKey: ['inventory', page, dateInit, dateEnd],
     queryFn: () =>
-      inventoryApi.getMovements(page, DEFAULT_PAGE_SIZE, 0, search),
+      inventoryApi.getMovements(page, DEFAULT_PAGE_SIZE, 0, dateInit, dateEnd),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -196,12 +198,20 @@ const InventoryPage: React.FC = () => {
         </Button>
       </div>
       <Card>
-        <Input
-          className="mb-4 max-w-sm border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-300"
-          label={t('common.search')}
-          type="date"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+        <DateRangeInput
+          dateInit={dateInit}
+          dateEnd={dateEnd}
+          onDateInitChange={(v) => {
+            setDateInit(v);
+            setPage(1);
+          }}
+          onDateEndChange={(v) => {
+            setDateEnd(v);
+            setPage(1);
+          }}
+          labelInit={t('common.dateFrom')}
+          labelEnd={t('common.dateTo')}
+          className="mb-4"
         />
         <DataTable columns={columns} data={items} loading={isLoading} />
         <Pagination

@@ -8,6 +8,8 @@ import type {
   ProductLotRequest,
 } from '../models/inventory.model';
 
+import { getCurrentDate } from '../utils/dateUtils';
+
 export const inventoryApi = {
   getStock: (page = 0, limit = 10, total = 0, search?: string) =>
     api
@@ -16,11 +18,17 @@ export const inventoryApi = {
       >('/inventory/stock', { params: { page, limit, total, ...(search ? { productName: search } : {}) } })
       .then((r) => r.data),
 
-  getMovements: (page = 0, limit = 10, total = 0, dateInit?: string) =>
+  getMovements: (
+    page = 0,
+    limit = 10,
+    total = 0,
+    dateInit: string = getCurrentDate(),
+    dateEnd: string = getCurrentDate(),
+  ) =>
     api
       .get<
         ApiResponse<InventoryMovement[]>
-      >('/inventory_movement', { params: { page, limit, total, ...(dateInit ? { dateInit } : {}) } })
+      >('/inventory_movement', { params: { page, limit, total, dateInit, dateEnd } })
       .then((r) => r.data),
 
   createMovement: (payload: Partial<InventoryMovement>) =>

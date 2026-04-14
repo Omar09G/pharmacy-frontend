@@ -23,7 +23,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
 import Pagination from '../../components/ui/Pagination';
-import SearchInput from '../../components/ui/SearchInput';
+import DateRangeInput from '../../components/ui/DateRangeInput';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
@@ -32,7 +32,7 @@ import Select from '../../components/ui/Select';
 import { supplierApi } from '../../services/supplierApi';
 import { paymentMethodApi } from '../../services/paymentMethodApi';
 import { useAuthStore } from '../../store/authStore';
-import { nowUTC } from '../../utils/dateUtils';
+import { nowUTC, getCurrentDate } from '../../utils/dateUtils';
 
 const schema = z.object({
   supplierId: z.coerce.number<number>().min(1, 'Requerido'),
@@ -50,12 +50,14 @@ const PurchasesPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [dateInit, setDateInit] = useState(getCurrentDate());
+  const [dateEnd, setDateEnd] = useState(getCurrentDate());
   const { open, openCreate, close } = useCrudModal<Purchase>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['purchases', page, search],
-    queryFn: () => purchaseApi.getAll(page, DEFAULT_PAGE_SIZE),
+    queryKey: ['purchases', page, dateInit, dateEnd],
+    queryFn: () =>
+      purchaseApi.getAll(page, DEFAULT_PAGE_SIZE, 0, dateInit, dateEnd),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -223,13 +225,20 @@ const PurchasesPage: React.FC = () => {
         </Button>
       </div>
       <Card>
-        <SearchInput
-          onSearch={(v) => {
-            setSearch(v);
+        <DateRangeInput
+          dateInit={dateInit}
+          dateEnd={dateEnd}
+          onDateInitChange={(v) => {
+            setDateInit(v);
             setPage(1);
           }}
-          placeholder={t('common.search')}
-          className="mb-4 max-w-sm"
+          onDateEndChange={(v) => {
+            setDateEnd(v);
+            setPage(1);
+          }}
+          labelInit={t('common.dateFrom')}
+          labelEnd={t('common.dateTo')}
+          className="mb-4"
         />
         <DataTable columns={columns} data={items} loading={isLoading} />
         <Pagination

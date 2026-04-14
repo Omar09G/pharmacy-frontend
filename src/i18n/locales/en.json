@@ -38,7 +38,9 @@
     "success": "Success!",
     "error": "Error",
     "warning": "Warning",
-    "type": "Type"
+    "type": "Type",
+    "dateFrom": "From",
+    "dateTo": "To"
   },
   "auth": {
     "login": "Sign In",

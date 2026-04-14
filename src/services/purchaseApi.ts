@@ -1,6 +1,7 @@
 import api from '../api/axiosInstance';
 import type { ApiResponse } from '../utils/Utils';
 import type { Purchase, PurchaseCreate } from '../models/purchase.model';
+import { getCurrentDate } from '../utils/dateUtils';
 
 interface TaxProfile {
   id: number;
@@ -13,18 +14,24 @@ interface TaxProfile {
 const taxApiPath = '/tax_profiles';
 
 export const purchaseApi = {
-  getAll: (page = 0, limit = 10, total = 0) =>
+  getAll: (
+    page = 0,
+    limit = 10,
+    total = 0,
+    dateInit: string = getCurrentDate(),
+    dateEnd: string = getCurrentDate(),
+  ) =>
     api
       .get<
         ApiResponse<Purchase[]>
-      >('/purchase', { params: { page, limit, total } })
+      >('/purchase', { params: { page, limit, total, dateInit, dateEnd } })
       .then((r) => r.data),
 
   getById: (id: number) =>
     api.get<ApiResponse<Purchase>>(`/purchase/${id}`).then((r) => r.data),
 
   create: (payload: PurchaseCreate) =>
-    api.put<ApiResponse<Purchase>>('/purchase', payload).then((r) => r.data),
+    api.post<ApiResponse<Purchase>>('/purchase', payload).then((r) => r.data),
 
   update: (id: number, payload: Partial<Purchase>) =>
     api

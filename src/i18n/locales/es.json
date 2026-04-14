@@ -38,7 +38,9 @@
     "success": "¡Éxito!",
     "error": "Error",
     "warning": "Advertencia",
-    "type": "Tipo"
+    "type": "Tipo",
+    "dateFrom": "Desde",
+    "dateTo": "Hasta"
   },
   "auth": {
     "login": "Iniciar Sesión",

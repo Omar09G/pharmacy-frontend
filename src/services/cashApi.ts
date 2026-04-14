@@ -6,13 +6,20 @@ import type {
   CreateCashJournal,
   CashJournalUpdate,
 } from '../models/cash.model';
+import { getCurrentDate } from '../utils/dateUtils';
 
 export const cashApi = {
-  getJournals: (page = 0, limit = 10, total = 0) =>
+  getJournals: (
+    page = 0,
+    limit = 10,
+    total = 0,
+    dateInit: string = getCurrentDate(),
+    dateEnd: string = getCurrentDate(),
+  ) =>
     api
       .get<
         ApiResponse<CashJournal[]>
-      >('/cash_journal', { params: { page, limit, total } })
+      >('/cash_journal', { params: { page, limit, total, dateInit, dateEnd } })
       .then((r) => r.data),
 
   getJournalById: (id: number) =>
@@ -22,7 +29,7 @@ export const cashApi = {
 
   openJournal: (payload: CreateCashJournal) =>
     api
-      .put<ApiResponse<CashJournal>>('/cash_journal', { id: 0, ...payload })
+      .post<ApiResponse<CashJournal>>('/cash_journal', { id: 0, ...payload })
       .then((r) => r.data),
 
   closeJournal: (id: number, payload: CashJournalUpdate) =>
@@ -47,7 +54,7 @@ export const cashApi = {
     },
   ) =>
     api
-      .put<
+      .post<
         ApiResponse<CashEntry>
       >(`/cash_journal/${journalId}/entries`, { id: 0, ...payload })
       .then((r) => r.data),

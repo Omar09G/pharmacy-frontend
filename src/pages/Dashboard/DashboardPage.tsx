@@ -16,45 +16,56 @@ import {
 import { DollarSign, ShoppingCart, Users, AlertTriangle } from 'lucide-react';
 import { formatLocalDate } from '../../utils/dateUtils';
 
+const n = (v: number | null | undefined) => v ?? 0;
+
 const DashboardPage: React.FC = () => {
   const { t } = useTranslation();
 
-  const { data: dailySales } = useQuery({
+  const { data: dailySalesRes } = useQuery({
     queryKey: ['dashboard-daily'],
-    queryFn: () => dashboardApi.getDailySales(),
+    queryFn: () => dashboardApi.getSalesDailySummary(),
   });
-  const { data: bestSellers } = useQuery({
+  const { data: bestSellersRes } = useQuery({
     queryKey: ['dashboard-bestSellers'],
-    queryFn: () => dashboardApi.getBestSellers(),
+    queryFn: () => dashboardApi.getBestSellers30d(),
   });
-  const { data: overdueInvoices } = useQuery({
+  const { data: overdueInvoicesRes } = useQuery({
     queryKey: ['dashboard-overdue'],
-    queryFn: () => dashboardApi.getOverdueInvoices(),
+    queryFn: () => dashboardApi.getCustomerInvoiceAging(),
   });
-  const { data: lowStock } = useQuery({
+  const { data: lowStockRes } = useQuery({
     queryKey: ['dashboard-lowStock'],
-    queryFn: () => dashboardApi.getLowStock(),
+    queryFn: () => dashboardApi.getInventoryStock(),
   });
-  const { data: cashCut } = useQuery({
+  const { data: cashCutRes } = useQuery({
     queryKey: ['dashboard-cashCut'],
-    queryFn: () => dashboardApi.getCashCut(),
+    queryFn: () => dashboardApi.getDailyCashCut(),
   });
-  const { data: cashBalance } = useQuery({
+  const { data: cashBalanceRes } = useQuery({
     queryKey: ['dashboard-cashBalance'],
     queryFn: () => dashboardApi.getCashJournalBalance(),
   });
 
+  const dailySales = dailySalesRes?.data;
+  const bestSellers = bestSellersRes?.data;
+  const overdueInvoices = overdueInvoicesRes?.data;
+  const lowStock = lowStockRes?.data;
+  const cashCuts = cashCutRes?.data;
+  const cashBalances = cashBalanceRes?.data;
+
   const todaySales = dailySales?.[dailySales.length - 1];
+  const todayCashCut = cashCuts?.[0];
+  const firstCashBalance = cashBalances?.[0];
   const kpis = [
     {
       label: t('dashboard.todaySales'),
-      value: todaySales?.salesCount ?? 0,
+      value: n(todaySales?.salesCount),
       icon: <ShoppingCart size={20} />,
       color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30',
     },
     {
       label: t('dashboard.todayRevenue'),
-      value: `$${(todaySales?.total ?? 0).toFixed(2)}`,
+      value: `$${n(Number(todaySales?.total)).toFixed(2)}`,
       icon: <DollarSign size={20} />,
       color: 'text-green-600 bg-green-100 dark:bg-green-900/30',
     },
@@ -74,9 +85,9 @@ const DashboardPage: React.FC = () => {
 
   const chartData =
     dailySales?.map((d) => ({
-      day: d.day.slice(5),
-      total: Math.round(d.total),
-      count: d.salesCount,
+      day: d.day.slice(5, 10),
+      total: Math.round(n(d.total)),
+      count: n(d.salesCount),
     })) ?? [];
 
   return (
@@ -85,11 +96,6 @@ const DashboardPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
           {t('dashboard.title')}
         </h1>
-      </div>
-
-      {/* Mock banner */}
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg px-4 py-3 text-sm text-yellow-800 dark:text-yellow-300">
-        {t('dashboard.mockBanner')}
       </div>
 
       {/* KPI cards */}
@@ -157,6 +163,7 @@ const DashboardPage: React.FC = () => {
                   width={120}
                   stroke="#9ca3af"
                   fontSize={11}
+                  tickFormatter={(v: string | null) => v ?? ''}
                 />
                 <Tooltip
                   contentStyle={{
@@ -188,14 +195,14 @@ const DashboardPage: React.FC = () => {
               <tbody>
                 {overdueInvoices?.map((inv) => (
                   <tr
-                    key={inv.saleId}
+                    key={inv.invoiceId}
                     className="border-b border-neutral-100 dark:border-neutral-700/50"
                   >
                     <td className="py-2 text-neutral-900 dark:text-neutral-100">
                       {inv.customerName}
                     </td>
                     <td className="py-2 text-right font-medium">
-                      ${inv.outstanding.toFixed(2)}
+                      ${n(Number(inv.outstanding)).toFixed(2)}
                     </td>
                     <td className="py-2 text-center">
                       <Badge
@@ -205,11 +212,13 @@ const DashboardPage: React.FC = () => {
                               overdue: 'red' as const,
                               open: 'yellow' as const,
                             } as Record<string, 'red' | 'yellow' | 'green'>
-                          )[inv.invoiceStatus] ?? 'green'
+                          )[inv.invoiceStatus ?? ''] ?? 'green'
                         }
                       >
                         {inv.invoiceStatus}{' '}
-                        {inv.daysOverdue > 0 ? `(${inv.daysOverdue}d)` : ''}
+                        {n(Number(inv.daysOverdue)) > 0
+                          ? `(${n(Number(inv.daysOverdue))}d)`
+                          : ''}
                       </Badge>
                     </td>
                   </tr>
@@ -244,12 +253,12 @@ const DashboardPage: React.FC = () => {
                       {s.productName}
                     </td>
                     <td className="py-2 text-center">
-                      <Badge color={s.qtyOnHand <= 3 ? 'red' : 'yellow'}>
-                        {s.qtyOnHand}
+                      <Badge color={n(s.qtyOnHand) <= 3 ? 'red' : 'yellow'}>
+                        {n(s.qtyOnHand)}
                       </Badge>
                     </td>
                     <td className="py-2 text-center text-neutral-500">
-                      {formatLocalDate(s.maxExpiryDate)}
+                      {s.maxExpiryDate ? formatLocalDate(s.maxExpiryDate) : '-'}
                     </td>
                   </tr>
                 ))}
@@ -267,31 +276,31 @@ const DashboardPage: React.FC = () => {
               {t('dashboard.cashCut')} Efectivo
             </p>
             <p className="text-xl font-bold text-neutral-900 dark:text-white">
-              ${cashCut?.salesCash.toFixed(2) ?? '0.00'}
+              ${n(Number(todayCashCut?.salesCash)).toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-sm text-neutral-500">No Efectivo</p>
             <p className="text-xl font-bold text-neutral-900 dark:text-white">
-              ${cashCut?.salesNonCash.toFixed(2) ?? '0.00'}
+              ${n(Number(todayCashCut?.salesNonCash)).toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-sm text-neutral-500">Entradas</p>
             <p className="text-xl font-bold text-green-600">
-              ${cashCut?.cashEntriesIn.toFixed(2) ?? '0.00'}
+              ${n(Number(todayCashCut?.cashEntriesIn)).toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-sm text-neutral-500">Salidas</p>
             <p className="text-xl font-bold text-red-600">
-              ${cashCut?.cashEntriesOut.toFixed(2) ?? '0.00'}
+              ${n(Number(todayCashCut?.cashEntriesOut)).toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-sm text-neutral-500">Balance</p>
             <p className="text-xl font-bold text-blue-600">
-              ${cashBalance?.balance.toFixed(2) ?? '0.00'}
+              ${n(Number(firstCashBalance?.balance)).toFixed(2)}
             </p>
           </div>
         </div>
