@@ -391,5 +391,36 @@
     "overdueInvoices": "Overdue Invoices",
     "lowStockItems": "Low Stock Items",
     "cashCut": "Cash Cut"
+  },
+  "alerts": {
+    "confirmUpdateTitle": "Update record?",
+    "confirmUpdateBody": "<strong style=\"color:#f87171\">{{name}}</strong> will be updated permanently.",
+    "confirmUpdateBtn": "Yes, update",
+    "confirmDeleteTitle": "Delete record?",
+    "confirmDeleteBody": "<strong style=\"color:#f87171\">{{name}}</strong> will be deleted permanently.",
+    "confirmDeleteBtn": "Yes, delete",
+    "successTitle": "Success!",
+    "errorTitle": "Error",
+    "errorAccept": "OK",
+    "confirmSaleTitle": "Confirm sale?",
+    "confirmSaleBody": "Total to charge: <strong style=\"color:#22c55e\">${{total}}</strong>",
+    "confirmBtn": "Confirm",
+    "cancelBtn": "Cancel"
+  },
+  "apiErrors": {
+    "badRequest": "The request contains invalid data. Please check your input and try again.",
+    "unauthorized": "You are not authorized. Please sign in again.",
+    "forbidden": "You do not have permission to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "conflict": "A record with this data already exists. Please check and try again.",
+    "unprocessable": "The submitted data is not valid. Please review the fields and try again.",
+    "tooManyRequests": "Too many requests. Please wait a moment and try again.",
+    "serverError": "An internal server error occurred. Please try again later.",
+    "serviceUnavailable": "The service is currently unavailable. Please try again later.",
+    "networkError": "Could not connect to the server. Please check your internet connection.",
+    "timeout": "The request took too long. Please try again.",
+    "unknown": "An unexpected error occurred. Please try again.",
+    "loginFailed": "Incorrect username or password.",
+    "accessDenied": "Access denied. You do not have permission to access this page."
   }
 }

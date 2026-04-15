@@ -11,7 +11,7 @@ import type {
   PaymentMethodCreate,
 } from '../../models/payment-method.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
+import { showSuccess, showApiError, confirmDelete } from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -56,7 +56,7 @@ const PaymentMethodsPage: React.FC = () => {
       showSuccess(t('paymentMethods.created'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({
@@ -71,7 +71,7 @@ const PaymentMethodsPage: React.FC = () => {
       showSuccess(t('paymentMethods.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => paymentMethodApi.delete(id),
@@ -79,7 +79,7 @@ const PaymentMethodsPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['paymentMethods'] });
       showSuccess(t('paymentMethods.deleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

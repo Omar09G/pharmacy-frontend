@@ -14,7 +14,7 @@ import type {
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
 import {
   showSuccess,
-  showError,
+  showApiError,
   confirmDelete,
   confirmUpdate,
 } from '../../utils/alerts';
@@ -99,7 +99,7 @@ const PurchasesPage: React.FC = () => {
       showSuccess(t('purchases.created'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: PurchaseUpdate }) =>
@@ -109,7 +109,7 @@ const PurchasesPage: React.FC = () => {
       showSuccess(t('purchases.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => purchaseApi.delete(id),
@@ -117,7 +117,7 @@ const PurchasesPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['purchases'] });
       showSuccess(t('purchases.deleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

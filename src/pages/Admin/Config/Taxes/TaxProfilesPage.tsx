@@ -11,6 +11,7 @@ import { DEFAULT_PAGE_SIZE } from '../../../../utils/constants';
 import {
   showSuccess,
   showError,
+  showApiError,
   confirmDelete,
 } from '../../../../utils/alerts';
 import { useCrudModal } from '../../../../hooks/useCrudModal';
@@ -86,7 +87,7 @@ const TaxProfilesPage: React.FC = () => {
       showSuccess(t('config.taxCreated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: Partial<TaxProfile> }) =>
@@ -96,7 +97,7 @@ const TaxProfilesPage: React.FC = () => {
       showSuccess(t('config.taxUpdated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => taxApiFn.delete(id),
@@ -104,7 +105,7 @@ const TaxProfilesPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['taxProfiles'] });
       showSuccess(t('config.taxDeleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

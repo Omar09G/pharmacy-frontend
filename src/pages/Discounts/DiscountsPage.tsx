@@ -8,7 +8,12 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { discountApi } from '../../services/discountApi';
 import type { Discount, DiscountCreate } from '../../models/discount.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
+import {
+  showSuccess,
+  showError,
+  showApiError,
+  confirmDelete,
+} from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -86,7 +91,7 @@ const DiscountsPage: React.FC = () => {
       showSuccess(t('discounts.created'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: Partial<Discount> }) =>
@@ -96,7 +101,7 @@ const DiscountsPage: React.FC = () => {
       showSuccess(t('discounts.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => discountApi.delete(id),
@@ -104,7 +109,7 @@ const DiscountsPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['discounts'] });
       showSuccess(t('discounts.deleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

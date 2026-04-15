@@ -8,7 +8,12 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { permissionApi } from '../../../services/roleApi';
 import type { Permission, PermissionCreate } from '../../../models/role.model';
 import { DEFAULT_PAGE_SIZE } from '../../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../../utils/alerts';
+import {
+  showSuccess,
+  showError,
+  showApiError,
+  confirmDelete,
+} from '../../../utils/alerts';
 import { useCrudModal } from '../../../hooks/useCrudModal';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
@@ -61,7 +66,7 @@ const PermissionsPage: React.FC = () => {
       setTotal((prev) => prev + 1);
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: Partial<Permission> }) =>
@@ -71,7 +76,7 @@ const PermissionsPage: React.FC = () => {
       showSuccess(t('permissions.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => permissionApi.delete(id),
@@ -80,7 +85,7 @@ const PermissionsPage: React.FC = () => {
       showSuccess(t('permissions.deleted'));
       setTotal((prev) => prev - 1);
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

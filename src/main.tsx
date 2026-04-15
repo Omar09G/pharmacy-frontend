@@ -17,11 +17,9 @@ if (savedUI?.state?.theme === 'dark') {
   document.documentElement.classList.add('dark');
 }
 
-// Restore session on load
-const { token, user } = useAuthStore.getState();
-if (token) {
-  useAuthStore.getState().restoreSession();
-}
+// Restore session on load (cookie-based — always try profile)
+const { user } = useAuthStore.getState();
+useAuthStore.getState().restoreSession();
 // Set Sentry user context if already logged in
 if (user) {
   setSentryUser(user);

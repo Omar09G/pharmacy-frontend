@@ -13,8 +13,8 @@ const Topbar: React.FC = () => {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 

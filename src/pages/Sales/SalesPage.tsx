@@ -5,7 +5,12 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { saleApi } from '../../services/saleApi';
 import type { Sale, SaleItem } from '../../models/sale.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
+import {
+  showSuccess,
+  showError,
+  showApiError,
+  confirmDelete,
+} from '../../utils/alerts';
 import { formatLocal, getCurrentDate } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -40,7 +45,7 @@ const SalesPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['sales'] });
       showSuccess(t('sales.cancelled'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const handleCancel = async (item: Sale) => {

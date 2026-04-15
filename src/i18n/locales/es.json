@@ -387,5 +387,36 @@
     "overdueInvoices": "Facturas Vencidas",
     "lowStockItems": "Productos con Stock Bajo",
     "cashCut": "Corte de Caja"
+  },
+  "alerts": {
+    "confirmUpdateTitle": "¿Actualizar registro?",
+    "confirmUpdateBody": "Se actualizará <strong style=\"color:#f87171\">{{name}}</strong> de forma permanente.",
+    "confirmUpdateBtn": "Sí, actualizar",
+    "confirmDeleteTitle": "¿Eliminar registro?",
+    "confirmDeleteBody": "Se eliminará <strong style=\"color:#f87171\">{{name}}</strong> de forma permanente.",
+    "confirmDeleteBtn": "Sí, eliminar",
+    "successTitle": "¡Éxito!",
+    "errorTitle": "Error",
+    "errorAccept": "Aceptar",
+    "confirmSaleTitle": "¿Confirmar venta?",
+    "confirmSaleBody": "Total a cobrar: <strong style=\"color:#22c55e\">${{total}}</strong>",
+    "confirmBtn": "Confirmar",
+    "cancelBtn": "Cancelar"
+  },
+  "apiErrors": {
+    "badRequest": "La solicitud contiene datos inválidos. Verifica la información e intenta de nuevo.",
+    "unauthorized": "No tienes autorización para acceder. Inicia sesión nuevamente.",
+    "forbidden": "No tienes permisos para realizar esta acción.",
+    "notFound": "El recurso solicitado no fue encontrado.",
+    "conflict": "Ya existe un registro con esos datos. Verifica e intenta de nuevo.",
+    "unprocessable": "Los datos enviados no son válidos. Revisa los campos e intenta de nuevo.",
+    "tooManyRequests": "Has realizado demasiadas solicitudes. Espera un momento e intenta de nuevo.",
+    "serverError": "Ocurrió un error interno en el servidor. Intenta más tarde.",
+    "serviceUnavailable": "El servicio no está disponible en este momento. Intenta más tarde.",
+    "networkError": "No se pudo conectar con el servidor. Verifica tu conexión a internet.",
+    "timeout": "La solicitud tardó demasiado. Intenta de nuevo.",
+    "unknown": "Ocurrió un error inesperado. Intenta de nuevo.",
+    "loginFailed": "Usuario o contraseña incorrectos.",
+    "accessDenied": "Acceso denegado. No tienes permisos para acceder a esta página."
   }
 }

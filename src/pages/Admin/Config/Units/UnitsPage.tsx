@@ -10,7 +10,7 @@ import type { ApiResponse } from '../../../../utils/Utils';
 import { DEFAULT_PAGE_SIZE } from '../../../../utils/constants';
 import {
   showSuccess,
-  showError,
+  showApiError,
   confirmDelete,
 } from '../../../../utils/alerts';
 import { useCrudModal } from '../../../../hooks/useCrudModal';
@@ -80,7 +80,7 @@ const UnitsPage: React.FC = () => {
       showSuccess(t('config.unitCreated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: Partial<Unit> }) =>
@@ -90,7 +90,7 @@ const UnitsPage: React.FC = () => {
       showSuccess(t('config.unitUpdated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => unitApiFn.delete(id),
@@ -98,7 +98,7 @@ const UnitsPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['units'] });
       showSuccess(t('config.unitDeleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

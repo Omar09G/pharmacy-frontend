@@ -8,7 +8,11 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { userApi } from '../../../services/userApi';
 import type { User, UserCreate, UserUpdate } from '../../../models/user.model';
 import { DEFAULT_PAGE_SIZE } from '../../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../../utils/alerts';
+import {
+  showSuccess,
+  showApiError,
+  confirmDelete,
+} from '../../../utils/alerts';
 import { useCrudModal } from '../../../hooks/useCrudModal';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
@@ -75,7 +79,7 @@ const UsersPage: React.FC = () => {
       showSuccess(t('users.created'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: UserUpdate }) =>
@@ -85,7 +89,7 @@ const UsersPage: React.FC = () => {
       showSuccess(t('users.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => userApi.delete(id),
@@ -93,7 +97,7 @@ const UsersPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['users'] });
       showSuccess(t('users.deleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

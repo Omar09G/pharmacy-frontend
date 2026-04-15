@@ -9,7 +9,7 @@ import { saleApi } from '../../services/saleApi';
 import { usePOSStore, type CartItem } from '../../store/posStore';
 import { useAuthStore } from '../../store/authStore';
 import { nowUTC } from '../../utils/dateUtils';
-import { showSuccess, showError } from '../../utils/alerts';
+import { showSuccess, showError, showApiError } from '../../utils/alerts';
 import type { Product } from '../../models/product.model';
 import type { Customer } from '../../models/customer.model';
 import type { PaymentMethod } from '../../models/payment-method.model';
@@ -247,7 +247,7 @@ const POSPage: React.FC = () => {
 
       clearCart();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const handleCharge = async () => {

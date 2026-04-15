@@ -21,7 +21,7 @@ import { z } from 'zod';
 import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCrudModal } from '../../hooks/useCrudModal';
-import { showError, showSuccess } from '../../utils/alerts';
+import { showError, showSuccess, showApiError } from '../../utils/alerts';
 import Modal from '../../components/ui/Modal';
 const InventoryPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -74,7 +74,7 @@ const InventoryPage: React.FC = () => {
       showSuccess(t('inventory.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmitStock = (d: FormDataStock, typeOperation?: string) => {

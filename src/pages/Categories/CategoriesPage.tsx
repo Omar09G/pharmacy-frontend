@@ -8,7 +8,12 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { categoryApi } from '../../services/categoryApi';
 import type { Category, CategoryCreate } from '../../models/category.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
+import {
+  showSuccess,
+  showError,
+  showApiError,
+  confirmDelete,
+} from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -64,7 +69,7 @@ const CategoriesPage: React.FC = () => {
       showSuccess(t('categories.created'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: Partial<Category> }) =>
@@ -74,7 +79,7 @@ const CategoriesPage: React.FC = () => {
       showSuccess(t('categories.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => categoryApi.delete(id),
@@ -82,7 +87,7 @@ const CategoriesPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['categories'] });
       showSuccess(t('categories.deleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

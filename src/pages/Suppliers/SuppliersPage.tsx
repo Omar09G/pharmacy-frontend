@@ -8,7 +8,12 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { supplierApi } from '../../services/supplierApi';
 import type { Supplier, SupplierCreate } from '../../models/supplier.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
+import {
+  showSuccess,
+  showError,
+  showApiError,
+  confirmDelete,
+} from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -56,7 +61,7 @@ const SuppliersPage: React.FC = () => {
       showSuccess(t('suppliers.created'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: FormData }) =>
@@ -66,7 +71,7 @@ const SuppliersPage: React.FC = () => {
       showSuccess(t('suppliers.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => supplierApi.delete(id),
@@ -74,7 +79,7 @@ const SuppliersPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['suppliers'] });
       showSuccess(t('suppliers.deleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const onSubmit = (d: FormData) => {
     if (editing) {

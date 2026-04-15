@@ -12,7 +12,7 @@ import type {
   CreateCashJournal,
 } from '../../models/cash.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError } from '../../utils/alerts';
+import { showSuccess, showError, showApiError } from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import { formatLocal, getCurrentDate, nowUTC } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
@@ -60,7 +60,7 @@ const CashJournalPage: React.FC = () => {
       showSuccess(t('cashJournal.journalOpened'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const closeMut = useMutation({
@@ -70,7 +70,7 @@ const CashJournalPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['cashJournals'] });
       showSuccess(t('cashJournal.journalClosed'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmitCancelJournal = (d: CashJournal) => {

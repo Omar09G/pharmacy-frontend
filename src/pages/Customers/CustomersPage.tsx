@@ -13,7 +13,12 @@ import type {
   CustomerCreditAccountCreate,
 } from '../../models/customer.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
+import {
+  showSuccess,
+  showError,
+  showApiError,
+  confirmDelete,
+} from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -93,7 +98,7 @@ const CustomersPage: React.FC = () => {
       showSuccess(t('customers.created'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: FormData }) =>
@@ -103,7 +108,7 @@ const CustomersPage: React.FC = () => {
       showSuccess(t('customers.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMut = useMutation({
     mutationFn: (id: number) => customerApi.delete(id),
@@ -111,7 +116,7 @@ const CustomersPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['customers'] });
       showSuccess(t('customers.deleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const createMutCredit = useMutation({
@@ -122,7 +127,7 @@ const CustomersPage: React.FC = () => {
       showSuccess(t('customers.created'));
       closeCredit();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const updateMutCredit = useMutation({
     mutationFn: ({ id, data: d }: { id: number; data: FormDataCredit }) =>
@@ -132,7 +137,7 @@ const CustomersPage: React.FC = () => {
       showSuccess(t('customers.updated'));
       closeCredit();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
   const deleteMutCredit = useMutation({
     mutationFn: (id: number) => customerApi.deleteCreditAccount(id),
@@ -141,7 +146,7 @@ const CustomersPage: React.FC = () => {
       showSuccess(t('customers.deleted'));
       closeCredit();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

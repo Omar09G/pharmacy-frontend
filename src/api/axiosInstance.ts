@@ -6,19 +6,8 @@ import { captureError } from '../config/sentry';
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
-
-// Request interceptor: inject Bearer token
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().token;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
 
 // ---------- Refresh-token machinery ----------
 let refreshPromise: Promise<boolean> | null = null;
@@ -55,9 +44,7 @@ axiosInstance.interceptors.response.use(
       const refreshed = await handleTokenRefresh();
 
       if (refreshed) {
-        // Update the Authorization header with the new token
-        const newToken = useAuthStore.getState().token;
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        // Retry the original request (cookie is now updated by the browser)
         return axiosInstance(originalRequest);
       }
     }

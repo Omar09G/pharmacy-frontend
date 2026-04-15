@@ -13,7 +13,12 @@ import type {
   UnitDetail,
 } from '../../models/product.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError, confirmDelete } from '../../utils/alerts';
+import {
+  showSuccess,
+  showError,
+  showApiError,
+  confirmDelete,
+} from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -118,7 +123,7 @@ const ProductsPage: React.FC = () => {
       showSuccess(t('products.created'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const updateMut = useMutation({
@@ -129,7 +134,7 @@ const ProductsPage: React.FC = () => {
       showSuccess(t('products.updated'));
       close();
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const deleteMut = useMutation({
@@ -138,7 +143,7 @@ const ProductsPage: React.FC = () => {
       qc.invalidateQueries({ queryKey: ['products'] });
       showSuccess(t('products.deleted'));
     },
-    onError: () => showError(t('common.error')),
+    onError: (err) => showApiError(err),
   });
 
   const onSubmit = (d: FormData) => {

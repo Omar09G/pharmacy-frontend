@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/constants';
 import { setSentryUser } from '../config/sentry';
+import { getLoginErrorMessage } from '../utils/apiErrorMapper';
 
 export interface AuthUser {
   id: number;
@@ -13,13 +14,11 @@ export interface AuthUser {
 
 interface AuthState {
   user: AuthUser | null;
-  token: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
   login: (credentials: { username: string; password: string }) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   setError: (error: string | null) => void;
   restoreSession: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
@@ -27,10 +26,8 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
-      token: null,
-      refreshToken: null,
       isAuthenticated: false,
       loading: false,
       error: null,
@@ -43,10 +40,11 @@ export const useAuthStore = create<AuthState>()(
             credentials,
             {
               headers: { 'Content-Type': 'application/json' },
+              withCredentials: true,
             },
           );
           const data = res.data?.data ?? res.data;
-          if (data?.token) {
+          if (data?.id) {
             const user = {
               id: Number(data.id ?? 0),
               fullName: data.name ?? data.fullName ?? data.username,
@@ -54,8 +52,6 @@ export const useAuthStore = create<AuthState>()(
               role: data.role,
             };
             set({
-              token: data.token,
-              refreshToken: data.refreshToken ?? null,
               user,
               isAuthenticated: true,
               loading: false,
@@ -63,23 +59,25 @@ export const useAuthStore = create<AuthState>()(
             });
             setSentryUser(user);
           } else {
-            set({ loading: false, error: 'No token returned from server' });
+            set({ loading: false, error: 'Invalid response from server' });
           }
         } catch (err: unknown) {
-          const msg = axios.isAxiosError(err)
-            ? ((err.response?.data as { message?: string })?.message ??
-              err.message)
-            : 'Login failed';
+          const msg = getLoginErrorMessage(err);
           set({ loading: false, error: msg });
           throw err;
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          await axios.post(`${API_BASE_URL}/auth/logout`, null, {
+            withCredentials: true,
+          });
+        } catch {
+          // Even if the backend call fails, clear local state
+        }
         set({
           user: null,
-          token: null,
-          refreshToken: null,
           isAuthenticated: false,
           error: null,
         });
@@ -89,12 +87,10 @@ export const useAuthStore = create<AuthState>()(
       setError: (error) => set({ error }),
 
       restoreSession: async () => {
-        const { token } = get();
-        if (!token) return;
         set({ loading: true });
         try {
           const res = await axios.get(`${API_BASE_URL}/auth/profile`, {
-            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
           });
           const data = res.data?.data ?? res.data;
           if (data) {
@@ -111,8 +107,6 @@ export const useAuthStore = create<AuthState>()(
           } else {
             set({
               user: null,
-              token: null,
-              refreshToken: null,
               isAuthenticated: false,
               loading: false,
             });
@@ -120,8 +114,6 @@ export const useAuthStore = create<AuthState>()(
         } catch {
           set({
             user: null,
-            token: null,
-            refreshToken: null,
             isAuthenticated: false,
             loading: false,
           });
@@ -129,23 +121,12 @@ export const useAuthStore = create<AuthState>()(
       },
 
       refreshSession: async () => {
-        const { refreshToken } = get();
-        if (!refreshToken) return false;
         try {
-          const res = await axios.post(
-            `${API_BASE_URL}/auth/refresh`,
-            { refreshToken },
-            { headers: { 'Content-Type': 'application/json' } },
-          );
+          const res = await axios.post(`${API_BASE_URL}/auth/refresh`, null, {
+            withCredentials: true,
+          });
           const data = res.data?.data ?? res.data;
-          if (data?.token) {
-            set({
-              token: data.token,
-              refreshToken: data.refreshToken ?? refreshToken,
-            });
-            return true;
-          }
-          return false;
+          return !!data;
         } catch {
           return false;
         }
@@ -154,8 +135,6 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'pharmacy_auth',
       partialize: (state) => ({
-        token: state.token,
-        refreshToken: state.refreshToken,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
