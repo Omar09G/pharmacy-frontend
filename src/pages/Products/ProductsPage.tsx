@@ -13,12 +13,7 @@ import type {
   UnitDetail,
 } from '../../models/product.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import {
-  showSuccess,
-  showError,
-  showApiError,
-  confirmDelete,
-} from '../../utils/alerts';
+import { showSuccess, showApiError, confirmDelete } from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';

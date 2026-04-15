@@ -10,7 +10,6 @@ import type { ApiResponse } from '../../../../utils/Utils';
 import { DEFAULT_PAGE_SIZE } from '../../../../utils/constants';
 import {
   showSuccess,
-  showError,
   showApiError,
   confirmDelete,
 } from '../../../../utils/alerts';

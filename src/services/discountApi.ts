@@ -14,7 +14,7 @@ export const discountApi = {
     api.get<ApiResponse<Discount>>(`/discount/${id}`).then((r) => r.data),
 
   create: (payload: DiscountCreate) =>
-    api.put<ApiResponse<Discount>>('/discount', payload).then((r) => r.data),
+    api.post<ApiResponse<Discount>>('/discount', payload).then((r) => r.data),
 
   update: (id: number, payload: Partial<Discount>) =>
     api

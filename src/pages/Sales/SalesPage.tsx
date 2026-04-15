@@ -5,12 +5,7 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { saleApi } from '../../services/saleApi';
 import type { Sale, SaleItem } from '../../models/sale.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import {
-  showSuccess,
-  showError,
-  showApiError,
-  confirmDelete,
-} from '../../utils/alerts';
+import { showSuccess, showApiError, confirmDelete } from '../../utils/alerts';
 import { formatLocal, getCurrentDate } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -100,6 +95,15 @@ const SalesPage: React.FC = () => {
   const columns: ColumnDef<Sale>[] = [
     { accessorKey: 'id', header: 'ID', size: 60 },
     {
+      accessorKey: 'customerName',
+      header: t('customers.fullName'),
+      cell: ({ getValue }) => {
+        const s = getValue() as string;
+        return <Badge color="purple">{s}</Badge>;
+      },
+      size: 150,
+    },
+    {
       accessorKey: 'date',
       header: t('sales.saleDate'),
       cell: ({ getValue }) => {
@@ -110,7 +114,10 @@ const SalesPage: React.FC = () => {
     {
       accessorKey: 'total',
       header: t('common.total'),
-      cell: ({ getValue }) => `$${Number(getValue() ?? 0).toFixed(2)}`,
+      cell: ({ getValue }) => {
+        const s = getValue() as string;
+        return <Badge color="gray">{`$${Number(s ?? 0).toFixed(2)}`}</Badge>;
+      },
     },
     {
       accessorKey: 'status',

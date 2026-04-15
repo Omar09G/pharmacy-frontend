@@ -221,7 +221,7 @@ const POSPage: React.FC = () => {
           try {
             handlePrint();
           } catch (err) {
-            console.error('print error', err);
+            showError(err as string);
           }
           setPrintAfterSuccess(false);
         }, 200);
@@ -537,7 +537,7 @@ const POSPage: React.FC = () => {
                 >
                   {discounts.map((d) => (
                     <option key={d.id} value={d.id}>
-                      {d.value}% - {d.name}
+                      {Number(d.value).toFixed(2)}% - {d.name}
                     </option>
                   ))}
                 </select>

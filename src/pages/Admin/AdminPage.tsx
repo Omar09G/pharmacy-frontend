@@ -13,13 +13,13 @@ const AdminPage: React.FC = () => {
   useEffect(() => {
     if (user && user.role !== ROLES.ADMIN) {
       showError(t('apiErrors.accessDenied'));
-      const t = setTimeout(
+      const timer = setTimeout(
         () => navigate('/app/dashboard', { replace: true }),
         1,
       );
-      return () => clearTimeout(t);
+      return () => clearTimeout(timer);
     }
-  }, [user, navigate]);
+  }, [user, navigate, t]);
 
   if (!user) return null;
   if (user.role !== ROLES.ADMIN) return null;

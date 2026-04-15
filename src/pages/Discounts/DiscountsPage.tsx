@@ -126,8 +126,6 @@ const DiscountsPage: React.FC = () => {
       const starDate = dateToUTC(d.startAt as string);
       const endDate = dateToUTC(d.endAt as string);
 
-      console.log('Fechas convertidas a UTC:', { starDate, endDate });
-
       const payload: DiscountCreate = {
         id: 0,
         createdAt: nowUTC(),

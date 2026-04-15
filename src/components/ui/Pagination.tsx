@@ -55,7 +55,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <div className="flex items-center gap-1.5">
             <label
               htmlFor="page-size-select"
-              className="text-xs text-neutral-500 dark:text-neutral-400 font-bold"
+              className="text-xs text-neutral-500 dark:text-neutral-400 font-black"
             >
               {t('common.rowsPerPage')}
             </label>
@@ -116,7 +116,7 @@ const Pagination: React.FC<PaginationProps> = ({
             value={page}
             onChange={(e) => goTo(Number(e.target.value))}
             aria-label={t('common.goToPage')}
-            className="h-8 min-w-[3.5rem] cursor-pointer rounded-md border border-neutral-300 bg-white px-2 text-center text-xs font-semibold tabular-nums text-neutral-800 transition-colors hover:border-blue-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:border-blue-500"
+            className="h-8 min-w-14 cursor-pointer rounded-md border border-neutral-300 bg-white px-2 text-center text-xs font-semibold tabular-nums text-neutral-800 transition-colors hover:border-blue-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:border-blue-500"
           >
             {pageOptions.map((p) => (
               <option key={p} value={p}>

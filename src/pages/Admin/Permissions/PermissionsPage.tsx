@@ -10,7 +10,6 @@ import type { Permission, PermissionCreate } from '../../../models/role.model';
 import { DEFAULT_PAGE_SIZE } from '../../../utils/constants';
 import {
   showSuccess,
-  showError,
   showApiError,
   confirmDelete,
 } from '../../../utils/alerts';

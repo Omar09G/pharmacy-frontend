@@ -12,7 +12,7 @@ import type {
   CreateCashJournal,
 } from '../../models/cash.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { showSuccess, showError, showApiError } from '../../utils/alerts';
+import { showSuccess, showApiError } from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import { formatLocal, getCurrentDate, nowUTC } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
