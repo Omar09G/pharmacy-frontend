@@ -34,17 +34,18 @@ const PermissionsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const [total, setTotal] = useState(0);
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Permission>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['permissions', page, search],
+    queryKey: ['permissions', page, pageSize, search],
     queryFn: () =>
       search.trim().length > 0
-        ? permissionApi.getByName(search, page, DEFAULT_PAGE_SIZE, total)
-        : permissionApi.getAll(page, DEFAULT_PAGE_SIZE, total),
+        ? permissionApi.getByName(search, page, pageSize, total)
+        : permissionApi.getAll(page, pageSize, total),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
 
@@ -170,8 +171,9 @@ const PermissionsPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
 

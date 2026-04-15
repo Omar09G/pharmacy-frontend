@@ -64,13 +64,13 @@ const ProductsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, close } = useCrudModal<Product>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['products', page, search],
-    queryFn: () =>
-      productApi.getAll(page, DEFAULT_PAGE_SIZE, 0, search || undefined),
+    queryKey: ['products', page, pageSize, search],
+    queryFn: () => productApi.getAll(page, pageSize, 0, search || undefined),
   });
 
   const products = Array.isArray(data?.data) ? data.data : [];
@@ -281,8 +281,9 @@ const ProductsPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
 

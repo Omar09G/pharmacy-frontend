@@ -36,14 +36,14 @@ const CategoriesPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Category>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['categories', page, search],
-    queryFn: () =>
-      categoryApi.getAll(page, DEFAULT_PAGE_SIZE, 0, search || undefined),
+    queryKey: ['categories', page, pageSize, search],
+    queryFn: () => categoryApi.getAll(page, pageSize, 0, search || undefined),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -174,8 +174,9 @@ const CategoriesPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
 

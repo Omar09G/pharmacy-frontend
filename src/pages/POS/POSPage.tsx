@@ -192,9 +192,9 @@ const POSPage: React.FC = () => {
       barcode: p.barcodesDetail?.barcode ?? '',
       qty: 1,
       qtyOnHand: p.lotsDetail?.qtyOnHand ?? 0,
-      unitPrice: p.purchasePrice ?? 0,
+      unitPrice: p.salePrice ?? 0,
       discount:
-        ((p.purchasePrice ?? 0) *
+        ((p.salePrice ?? 0) *
           (discounts.find((d) => d.id === discountId)?.value ?? 0)) /
         100,
       lotId: p.lotsDetail?.id,
@@ -368,7 +368,7 @@ const POSPage: React.FC = () => {
                       </span>
                     </div>
                     <span className="font-semibold text-blue-600">
-                      ${Number(p.purchasePrice ?? 0).toFixed(2)}
+                      ${Number(p.salePrice ?? 0).toFixed(2)}
                     </span>
                   </button>
                 ))}

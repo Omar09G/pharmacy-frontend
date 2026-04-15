@@ -26,15 +26,15 @@ const SalesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [dateInit, setDateInit] = useState(getCurrentDate());
   const [dateEnd, setDateEnd] = useState(getCurrentDate());
   const { open, openCreate, close } = useCrudModal<Sale>();
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['sales', page, dateInit, dateEnd],
-    queryFn: () =>
-      saleApi.getAll(page, DEFAULT_PAGE_SIZE, 0, dateInit, dateEnd),
+    queryKey: ['sales', page, pageSize, dateInit, dateEnd],
+    queryFn: () => saleApi.getAll(page, pageSize, 0, dateInit, dateEnd),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -173,8 +173,9 @@ const SalesPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
       <Modal open={open} onClose={close} title={t('sales.detail')} size="xl">

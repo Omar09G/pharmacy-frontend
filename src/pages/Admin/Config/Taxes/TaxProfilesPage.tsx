@@ -65,13 +65,14 @@ const TaxProfilesPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<TaxProfile>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['taxProfiles', page, search],
-    queryFn: () => taxApiFn.getAll(page, DEFAULT_PAGE_SIZE, 0),
+    queryKey: ['taxProfiles', page, pageSize, search],
+    queryFn: () => taxApiFn.getAll(page, pageSize, 0),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -206,8 +207,9 @@ const TaxProfilesPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
 

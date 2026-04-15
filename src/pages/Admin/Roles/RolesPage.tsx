@@ -35,16 +35,17 @@ const RolesPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const [total, setTotal] = useState(0);
   const { open, editing, openCreate, openEdit, close } = useCrudModal<Role>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['roles', page, search],
+    queryKey: ['roles', page, pageSize, search],
     queryFn: () =>
       search.trim().length > 0
-        ? roleApi.getByName(search, page, DEFAULT_PAGE_SIZE, total)
-        : roleApi.getAll(page, DEFAULT_PAGE_SIZE, total),
+        ? roleApi.getByName(search, page, pageSize, total)
+        : roleApi.getAll(page, pageSize, total),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
 
@@ -171,8 +172,9 @@ const RolesPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
 

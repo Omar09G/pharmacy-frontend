@@ -27,6 +27,7 @@ const InventoryPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [dateInit, setDateInit] = useState(getCurrentDate());
   const [dateEnd, setDateEnd] = useState(getCurrentDate());
   const [operationType, setOperationType] = useState<
@@ -116,9 +117,9 @@ const InventoryPage: React.FC = () => {
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: ['inventory', page, dateInit, dateEnd],
+    queryKey: ['inventory', page, pageSize, dateInit, dateEnd],
     queryFn: () =>
-      inventoryApi.getMovements(page, DEFAULT_PAGE_SIZE, 0, dateInit, dateEnd),
+      inventoryApi.getMovements(page, pageSize, 0, dateInit, dateEnd),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -217,8 +218,9 @@ const InventoryPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
       <Modal

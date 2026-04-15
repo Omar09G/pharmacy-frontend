@@ -44,13 +44,13 @@ const UsersPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } = useCrudModal<User>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['users', page, search],
-    queryFn: () =>
-      userApi.getAll(page, DEFAULT_PAGE_SIZE, 0, search || undefined),
+    queryKey: ['users', page, pageSize, search],
+    queryFn: () => userApi.getAll(page, pageSize, 0, search || undefined),
   });
 
   const { data: roleData } = useQuery({
@@ -225,8 +225,9 @@ const UsersPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
 

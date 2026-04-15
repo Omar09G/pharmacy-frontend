@@ -63,13 +63,14 @@ const LocationsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Location>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['locations', page, search],
-    queryFn: () => locationApiFn.getAll(page, DEFAULT_PAGE_SIZE, 0),
+    queryKey: ['locations', page, pageSize, search],
+    queryFn: () => locationApiFn.getAll(page, pageSize, 0),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -191,8 +192,9 @@ const LocationsPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
 

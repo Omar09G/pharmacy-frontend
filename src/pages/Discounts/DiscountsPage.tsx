@@ -8,12 +8,7 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { discountApi } from '../../services/discountApi';
 import type { Discount, DiscountCreate } from '../../models/discount.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import {
-  showSuccess,
-  showError,
-  showApiError,
-  confirmDelete,
-} from '../../utils/alerts';
+import { showSuccess, showApiError, confirmDelete } from '../../utils/alerts';
 import { useCrudModal } from '../../hooks/useCrudModal';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -54,13 +49,14 @@ const DiscountsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Discount>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['discounts', page, search],
-    queryFn: () => discountApi.getAll(page, DEFAULT_PAGE_SIZE),
+    queryKey: ['discounts', page, pageSize, search],
+    queryFn: () => discountApi.getAll(page, pageSize),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -276,8 +272,9 @@ const DiscountsPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
 

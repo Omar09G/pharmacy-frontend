@@ -41,13 +41,13 @@ const SuppliersPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Supplier>();
   const { data, isLoading } = useQuery({
-    queryKey: ['suppliers', page, search],
-    queryFn: () =>
-      supplierApi.getAll(page, DEFAULT_PAGE_SIZE, 0, search || undefined),
+    queryKey: ['suppliers', page, pageSize, search],
+    queryFn: () => supplierApi.getAll(page, pageSize, 0, search || undefined),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -197,8 +197,9 @@ const SuppliersPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
       <Modal

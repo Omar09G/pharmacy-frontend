@@ -4,8 +4,8 @@ import { toZonedTime } from 'date-fns-tz';
 
 const localeMap: Record<string, typeof es> = { es, en: enUS };
 
-/** Mexico City timezone — all display conversions target this zone */
-const MEXICO_TZ = 'America/Mexico_City';
+/** Application timezone from env, defaults to America/Mexico_City */
+const APP_TZ = import.meta.env.VITE_APP_TIMEZONE || 'America/Mexico_City';
 
 /** Convert a local Date to ISO UTC string */
 export function toUTC(localDate: Date): string {
@@ -22,48 +22,48 @@ export function localInputToUTC(inputValue: string): string {
   return new Date(inputValue).toISOString();
 }
 
-/** Convert ISO UTC string to value suitable for input[type=datetime-local] (Mexico City) */
+/** Convert ISO UTC string to value suitable for input[type=datetime-local] */
 export function utcToLocalInput(utcString: string): string {
   const d = parseISO(utcString);
-  const local = toZonedTime(d, MEXICO_TZ);
+  const local = toZonedTime(d, APP_TZ);
   return format(local, "yyyy-MM-dd'T'HH:mm");
 }
 
-/** Format UTC string to Mexico City date+time for display */
+/** Format UTC string to local date+time for display */
 export function formatLocal(utcString: string, lang: string = 'es'): string {
   const d = parseISO(utcString);
-  const local = toZonedTime(d, MEXICO_TZ);
+  const local = toZonedTime(d, APP_TZ);
   return format(local, 'dd/MM/yyyy HH:mm', { locale: localeMap[lang] ?? es });
 }
 
-/** Format UTC string to Mexico City date only */
+/** Format UTC string to local date only */
 export function formatLocalDate(
   utcString: string,
   lang: string = 'es',
 ): string {
   const d = parseISO(utcString);
-  const local = toZonedTime(d, MEXICO_TZ);
+  const local = toZonedTime(d, APP_TZ);
   return format(local, 'dd/MM/yyyy', { locale: localeMap[lang] ?? es });
 }
 
-/** Format UTC string to Mexico City time only */
+/** Format UTC string to local time only */
 export function formatLocalTime(utcString: string): string {
   const d = parseISO(utcString);
-  const local = toZonedTime(d, MEXICO_TZ);
+  const local = toZonedTime(d, APP_TZ);
   return format(local, 'HH:mm');
 }
 
-/** Format UTC string to Mexico City date+time with timezone abbreviation */
+/** Format UTC string to local date+time with timezone abbreviation */
 export function formatLocalFull(utcString: string): string {
   const d = parseISO(utcString);
-  const local = toZonedTime(d, MEXICO_TZ);
+  const local = toZonedTime(d, APP_TZ);
   const tzAbbr =
     new Intl.DateTimeFormat('en', {
-      timeZone: MEXICO_TZ,
+      timeZone: APP_TZ,
       timeZoneName: 'short',
     })
       .formatToParts(d)
-      .find((p) => p.type === 'timeZoneName')?.value ?? MEXICO_TZ;
+      .find((p) => p.type === 'timeZoneName')?.value ?? APP_TZ;
   return `${format(local, 'dd/MM/yyyy HH:mm')} (${tzAbbr})`;
 }
 

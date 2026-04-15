@@ -34,13 +34,14 @@ const PaymentMethodsPage: React.FC = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<PaymentMethod>();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['paymentMethods', page, search],
-    queryFn: () => paymentMethodApi.getAll(page, DEFAULT_PAGE_SIZE),
+    queryKey: ['paymentMethods', page, pageSize, search],
+    queryFn: () => paymentMethodApi.getAll(page, pageSize),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
@@ -171,8 +172,9 @@ const PaymentMethodsPage: React.FC = () => {
         <Pagination
           page={page}
           totalItems={total}
-          pageSize={DEFAULT_PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </Card>
 
