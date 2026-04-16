@@ -165,6 +165,7 @@ const TaxProfilesPage: React.FC = () => {
       cell: ({ row }) => (
         <div className="flex gap-2">
           <Button
+            title={t('tooltips.edit')}
             variant="ghost"
             size="sm"
             onClick={() => handleEdit(row.original)}
@@ -172,6 +173,7 @@ const TaxProfilesPage: React.FC = () => {
             <Pencil size={16} />
           </Button>
           <Button
+            title={t('tooltips.delete')}
             variant="ghost"
             size="sm"
             onClick={() => handleDelete(row.original)}
@@ -189,7 +191,7 @@ const TaxProfilesPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
           {t('config.taxes')}
         </h1>
-        <Button onClick={handleCreate}>
+        <Button title={t('tooltips.newTax')} onClick={handleCreate}>
           <Plus size={16} /> {t('config.newTax')}
         </Button>
       </div>
@@ -218,13 +220,22 @@ const TaxProfilesPage: React.FC = () => {
         title={editing ? t('config.editTax') : t('config.newTax')}
         footer={
           <>
-            <Button variant="secondary" onClick={() => form.reset()}>
+            <Button
+              title={t('tooltips.clear')}
+              variant="secondary"
+              onClick={() => form.reset()}
+            >
               {t('common.clear')}
             </Button>
-            <Button variant="secondary" onClick={close}>
+            <Button
+              title={t('tooltips.cancel')}
+              variant="secondary"
+              onClick={close}
+            >
               {t('common.cancel')}
             </Button>
             <Button
+              title={t('tooltips.save')}
               onClick={form.handleSubmit(onSubmit)}
               loading={createMut.isPending || updateMut.isPending}
             >

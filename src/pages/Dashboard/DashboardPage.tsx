@@ -53,9 +53,10 @@ const DashboardPage: React.FC = () => {
   const cashCuts = cashCutRes?.data;
   const cashBalances = cashBalanceRes?.data;
 
-  const todaySales = dailySales?.[0];
-  const todayCashCut = cashCuts?.[0];
-  const firstCashBalance = cashBalances?.[0];
+  const todaySales = dailySales?.[0] ?? null;
+  const totalSales = todaySales?.total ?? 0;
+  const todayCashCut = cashCuts?.[0] ?? null;
+  const firstCashBalance = cashBalances?.[0] ?? null;
   const kpis = [
     {
       label: t('dashboard.todaySales'),
@@ -65,7 +66,7 @@ const DashboardPage: React.FC = () => {
     },
     {
       label: t('dashboard.todayRevenue'),
-      value: `$${n(Number(todaySales?.total)).toFixed(2)}`,
+      value: `$${n(Number(totalSales)).toFixed(2)}`,
       icon: <DollarSign size={20} />,
       color: 'text-green-600 bg-green-100 dark:bg-green-900/30',
     },

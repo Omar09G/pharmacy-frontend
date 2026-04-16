@@ -59,6 +59,7 @@ const LandingPage: React.FC = () => {
               onClick={() =>
                 navigate(isAuthenticated ? '/app/dashboard' : '/login')
               }
+              title={t('tooltips.enterSystem')}
               className="px-8 py-3 bg-white text-blue-700 font-semibold rounded-lg hover:bg-blue-50 transition-colors shadow-lg"
             >
               {t('landing.enterSystem')}

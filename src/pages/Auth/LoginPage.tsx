@@ -86,6 +86,7 @@ const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
+                title={t('tooltips.togglePassword')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -96,6 +97,7 @@ const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
+            title={t('tooltips.login')}
             className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             {loading ? (

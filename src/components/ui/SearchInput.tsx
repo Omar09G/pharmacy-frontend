@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../utils/cn';
 
 interface SearchInputProps {
@@ -17,6 +18,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
   className,
   debounceMs = 300,
 }) => {
+  const { t } = useTranslation();
   const [internal, setInternal] = useState(controlledValue ?? '');
 
   useEffect(() => {
@@ -45,6 +47,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
             setInternal('');
             onSearch('');
           }}
+          title={t('tooltips.clearSearch')}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
         >
           <X size={16} />

@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../utils/cn';
 
 interface ModalProps {
@@ -26,6 +27,7 @@ const Modal: React.FC<ModalProps> = ({
   footer,
   size = 'md',
 }) => {
+  const { t } = useTranslation();
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -78,6 +80,7 @@ const Modal: React.FC<ModalProps> = ({
             </h2>
             <button
               onClick={onClose}
+              title={t('tooltips.closeModal')}
               aria-label="Cerrar"
               className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500"
             >

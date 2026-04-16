@@ -194,6 +194,7 @@ const PurchasesPage: React.FC = () => {
         <div className="flex gap-2">
           {row.original.status === 'PENDING' ? (
             <Button
+              title={t('tooltips.edit')}
               variant="ghost"
               size="sm"
               onClick={() => handleEdit(row.original)}
@@ -203,6 +204,7 @@ const PurchasesPage: React.FC = () => {
           ) : null}
 
           <Button
+            title={t('tooltips.delete')}
             variant="ghost"
             size="sm"
             onClick={() => handleDelete(row.original)}
@@ -220,7 +222,7 @@ const PurchasesPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
           {t('purchases.title')}
         </h1>
-        <Button onClick={handleCreate}>
+        <Button title={t('tooltips.newPurchase')} onClick={handleCreate}>
           <Plus size={16} /> {t('purchases.newPurchase')}
         </Button>
       </div>
@@ -256,13 +258,22 @@ const PurchasesPage: React.FC = () => {
         title={t('purchases.newPurchase')}
         footer={
           <>
-            <Button variant="secondary" onClick={() => form.reset()}>
+            <Button
+              title={t('tooltips.clear')}
+              variant="secondary"
+              onClick={() => form.reset()}
+            >
               {t('common.clear')}
             </Button>
-            <Button variant="secondary" onClick={close}>
+            <Button
+              title={t('tooltips.cancel')}
+              variant="secondary"
+              onClick={close}
+            >
               {t('common.cancel')}
             </Button>
             <Button
+              title={t('tooltips.save')}
               onClick={form.handleSubmit(onSubmit)}
               loading={createMut.isPending || updateMut.isPending}
             >

@@ -1,6 +1,12 @@
 # Dockerfile for React + Vite Production Build
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+ARG VITE_API_BASE_URL=http://localhost:8080/v1/api
+ARG VITE_APP_TIMEZONE=America/Mexico_City
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_APP_TIMEZONE=$VITE_APP_TIMEZONE
+
 COPY package*.json ./
 RUN npm install --frozen-lockfile
 COPY . .

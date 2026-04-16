@@ -145,6 +145,7 @@ const CashJournalPage: React.FC = () => {
       cell: ({ row }) =>
         row.original.status === 'OPEN' ? (
           <Button
+            title={t('tooltips.closeJournal')}
             variant="ghost"
             size="sm"
             onClick={() => onSubmitCancelJournal(row.original)}
@@ -163,7 +164,7 @@ const CashJournalPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
           {t('cashJournal.title')}
         </h1>
-        <Button onClick={handleOpen}>
+        <Button title={t('tooltips.openJournal')} onClick={handleOpen}>
           <Plus size={16} /> {t('cashJournal.openJournal')}
         </Button>
       </div>
@@ -199,10 +200,15 @@ const CashJournalPage: React.FC = () => {
         title={t('cashJournal.openJournal')}
         footer={
           <>
-            <Button variant="secondary" onClick={close}>
+            <Button
+              title={t('tooltips.cancel')}
+              variant="secondary"
+              onClick={close}
+            >
               {t('common.cancel')}
             </Button>
             <Button
+              title={t('tooltips.confirm')}
               onClick={form.handleSubmit(onSubmitJournal)}
               loading={openMut.isPending}
             >

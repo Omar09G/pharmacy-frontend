@@ -26,6 +26,7 @@ const PublicLayout: React.FC = () => {
             {isAuthenticated ? (
               <button
                 onClick={() => navigate('/app/dashboard')}
+                title={t('tooltips.enterSystem')}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
               >
                 {t('landing.enterSystem')}
@@ -33,6 +34,7 @@ const PublicLayout: React.FC = () => {
             ) : (
               <button
                 onClick={() => navigate('/login')}
+                title={t('tooltips.login')}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
               >
                 {t('auth.login')}

@@ -171,6 +171,7 @@ const InventoryPage: React.FC = () => {
       </h1>
       <div className="flex items-center justify-end gap-4">
         <Button
+          title={t('tooltips.updateStock')}
           variant="tertiary"
           onClick={() => {
             setOperationType('update');
@@ -180,6 +181,7 @@ const InventoryPage: React.FC = () => {
           <Plus size={16} /> {t('inventory.updateStock')}
         </Button>
         <Button
+          title={t('tooltips.adjustStock')}
           variant="primary"
           onClick={() => {
             setOperationType('adjust');
@@ -189,6 +191,7 @@ const InventoryPage: React.FC = () => {
           <Plus size={16} /> {t('inventory.adjustStock')}
         </Button>
         <Button
+          title={t('tooltips.lowStock')}
           variant="secondary"
           onClick={() => {
             setOperationType('lowStock');
@@ -229,11 +232,17 @@ const InventoryPage: React.FC = () => {
         title={t('inventory.title')}
         footer={
           <>
-            <Button onClick={close} variant="ghost" size="sm">
+            <Button
+              title={t('tooltips.close')}
+              onClick={close}
+              variant="ghost"
+              size="sm"
+            >
               <BanIcon size={16} className="text-blue-500" />
             </Button>
 
             <Button
+              title={t('tooltips.saveStock')}
               variant="ghost"
               size="sm"
               onClick={formDataStock.handleSubmit((data) =>

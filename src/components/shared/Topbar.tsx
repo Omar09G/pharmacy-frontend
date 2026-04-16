@@ -1,5 +1,6 @@
 import React from 'react';
 import { Menu, LogOut } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import { useNavigate } from 'react-router';
@@ -8,6 +9,7 @@ import LanguageToggle from './LanguageToggle';
 import Badge from '../ui/Badge';
 
 const Topbar: React.FC = () => {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
@@ -22,6 +24,7 @@ const Topbar: React.FC = () => {
     <header className="h-16 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex items-center justify-between px-4 md:px-6">
       <button
         onClick={toggleSidebar}
+        title={t('tooltips.openSidebar')}
         className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 md:hidden"
       >
         <Menu size={20} className="text-neutral-600 dark:text-neutral-300" />
@@ -44,6 +47,7 @@ const Topbar: React.FC = () => {
           </div>
           <button
             onClick={handleLogout}
+            title={t('tooltips.logout')}
             className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-500 hover:text-red-600 transition-colors"
             aria-label="Logout"
           >

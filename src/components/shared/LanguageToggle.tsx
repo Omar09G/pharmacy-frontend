@@ -16,6 +16,7 @@ const LanguageToggle: React.FC = () => {
     <button
       onClick={toggle}
       className="px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm font-medium text-neutral-600 dark:text-neutral-300 transition-colors"
+      title={language === 'es' ? 'Cambiar idioma' : 'Toggle language'}
       aria-label="Toggle language"
     >
       {language === 'es' ? '🇲🇽 ES' : '🇺🇸 EN'}

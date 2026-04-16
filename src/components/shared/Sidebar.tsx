@@ -43,6 +43,11 @@ const Sidebar: React.FC = () => {
   const { sidebarOpen, setSidebarOpen } = useUIStore();
   const isAdmin = user?.role === ROLES.ADMIN;
 
+  //Get env variables NAME, VERSION, ENV
+  const appName = import.meta.env.VITE_APP_NAME || 'Pharmacy App';
+  const appVersion = import.meta.env.VITE_APP_VERSION || '1.0.0';
+  const appEnv = import.meta.env.VITE_APP_ENV || 'production';
+
   const mainItems: NavItem[] = [
     {
       to: '/app/dashboard',
@@ -191,10 +196,11 @@ const Sidebar: React.FC = () => {
               <Pill size={20} className="text-white" />
             </div>
             <span className="font-bold text-lg text-neutral-900 dark:text-white">
-              Farmacia
+              {appName} v{appVersion} ({appEnv})
             </span>
           </NavLink>
           <button
+            title={t('tooltips.closeSidebar')}
             className="md:hidden p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
             onClick={() => setSidebarOpen(false)}
           >

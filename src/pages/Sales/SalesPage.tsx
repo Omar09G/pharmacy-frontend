@@ -133,6 +133,7 @@ const SalesPage: React.FC = () => {
       cell: ({ row }) => (
         <div className="flex gap-2">
           <Button
+            title={t('tooltips.viewDetails')}
             variant="ghost"
             size="sm"
             onClick={() => handleViewDetails(row.original)}
@@ -141,6 +142,7 @@ const SalesPage: React.FC = () => {
             <EyeIcon size={16} className="text-blue-500" />
           </Button>
           <Button
+            title={t('tooltips.cancelSale')}
             variant="ghost"
             size="sm"
             onClick={() => handleCancel(row.original)}

@@ -31,6 +31,7 @@ import {
   BanIcon,
   SaveIcon,
   PencilIcon,
+  ReceiptText,
 } from 'lucide-react';
 import { nowUTC } from '../../utils/dateUtils';
 
@@ -269,6 +270,7 @@ const CustomersPage: React.FC = () => {
       cell: ({ row }) => (
         <div className="flex gap-2">
           <Button
+            title={t('tooltips.edit')}
             variant="ghost"
             size="sm"
             onClick={() => handleEdit(row.original)}
@@ -276,6 +278,7 @@ const CustomersPage: React.FC = () => {
             <Pencil size={16} />
           </Button>
           <Button
+            title={t('tooltips.delete')}
             variant="ghost"
             size="sm"
             onClick={() => handleDelete(row.original)}
@@ -283,11 +286,20 @@ const CustomersPage: React.FC = () => {
             <Trash2 size={16} className="text-red-500" />
           </Button>
           <Button
+            title={t('tooltips.viewCreditLine')}
             variant="ghost"
             size="sm"
             onClick={() => handleViewLinCredit(row.original)}
           >
             <EyeIcon size={16} className="text-blue-500" />
+          </Button>
+          <Button
+            title={t('tooltips.accountStatement')}
+            variant="ghost"
+            size="sm"
+            onClick={() => handleViewLinCredit(row.original)}
+          >
+            <ReceiptText size={16} className="text-gray-500" />
           </Button>
         </div>
       ),
@@ -300,7 +312,7 @@ const CustomersPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
           {t('customers.title')}
         </h1>
-        <Button onClick={handleCreate}>
+        <Button title={t('tooltips.newCustomer')} onClick={handleCreate}>
           <Plus size={16} /> {t('customers.newCustomer')}
         </Button>
       </div>
@@ -330,13 +342,22 @@ const CustomersPage: React.FC = () => {
         }
         footer={
           <>
-            <Button variant="secondary" onClick={() => form.reset()}>
+            <Button
+              title={t('tooltips.clear')}
+              variant="secondary"
+              onClick={() => form.reset()}
+            >
               {t('common.clear')}
             </Button>
-            <Button variant="secondary" onClick={close}>
+            <Button
+              title={t('tooltips.cancel')}
+              variant="secondary"
+              onClick={close}
+            >
               {t('common.cancel')}
             </Button>
             <Button
+              title={t('tooltips.save')}
               onClick={form.handleSubmit(onSubmit)}
               loading={createMut.isPending || updateMut.isPending}
             >
@@ -401,10 +422,16 @@ const CustomersPage: React.FC = () => {
         title={t('customers.creditAccount')}
         footer={
           <>
-            <Button onClick={closeCredit} variant="ghost" size="sm">
+            <Button
+              title={t('tooltips.close')}
+              onClick={closeCredit}
+              variant="ghost"
+              size="sm"
+            >
               <BanIcon size={16} className="text-blue-500" />
             </Button>
             <Button
+              title={t('tooltips.deleteCreditAccount')}
               onClick={() =>
                 handleDeleteCredit(formCredit.getValues().customerId)
               }
@@ -415,6 +442,7 @@ const CustomersPage: React.FC = () => {
             </Button>
 
             <Button
+              title={t('tooltips.saveCreditAccount')}
               variant="ghost"
               size="sm"
               onClick={formCredit.handleSubmit(onSubmitCredit)}

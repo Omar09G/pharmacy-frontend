@@ -357,6 +357,7 @@ const POSPage: React.FC = () => {
                   <button
                     key={p.id}
                     onClick={() => handleAddProduct(p)}
+                    title={t('tooltips.addProduct')}
                     className="w-full flex items-center justify-between px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-left transition-colors"
                   >
                     <div>
@@ -430,6 +431,7 @@ const POSPage: React.FC = () => {
                               onClick={() =>
                                 updateQuantity(item.productId, item.qty - 1)
                               }
+                              title={t('tooltips.decreaseQuantity')}
                               aria-label="Disminuir cantidad"
                               className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
                             >
@@ -442,6 +444,7 @@ const POSPage: React.FC = () => {
                               onClick={() =>
                                 updateQuantity(item.productId, item.qty + 1)
                               }
+                              title={t('tooltips.increaseQuantity')}
                               aria-label="Aumentar cantidad"
                               className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
                             >
@@ -461,6 +464,7 @@ const POSPage: React.FC = () => {
                         <td className="py-2 px-3">
                           <button
                             onClick={() => removeItem(item.productId)}
+                            title={t('tooltips.removeItem')}
                             aria-label="Eliminar producto"
                             className="text-red-500 hover:text-red-600"
                           >
@@ -574,6 +578,7 @@ const POSPage: React.FC = () => {
               </div>
             </div>
             <Button
+              title={t('tooltips.charge')}
               onClick={handleCharge}
               className="w-full mt-4"
               size="lg"
@@ -582,6 +587,7 @@ const POSPage: React.FC = () => {
               <CreditCard size={20} /> {t('pos.charge')} ${total.toFixed(2)}
             </Button>
             <Button
+              title={t('tooltips.clearCart')}
               variant="ghost"
               onClick={clearCart}
               className="w-full mt-2"
@@ -601,10 +607,15 @@ const POSPage: React.FC = () => {
         size="lg"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setShowConfirm(false)}>
+            <Button
+              title={t('tooltips.cancel')}
+              variant="secondary"
+              onClick={() => setShowConfirm(false)}
+            >
               {t('common.cancel')}
             </Button>
             <Button
+              title={t('tooltips.confirmSale')}
               onClick={handleConfirmSale}
               loading={saleMut.isPending}
               variant="tertiary"
@@ -613,6 +624,7 @@ const POSPage: React.FC = () => {
               <DollarSign size={16} /> {t('common.confirm')}
             </Button>
             <Button
+              title={t('tooltips.confirmAndPrint')}
               onClick={handleConfirmAndPrintSale}
               loading={saleMut.isPending}
               disabled={methodName === 'Efectivo' && getPayAmountAt() < total}

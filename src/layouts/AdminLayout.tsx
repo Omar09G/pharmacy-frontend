@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useTranslation } from 'react-i18next';
 import Sidebar from '../components/shared/Sidebar';
 import Topbar from '../components/shared/Topbar';
 import { captureError } from '../config/sentry';
@@ -12,6 +13,7 @@ function ErrorFallback({
   error: unknown;
   resetErrorBoundary: () => void;
 }) {
+  const { t } = useTranslation();
   const message = error instanceof Error ? error.message : 'Error desconocido';
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
@@ -21,6 +23,7 @@ function ErrorFallback({
       </p>
       <button
         onClick={resetErrorBoundary}
+        title={t('tooltips.retry')}
         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
       >
         Intentar de nuevo
