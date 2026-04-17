@@ -277,31 +277,31 @@ const DashboardPage: React.FC = () => {
               {t('dashboard.cashCut')} Efectivo
             </p>
             <p className="text-xl font-bold text-neutral-900 dark:text-white">
-              ${n(Number(todayCashCut?.salesCash)).toFixed(2)}
+              ${n(Number(todayCashCut?.salesCash ?? 0)).toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-sm text-neutral-500">No Efectivo</p>
             <p className="text-xl font-bold text-neutral-900 dark:text-white">
-              ${n(Number(todayCashCut?.salesNonCash)).toFixed(2)}
+              ${n(Number(todayCashCut?.salesNonCash ?? 0)).toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-sm text-neutral-500">Entradas</p>
             <p className="text-xl font-bold text-green-600">
-              ${n(Number(todayCashCut?.cashEntriesIn)).toFixed(2)}
+              ${n(Number(todayCashCut?.cashEntriesIn ?? 0)).toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-sm text-neutral-500">Salidas</p>
             <p className="text-xl font-bold text-red-600">
-              ${n(Number(todayCashCut?.cashEntriesOut)).toFixed(2)}
+              ${n(Number(todayCashCut?.cashEntriesOut ?? 0)).toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-sm text-neutral-500">Balance</p>
             <p className="text-xl font-bold text-blue-600">
-              ${n(Number(firstCashBalance?.balance)).toFixed(2)}
+              ${n(Number(firstCashBalance?.balance ?? 0)).toFixed(2)}
             </p>
           </div>
         </div>

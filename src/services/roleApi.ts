@@ -24,7 +24,7 @@ export const roleApi = {
       .then((r) => r.data),
 
   create: (payload: RoleCreate) =>
-    api.put<ApiResponse<Role>>('/role', payload).then((r) => r.data),
+    api.post<ApiResponse<Role>>('/role', payload).then((r) => r.data),
 
   update: (id: number, payload: Partial<Role>) =>
     api.patch<ApiResponse<Role>>(`/role/${id}`, payload).then((r) => r.data),

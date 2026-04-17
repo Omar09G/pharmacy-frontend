@@ -153,16 +153,43 @@ const UsersPage: React.FC = () => {
     openCreate();
   };
 
+  const getColorRole = (role: string) => {
+    switch (role) {
+      case 'ADMIN':
+        return 'purple';
+      case 'USER':
+        return 'blue';
+      default:
+        return 'teal';
+    }
+  };
+
   const columns: ColumnDef<User>[] = [
     // { accessorKey: 'id', header: 'ID', size: 60 },
     { accessorKey: 'fullName', header: t('users.fullName') },
-    { accessorKey: 'username', header: t('users.username') },
+    {
+      accessorKey: 'username',
+      header: t('users.username'),
+      cell: ({ getValue }) => (
+        <Badge
+          color={getColorRole(getValue() as string)}
+          className="font-medium"
+        >
+          {getValue() as string}
+        </Badge>
+      ),
+    },
     { accessorKey: 'email', header: t('users.email') },
     {
       accessorKey: 'role',
       header: t('users.role'),
       cell: ({ getValue }) => (
-        <Badge color="blue">{getValue() as string}</Badge>
+        <Badge
+          color={getColorRole(getValue() as string)}
+          className="font-medium"
+        >
+          {getValue() as string}
+        </Badge>
       ),
     },
     {

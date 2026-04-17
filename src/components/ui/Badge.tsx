@@ -1,7 +1,16 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
 
-type BadgeColor = 'blue' | 'green' | 'red' | 'yellow' | 'gray' | 'purple';
+type BadgeColor =
+  | 'blue'
+  | 'green'
+  | 'red'
+  | 'yellow'
+  | 'gray'
+  | 'purple'
+  | 'pink'
+  | 'indigo'
+  | 'teal';
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -18,6 +27,10 @@ const colorClasses: Record<BadgeColor, string> = {
   gray: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300',
   purple:
     'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  pink: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
+  indigo:
+    'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+  teal: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
 };
 
 const Badge: React.FC<BadgeProps> = ({

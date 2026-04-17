@@ -66,6 +66,7 @@ function DataTable<T>({
                   className={cn(
                     'px-4 py-3 text-left font-medium text-neutral-500 dark:text-neutral-400',
                     header.column.getCanSort() && 'cursor-pointer select-none',
+                    'hover:bg-neutral-100 dark:hover:bg-neutral-700/30 transition-colors ',
                   )}
                   onClick={header.column.getToggleSortingHandler()}
                 >
@@ -89,7 +90,7 @@ function DataTable<T>({
           {table.getRowModel().rows.map((row) => (
             <tr
               key={row.id}
-              className="border-b border-neutral-100 dark:border-neutral-700/50 hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors"
+              className="border-b border-neutral-200 dark:border-neutral-700/50 hover:bg-neutral-100 dark:hover:bg-neutral-700/30 transition-colors"
             >
               {row.getVisibleCells().map((cell) => (
                 <td

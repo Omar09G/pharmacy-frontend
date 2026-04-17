@@ -20,7 +20,7 @@ export const userApi = {
     api.get<ApiResponse<User>>(`/user/${id}`).then((r) => r.data),
 
   create: (payload: UserCreate) =>
-    api.put<ApiResponse<User>>('/user', payload).then((r) => r.data),
+    api.post<ApiResponse<User>>('/user', payload).then((r) => r.data),
 
   update: (id: number, payload: UserUpdate) =>
     api.patch<ApiResponse<User>>(`/user/${id}`, payload).then((r) => r.data),
