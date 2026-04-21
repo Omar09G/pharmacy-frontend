@@ -4,6 +4,8 @@ import PublicLayout from './layouts/PublicLayout';
 import AdminLayout from './layouts/AdminLayout';
 import PrivateRoute from './components/shared/PrivateRoute';
 import LoadingSpinner from './components/ui/LoadingSpinner';
+import { useInactivityLogout } from './hooks/useInactivityLogout';
+import { showError } from './utils/alerts';
 
 // Lazy-loaded pages
 const LandingPage = lazy(() => import('./pages/Landing/LandingPage'));
@@ -42,6 +44,14 @@ const LocationsPage = lazy(
 const Fallback = () => <LoadingSpinner className="min-h-screen" size="lg" />;
 
 const App: React.FC = () => {
+  // A-5 + M-9: Logout after 15 min of inactivity; warn at 13 min
+  useInactivityLogout({
+    logoutAfterMs: 15 * 60 * 1000,
+    warningAfterMs: 13 * 60 * 1000,
+    onWarning: () =>
+      showError('Tu sesión expirará en 2 minutos por inactividad.'),
+  });
+
   return (
     <Suspense fallback={<Fallback />}>
       <Routes>

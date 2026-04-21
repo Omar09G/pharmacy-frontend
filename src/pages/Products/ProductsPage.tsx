@@ -86,19 +86,19 @@ const ProductsPage: React.FC = () => {
     queries: [
       {
         queryKey: ['categories'],
-        queryFn: () => categoryApi.getAll(0, 100, 0),
+        queryFn: () => categoryApi.getAll(1, 100, 0),
       },
       {
         queryKey: ['units'],
-        queryFn: () => productApi.getAllUnits(0, 100, 0),
+        queryFn: () => productApi.getAllUnits(1, 100, 0),
       },
       {
         queryKey: ['taxProfiles'],
-        queryFn: () => productApi.getAllTaxProfiles(0, 100, 0),
+        queryFn: () => productApi.getAllTaxProfiles(1, 100, 0),
       },
       {
         queryKey: ['purchases'],
-        queryFn: () => purchaseApi.getAll(0, 100, 0),
+        queryFn: () => purchaseApi.getAll(1, 100, 0),
       },
     ],
   });

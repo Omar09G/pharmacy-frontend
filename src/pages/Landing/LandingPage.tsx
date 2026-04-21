@@ -14,7 +14,7 @@ const LandingPage: React.FC = () => {
 
   const { data: productsData } = useQuery({
     queryKey: ['landing-products'],
-    queryFn: () => productApi.getAll(0, 12),
+    queryFn: () => productApi.getAll(1, 12),
   });
   const products: Product[] = Array.isArray(productsData?.data)
     ? productsData.data

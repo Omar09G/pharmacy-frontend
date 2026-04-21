@@ -89,18 +89,18 @@ const POSPage: React.FC = () => {
     { data: discountsData },
   ] = useQueries({
     queries: [
-      { queryKey: ['pos-products'], queryFn: () => productApi.getAll(0, 1000) },
+      { queryKey: ['pos-products'], queryFn: () => productApi.getAll(1, 1000) },
       {
         queryKey: ['pos-customers'],
-        queryFn: () => customerApi.getAll(0, 100),
+        queryFn: () => customerApi.getAll(1, 100),
       },
       {
         queryKey: ['pos-paymentMethods'],
-        queryFn: () => paymentMethodApi.getAll(0, 50),
+        queryFn: () => paymentMethodApi.getAll(1, 50),
       },
       {
         queryKey: ['pos-discounts'],
-        queryFn: () => discountApi.getAll(0, 50, 0, true),
+        queryFn: () => discountApi.getAll(1, 50, 0, true),
       },
     ],
   });

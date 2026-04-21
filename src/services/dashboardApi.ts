@@ -15,7 +15,7 @@ import { getCurrentDate } from '../utils/dateUtils';
 
 export const dashboardApi = {
   getSalesDailySummary: (
-    page = 0,
+    page = 1,
     limit = 31,
     total = 0,
     dateInit: string = getCurrentDate(),
@@ -28,7 +28,7 @@ export const dashboardApi = {
       .then((r) => r.data),
 
   getBestSellers30d: (
-    page = 0,
+    page = 1,
     limit = 100,
     total = 0,
     dateInit?: string,
@@ -40,7 +40,7 @@ export const dashboardApi = {
       })
       .then((r) => r.data),
 
-  getInventoryStock: (page = 0, limit = 10, total = 0, productId?: number) =>
+  getInventoryStock: (page = 1, limit = 10, total = 0, productId?: number) =>
     api
       .get<ApiResponse<DashboardInventoryStock[]>>('/vw_inventory_stock', {
         params: { page, limit, total, productId },
@@ -48,7 +48,7 @@ export const dashboardApi = {
       .then((r) => r.data),
 
   getCashJournalBalance: (
-    page = 0,
+    page = 1,
     limit = 100,
     total = 0,
     dateInit?: string,
@@ -61,7 +61,7 @@ export const dashboardApi = {
       .then((r) => r.data),
 
   getDailyCashCut: (
-    page = 0,
+    page = 1,
     limit = 100,
     total = 0,
     dateInit: string = getCurrentDate(),
@@ -74,7 +74,7 @@ export const dashboardApi = {
       .then((r) => r.data),
 
   getCustomerAccountSummary: (
-    page = 0,
+    page = 1,
     limit = 100,
     total = 0,
     customerId?: number,
@@ -88,7 +88,7 @@ export const dashboardApi = {
       .then((r) => r.data),
 
   getCustomerInvoiceAging: (
-    page = 0,
+    page = 1,
     limit = 100,
     total = 0,
     customerId?: number,
@@ -100,7 +100,7 @@ export const dashboardApi = {
       .then((r) => r.data),
 
   getSalesWithPayments: (
-    page = 0,
+    page = 1,
     limit = 100,
     total = 0,
     dateInit?: string,
@@ -115,7 +115,7 @@ export const dashboardApi = {
       .then((r) => r.data),
 
   getSaleItemsDetail: (
-    page = 0,
+    page = 1,
     limit = 100,
     total = 0,
     saleId?: number,

@@ -64,7 +64,7 @@ const DiscountsPage: React.FC = () => {
   //Categorias
   const { data: categoriesData } = useQuery({
     queryKey: ['pos-categories'],
-    queryFn: () => categoryApi.getAll(0, 100),
+    queryFn: () => categoryApi.getAll(1, 100),
   });
 
   const categories: Category[] = Array.isArray(categoriesData?.data)

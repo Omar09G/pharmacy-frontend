@@ -1,6 +1,12 @@
 import Swal from 'sweetalert2';
+import DOMPurify from 'dompurify';
 import i18n from '../i18n';
 import { getApiErrorMessage } from './apiErrorMapper';
+
+/** Sanitize a plain-text string before embedding it inside an HTML template. */
+function sanitize(value: string): string {
+  return DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+}
 
 /* ── Theme ─────────────────────────────────────────────── */
 
@@ -102,6 +108,7 @@ function injectCss() {
 export function confirmUpdate(name: string) {
   injectCss();
   const t = theme();
+  const safeName = sanitize(name);
   return Swal.fire({
     icon: undefined,
     title: i18n.t('alerts.confirmUpdateTitle'),
@@ -109,7 +116,7 @@ export function confirmUpdate(name: string) {
       <div style="display:flex;align-items:center;gap:14px;margin-top:12px">
         ${badge('linear-gradient(135deg,#fbbf24,#f59e0b)', icons.warning)}
         <p style="color:${t.muted};font-size:14px;line-height:1.5;text-align:left;margin:0">
-          ${i18n.t('alerts.confirmUpdateBody', { name, interpolation: { escapeValue: false } })}
+          ${i18n.t('alerts.confirmUpdateBody', { name: safeName, interpolation: { escapeValue: false } })}
         </p>
       </div>`,
     showCancelButton: true,
@@ -124,6 +131,7 @@ export function confirmUpdate(name: string) {
 export function confirmDelete(name: string) {
   injectCss();
   const t = theme();
+  const safeName = sanitize(name);
   return Swal.fire({
     icon: undefined,
     title: i18n.t('alerts.confirmDeleteTitle'),
@@ -131,7 +139,7 @@ export function confirmDelete(name: string) {
       <div style="display:flex;align-items:center;gap:14px;margin-top:12px">
         ${badge('linear-gradient(135deg,#fb7185,#ef4444)', icons.trash)}
         <p style="color:${t.muted};font-size:14px;line-height:1.5;text-align:left;margin:0">
-          ${i18n.t('alerts.confirmDeleteBody', { name, interpolation: { escapeValue: false } })}
+          ${i18n.t('alerts.confirmDeleteBody', { name: safeName, interpolation: { escapeValue: false } })}
         </p>
       </div>`,
     showCancelButton: true,
@@ -202,6 +210,8 @@ export function showError(msg: string) {
 export function confirmSale(total: number) {
   injectCss();
   const t = theme();
+  // total is a number — format it safely (no HTML injection possible from a number)
+  const safeTotal = sanitize(total.toFixed(2));
   return Swal.fire({
     icon: undefined,
     title: i18n.t('alerts.confirmSaleTitle'),
@@ -209,7 +219,7 @@ export function confirmSale(total: number) {
       <div style="display:flex;align-items:center;gap:14px;margin-top:12px">
         ${badge('linear-gradient(135deg,#34d399,#059669)', icons.sale)}
         <p style="color:${t.muted};font-size:14px;line-height:1.5;text-align:left;margin:0">
-          ${i18n.t('alerts.confirmSaleBody', { total: total.toFixed(2), interpolation: { escapeValue: false } })}
+          ${i18n.t('alerts.confirmSaleBody', { total: safeTotal, interpolation: { escapeValue: false } })}
         </p>
       </div>`,
     showCancelButton: true,

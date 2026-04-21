@@ -50,7 +50,7 @@ const CategoriesPage: React.FC = () => {
   // Preload data
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => categoryApi.getAll(0, 100, 0),
+    queryFn: () => categoryApi.getAll(1, 100, 0),
   });
 
   const categoriesDetail: Category[] = Array.isArray(categoriesData?.data)

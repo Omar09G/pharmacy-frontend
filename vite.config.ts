@@ -23,8 +23,9 @@ export default defineConfig({
       '/api': {
         target: process.env.BACKEND_URL || 'http://localhost:8080',
         changeOrigin: true,
-        secure: false,
-        // keep the /api prefix so front and backend paths align; remove "rewrite" if backend expects it
+        // A-4 fix: SSL verification is ON by default.
+        // Set VITE_PROXY_INSECURE=true only when using self-signed certs in local dev.
+        secure: process.env.VITE_PROXY_INSECURE !== 'true',
       },
     },
   },

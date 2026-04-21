@@ -55,7 +55,7 @@ const UsersPage: React.FC = () => {
 
   const { data: roleData } = useQuery({
     queryKey: ['roles'],
-    queryFn: () => roleApi.getAll(0, 100, 0),
+    queryFn: () => roleApi.getAll(1, 100, 0),
   });
 
   const roleOptions =

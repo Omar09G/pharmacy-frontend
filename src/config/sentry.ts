@@ -23,7 +23,10 @@ export function initSentry(): void {
   });
 }
 
-/** Identify the logged-in user for Sentry context */
+/** Identify the logged-in user for Sentry context.
+ * M-4: Only send non-PII fields (id + role). Username is omitted to avoid
+ * sending personally identifiable information to a third-party service.
+ */
 export function setSentryUser(
   user: {
     id: number;
@@ -35,7 +38,7 @@ export function setSentryUser(
   if (user) {
     Sentry.setUser({
       id: String(user.id),
-      username: user.username,
+      // username intentionally omitted — see M-4 in SECURITY_AUDIT_REPORT.md
       segment: user.role,
     });
   } else {
