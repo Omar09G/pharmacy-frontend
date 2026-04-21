@@ -15,7 +15,7 @@ const taxApiPath = '/tax_profiles';
 
 export const purchaseApi = {
   getAll: (
-    page = 0,
+    page = 1,
     limit = 10,
     total = 0,
     dateInit: string = getCurrentDate(),

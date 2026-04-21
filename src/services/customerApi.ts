@@ -10,7 +10,7 @@ import type {
 } from '../models/customer.model';
 
 export const customerApi = {
-  getAll: (page = 0, limit = 10, total = 0, search?: string) =>
+  getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
       .get<
         ApiResponse<Customer[]>

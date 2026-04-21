@@ -3,7 +3,7 @@ import type { ApiResponse } from '../utils/Utils';
 import type { Discount, DiscountCreate } from '../models/discount.model';
 
 export const discountApi = {
-  getAll: (page = 0, limit = 10, total = 0, active?: boolean) =>
+  getAll: (page = 1, limit = 10, total = 0, active?: boolean) =>
     api
       .get<
         ApiResponse<Discount[]>

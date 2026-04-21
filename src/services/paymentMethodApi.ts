@@ -6,7 +6,7 @@ import type {
 } from '../models/payment-method.model';
 
 export const paymentMethodApi = {
-  getAll: (page = 0, limit = 50, total = 0) =>
+  getAll: (page = 1, limit = 50, total = 0) =>
     api
       .get<
         ApiResponse<PaymentMethod[]>

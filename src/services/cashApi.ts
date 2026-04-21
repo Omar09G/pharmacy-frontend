@@ -10,7 +10,7 @@ import { getCurrentDate } from '../utils/dateUtils';
 
 export const cashApi = {
   getJournals: (
-    page = 0,
+    page = 1,
     limit = 10,
     total = 0,
     dateInit: string = getCurrentDate(),
@@ -37,7 +37,7 @@ export const cashApi = {
       .patch<ApiResponse<CashJournal>>(`/cash_journal/${id}`, payload)
       .then((r) => r.data),
 
-  getEntries: (journalId: number, page = 0, limit = 20) =>
+  getEntries: (journalId: number, page = 1, limit = 20) =>
     api
       .get<
         ApiResponse<CashEntry[]>

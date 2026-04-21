@@ -7,7 +7,7 @@ import type {
 } from '../models/supplier.model';
 
 export const supplierApi = {
-  getAll: (page = 0, limit = 10, total = 0, search?: string) =>
+  getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
       .get<
         ApiResponse<Supplier[]>

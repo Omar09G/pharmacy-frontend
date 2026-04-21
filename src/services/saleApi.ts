@@ -5,7 +5,7 @@ import { getCurrentDate } from '../utils/dateUtils';
 
 export const saleApi = {
   getAll: (
-    page = 0,
+    page = 1,
     limit = 10,
     total = 0,
     dateInit: string = getCurrentDate(),
@@ -20,7 +20,7 @@ export const saleApi = {
   getById: (id: number) =>
     api.get<ApiResponse<Sale>>(`/sale/${id}`).then((r) => r.data),
 
-  getByDate: (date: string, page = 0, limit = 10, total = 0) =>
+  getByDate: (date: string, page = 1, limit = 10, total = 0) =>
     api
       .get<
         ApiResponse<Sale[]>
@@ -36,7 +36,7 @@ export const saleApi = {
   cancel: (id: number) =>
     api.patch<ApiResponse<null>>(`/add_sale/${id}`, {}).then((r) => r.data),
 
-  getSaleDetails: (saleId: number, page = 0, limit = 1000, total = 0) =>
+  getSaleDetails: (saleId: number, page = 1, limit = 1000, total = 0) =>
     api
       .get<
         ApiResponse<SaleItem[]>

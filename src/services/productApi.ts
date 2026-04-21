@@ -11,7 +11,7 @@ const unitApiPath = '/units';
 const taxApiPath = '/tax_profiles';
 
 export const productApi = {
-  getAll: (page = 0, limit = 10, total = 0, search?: string) =>
+  getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
       .get<
         ApiResponse<Product[]>

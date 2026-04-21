@@ -8,7 +8,7 @@ import type {
 } from '../models/role.model';
 
 export const roleApi = {
-  getAll: (page = 0, limit = 10, total = 0) =>
+  getAll: (page = 1, limit = 10, total = 0) =>
     api
       .get<ApiResponse<Role[]>>('/role', { params: { page, limit, total } })
       .then((r) => r.data),
@@ -16,7 +16,7 @@ export const roleApi = {
   getById: (id: number) =>
     api.get<ApiResponse<Role>>(`/role/${id}`).then((r) => r.data),
 
-  getByName: (name: string, page = 0, limit = 10, total = 0) =>
+  getByName: (name: string, page = 1, limit = 10, total = 0) =>
     api
       .get<
         ApiResponse<Role[]>
@@ -34,7 +34,7 @@ export const roleApi = {
 };
 
 export const permissionApi = {
-  getAll: (page = 0, limit = 10, total = 0) =>
+  getAll: (page = 1, limit = 10, total = 0) =>
     api
       .get<
         ApiResponse<Permission[]>
@@ -44,7 +44,7 @@ export const permissionApi = {
   getById: (id: number) =>
     api.get<ApiResponse<Permission>>(`/permission/${id}`).then((r) => r.data),
 
-  getByName: (name: string, page = 0, limit = 10, total = 0) => {
+  getByName: (name: string, page = 1, limit = 10, total = 0) => {
     if (name.trim().length === 0) {
       return api
         .get<

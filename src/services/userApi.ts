@@ -9,7 +9,7 @@ import type {
 } from '../models/user.model';
 
 export const userApi = {
-  getAll: (page = 0, limit = 10, total = 0, search?: string) =>
+  getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
       .get<
         ApiResponse<User[]>

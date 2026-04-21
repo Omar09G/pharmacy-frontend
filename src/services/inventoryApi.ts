@@ -11,7 +11,7 @@ import type {
 import { getCurrentDate } from '../utils/dateUtils';
 
 export const inventoryApi = {
-  getStock: (page = 0, limit = 10, total = 0, search?: string) =>
+  getStock: (page = 1, limit = 10, total = 0, search?: string) =>
     api
       .get<
         ApiResponse<InventoryStock[]>
@@ -19,7 +19,7 @@ export const inventoryApi = {
       .then((r) => r.data),
 
   getMovements: (
-    page = 0,
+    page = 1,
     limit = 10,
     total = 0,
     dateInit: string = getCurrentDate(),

@@ -25,7 +25,14 @@ const SalesPage: React.FC = () => {
   const [dateInit, setDateInit] = useState(getCurrentDate());
   const [dateEnd, setDateEnd] = useState(getCurrentDate());
   const { open, openCreate, close } = useCrudModal<Sale>();
-  const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
+  const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
+
+  const { data: saleDetailsData, isLoading: isLoadingDetails } = useQuery({
+    queryKey: ['saleDetails', selectedSaleId],
+    queryFn: () => saleApi.getSaleDetails(selectedSaleId!),
+    enabled: selectedSaleId !== null,
+  });
+  const saleItems: SaleItem[] = saleDetailsData?.data ?? [];
 
   const { data, isLoading } = useQuery({
     queryKey: ['sales', page, pageSize, dateInit, dateEnd],
@@ -56,11 +63,7 @@ const SalesPage: React.FC = () => {
   };
 
   const handleViewDetails = (item: Sale) => {
-    saleApi.getSaleDetails(item.id).then((res) => {
-      const items = res.data;
-
-      setSaleItems(items);
-    });
+    setSelectedSaleId(item.id);
     openCreate();
   };
 
@@ -192,7 +195,7 @@ const SalesPage: React.FC = () => {
           <DataTable
             columns={columnsSaleItem}
             data={saleItems}
-            loading={isLoading}
+            loading={isLoadingDetails}
           />
         </Card>
       </Modal>

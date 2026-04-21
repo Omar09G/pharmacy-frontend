@@ -3,7 +3,7 @@ import type { ApiResponse } from '../utils/Utils';
 import type { Category, CategoryCreate } from '../models/category.model';
 
 export const categoryApi = {
-  getAll: (page = 0, limit = 10, total = 0, search?: string) =>
+  getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
       .get<
         ApiResponse<Category[]>
