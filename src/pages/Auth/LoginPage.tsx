@@ -38,7 +38,10 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     if (!rateLimitUntil) return;
     const tick = () => {
-      const secs = Math.max(0, Math.ceil((rateLimitUntil.getTime() - Date.now()) / 1000));
+      const secs = Math.max(
+        0,
+        Math.ceil((rateLimitUntil.getTime() - Date.now()) / 1000),
+      );
       setRateLimitSecsLeft(secs);
       if (secs === 0) setRateLimitUntil(null);
     };
@@ -54,16 +57,19 @@ const LoginPage: React.FC = () => {
     }
   }, [error, setError]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (rateLimitUntil) return; // blocked by rate limit
-    try {
-      await login({ username, password });
-      navigate(from, { replace: true });
-    } catch {
-      // error handled by store
-    }
-  }, [rateLimitUntil, login, username, password, navigate, from]);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (rateLimitUntil) return; // blocked by rate limit
+      try {
+        await login({ username, password });
+        navigate(from, { replace: true });
+      } catch {
+        // error handled by store
+      }
+    },
+    [rateLimitUntil, login, username, password, navigate, from],
+  );
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
@@ -125,7 +131,10 @@ const LoginPage: React.FC = () => {
           {/* M-5: Show rate-limit countdown if blocked */}
           {rateLimitUntil && rateLimitSecsLeft > 0 && (
             <p className="text-center text-sm text-red-500 dark:text-red-400">
-              {t('auth.rateLimited', { seconds: rateLimitSecsLeft, defaultValue: `Demasiados intentos. Intenta en ${rateLimitSecsLeft}s` })}
+              {t('auth.rateLimited', {
+                seconds: rateLimitSecsLeft,
+                defaultValue: `Demasiados intentos. Intenta en ${rateLimitSecsLeft}s`,
+              })}
             </p>
           )}
 

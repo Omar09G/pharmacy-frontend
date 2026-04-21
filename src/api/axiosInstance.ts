@@ -76,9 +76,7 @@ axiosInstance.interceptors.response.use(
 
     // M-5: Handle rate limiting — notify subscribers so UI can show a countdown
     if (error.response?.status === 429) {
-      notifyRateLimit(
-        (error.response.headers as Record<string, string>) ?? {},
-      );
+      notifyRateLimit((error.response.headers as Record<string, string>) ?? {});
       return Promise.reject(error);
     }
 

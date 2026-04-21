@@ -72,7 +72,14 @@ const SalesPage: React.FC = () => {
       accessorKey: 'productName',
       header: t('products.productName'),
     },
-    { accessorKey: 'qty', header: t('sales.items') },
+    {
+      accessorKey: 'qty',
+      header: t('sales.items'),
+      cell: ({ getValue }) => {
+        const qty = Number(getValue() ?? 0).toFixed(0);
+        return `${qty} ${Number(qty) > 1 ? t('common.units') : t('common.unit')}`;
+      },
+    },
     {
       accessorKey: 'unitPrice',
       header: t('common.price'),

@@ -45,7 +45,9 @@
     "warning": "Advertencia",
     "type": "Tipo",
     "dateFrom": "Desde",
-    "dateTo": "Hasta"
+    "dateTo": "Hasta",
+    "units": "unidades",
+    "unit": "unidad"
   },
   "auth": {
     "login": "Iniciar Sesión",

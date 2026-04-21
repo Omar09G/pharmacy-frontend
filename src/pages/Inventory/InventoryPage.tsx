@@ -142,10 +142,18 @@ const InventoryPage: React.FC = () => {
     {
       header: t('inventory.inventoryMovement.quantity'),
       accessorKey: 'changeQty',
+      cell: ({ getValue }) => {
+        const qty = getValue() as number;
+        return (
+          <Badge color={qty > 0 ? 'green' : 'red'}>
+            {Number(qty).toFixed(1)}
+          </Badge>
+        );
+      },
     },
     {
       header: t('inventory.inventoryMovement.referenceType'),
-      accessorKey: 'referenceType',
+      accessorKey: 'productName',
     },
     {
       header: t('inventory.inventoryMovement.saleId'),

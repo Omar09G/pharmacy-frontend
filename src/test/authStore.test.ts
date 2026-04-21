@@ -13,7 +13,9 @@ vi.mock('axios', async (importOriginal) => {
   };
 });
 vi.mock('../config/sentry', () => ({ setSentryUser: vi.fn() }));
-vi.mock('../utils/constants', () => ({ API_BASE_URL: 'http://localhost:8080' }));
+vi.mock('../utils/constants', () => ({
+  API_BASE_URL: 'http://localhost:8080',
+}));
 vi.mock('../utils/apiErrorMapper', () => ({
   getLoginErrorMessage: vi.fn((err: unknown) => {
     // Simulate: 401 → loginFailed, others → generic key
@@ -54,7 +56,9 @@ describe('authStore', () => {
         data: { data: mockUser },
       });
 
-      await useAuthStore.getState().login({ username: 'testuser', password: 'pass' });
+      await useAuthStore
+        .getState()
+        .login({ username: 'testuser', password: 'pass' });
 
       const state = useAuthStore.getState();
       expect(state.isAuthenticated).toBe(true);
@@ -66,7 +70,13 @@ describe('authStore', () => {
 
     it('sets error on login failure (401)', async () => {
       const err = new axios.AxiosError('Unauthorized');
-      err.response = { status: 401, data: {}, headers: {}, config: {} as never, statusText: '' };
+      err.response = {
+        status: 401,
+        data: {},
+        headers: {},
+        config: {} as never,
+        statusText: '',
+      };
       vi.mocked(axios.post).mockRejectedValueOnce(err);
 
       await expect(
@@ -83,7 +93,9 @@ describe('authStore', () => {
     it('sets error when response has no id field', async () => {
       vi.mocked(axios.post).mockResolvedValueOnce({ data: { data: {} } });
 
-      await useAuthStore.getState().login({ username: 'test', password: 'pass' });
+      await useAuthStore
+        .getState()
+        .login({ username: 'test', password: 'pass' });
 
       const state = useAuthStore.getState();
       expect(state.isAuthenticated).toBe(false);
@@ -93,7 +105,9 @@ describe('authStore', () => {
     it('sets loading=true while logging in', async () => {
       let resolveLogin!: (v: unknown) => void;
       vi.mocked(axios.post).mockReturnValueOnce(
-        new Promise((r) => { resolveLogin = r; }),
+        new Promise((r) => {
+          resolveLogin = r;
+        }),
       );
 
       const loginPromise = useAuthStore
@@ -109,7 +123,10 @@ describe('authStore', () => {
 
   describe('logout', () => {
     it('clears user and isAuthenticated on logout', async () => {
-      useAuthStore.setState({ user: { id: 1, fullName: 'Test', username: 'test', role: 'admin' }, isAuthenticated: true });
+      useAuthStore.setState({
+        user: { id: 1, fullName: 'Test', username: 'test', role: 'admin' },
+        isAuthenticated: true,
+      });
       vi.mocked(axios.post).mockResolvedValueOnce({});
 
       await useAuthStore.getState().logout();
@@ -120,7 +137,10 @@ describe('authStore', () => {
     });
 
     it('clears state even if backend logout call fails', async () => {
-      useAuthStore.setState({ user: { id: 1, fullName: 'Test', username: 'test', role: 'admin' }, isAuthenticated: true });
+      useAuthStore.setState({
+        user: { id: 1, fullName: 'Test', username: 'test', role: 'admin' },
+        isAuthenticated: true,
+      });
       vi.mocked(axios.post).mockRejectedValueOnce(new Error('Network error'));
 
       await useAuthStore.getState().logout();
@@ -133,7 +153,9 @@ describe('authStore', () => {
 
   describe('refreshSession', () => {
     it('returns true when refresh succeeds', async () => {
-      vi.mocked(axios.post).mockResolvedValueOnce({ data: { data: { ok: true } } });
+      vi.mocked(axios.post).mockResolvedValueOnce({
+        data: { data: { ok: true } },
+      });
       const result = await useAuthStore.getState().refreshSession();
       expect(result).toBe(true);
     });

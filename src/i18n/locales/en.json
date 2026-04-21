@@ -45,7 +45,9 @@
     "warning": "Warning",
     "type": "Type",
     "dateFrom": "From",
-    "dateTo": "To"
+    "dateTo": "To",
+    "units": "units",
+    "unit": "unit"
   },
   "auth": {
     "login": "Sign In",
