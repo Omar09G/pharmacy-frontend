@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { dashboardApi } from '../../services/dashboardApi';
 import Card from '../../components/ui/Card';
@@ -21,29 +21,41 @@ const n = (v: number | null | undefined) => v ?? 0;
 const DashboardPage: React.FC = () => {
   const { t } = useTranslation();
 
-  const { data: dailySalesRes } = useQuery({
-    queryKey: ['dashboard-daily'],
-    queryFn: () => dashboardApi.getSalesDailySummary(),
-  });
-  const { data: bestSellersRes } = useQuery({
-    queryKey: ['dashboard-bestSellers'],
-    queryFn: () => dashboardApi.getBestSellers30d(),
-  });
-  const { data: overdueInvoicesRes } = useQuery({
-    queryKey: ['dashboard-overdue'],
-    queryFn: () => dashboardApi.getCustomerInvoiceAging(),
-  });
-  const { data: lowStockRes } = useQuery({
-    queryKey: ['dashboard-lowStock'],
-    queryFn: () => dashboardApi.getInventoryStock(),
-  });
-  const { data: cashCutRes } = useQuery({
-    queryKey: ['dashboard-cashCut'],
-    queryFn: () => dashboardApi.getDailyCashCut(),
-  });
-  const { data: cashBalanceRes } = useQuery({
-    queryKey: ['dashboard-cashBalance'],
-    queryFn: () => dashboardApi.getCashJournalBalance(),
+  // Preload data in parallel
+  const [
+    { data: dailySalesRes },
+    { data: bestSellersRes },
+    { data: overdueInvoicesRes },
+    { data: lowStockRes },
+    { data: cashCutRes },
+    { data: cashBalanceRes },
+  ] = useQueries({
+    queries: [
+      {
+        queryKey: ['dashboard-daily'],
+        queryFn: () => dashboardApi.getSalesDailySummary(),
+      },
+      {
+        queryKey: ['dashboard-bestSellers'],
+        queryFn: () => dashboardApi.getBestSellers30d(),
+      },
+      {
+        queryKey: ['dashboard-overdue'],
+        queryFn: () => dashboardApi.getCustomerInvoiceAging(),
+      },
+      {
+        queryKey: ['dashboard-lowStock'],
+        queryFn: () => dashboardApi.getInventoryStock(),
+      },
+      {
+        queryKey: ['dashboard-cashCut'],
+        queryFn: () => dashboardApi.getDailyCashCut(),
+      },
+      {
+        queryKey: ['dashboard-cashBalance'],
+        queryFn: () => dashboardApi.getCashJournalBalance(),
+      },
+    ],
   });
 
   const dailySales = dailySalesRes?.data;

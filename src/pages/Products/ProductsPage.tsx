@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useQueries,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -71,37 +76,44 @@ const ProductsPage: React.FC = () => {
   const products = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
 
-  const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoryApi.getAll(0, 100, 0),
+  // Preload reference data in parallel
+  const [
+    { data: categoriesData },
+    { data: unitData },
+    { data: taxData },
+    { data: purchaseData },
+  ] = useQueries({
+    queries: [
+      {
+        queryKey: ['categories'],
+        queryFn: () => categoryApi.getAll(0, 100, 0),
+      },
+      {
+        queryKey: ['units'],
+        queryFn: () => productApi.getAllUnits(0, 100, 0),
+      },
+      {
+        queryKey: ['taxProfiles'],
+        queryFn: () => productApi.getAllTaxProfiles(0, 100, 0),
+      },
+      {
+        queryKey: ['purchases'],
+        queryFn: () => purchaseApi.getAll(0, 100, 0),
+      },
+    ],
   });
 
   const categoriesDetail: Category[] = Array.isArray(categoriesData?.data)
     ? categoriesData.data
     : [];
 
-  const { data: unitData } = useQuery({
-    queryKey: ['units'],
-    queryFn: () => productApi.getAllUnits(0, 100, 0),
-  });
-
   const unitsDetail: UnitDetail[] = Array.isArray(unitData?.data)
     ? unitData.data
     : [];
 
-  const { data: taxData } = useQuery({
-    queryKey: ['taxProfiles'],
-    queryFn: () => productApi.getAllTaxProfiles(0, 100, 0),
-  });
-
   const taxProfilesDetail: TaxProfileDetail[] = Array.isArray(taxData?.data)
     ? taxData.data
     : [];
-
-  const { data: purchaseData } = useQuery({
-    queryKey: ['purchases'],
-    queryFn: () => purchaseApi.getAll(0, 100, 0),
-  });
 
   const purchasesDetail: Purchase[] = Array.isArray(purchaseData?.data)
     ? purchaseData.data

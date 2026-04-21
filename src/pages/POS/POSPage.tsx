@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { productApi } from '../../services/productApi';
 import { customerApi } from '../../services/customerApi';
@@ -81,22 +81,28 @@ const POSPage: React.FC = () => {
     onAfterPrint: () => setPrintData(null),
   });
 
-  // Preload data
-  const { data: productsData } = useQuery({
-    queryKey: ['pos-products'],
-    queryFn: () => productApi.getAll(0, 1000),
-  });
-  const { data: customersData } = useQuery({
-    queryKey: ['pos-customers'],
-    queryFn: () => customerApi.getAll(0, 100),
-  });
-  const { data: payMethodsData } = useQuery({
-    queryKey: ['pos-paymentMethods'],
-    queryFn: () => paymentMethodApi.getAll(0, 50),
-  });
-  const { data: discountsData } = useQuery({
-    queryKey: ['pos-discounts'],
-    queryFn: () => discountApi.getAll(0, 50, 0, true),
+  // Preload data in parallel
+  const [
+    { data: productsData },
+    { data: customersData },
+    { data: payMethodsData },
+    { data: discountsData },
+  ] = useQueries({
+    queries: [
+      { queryKey: ['pos-products'], queryFn: () => productApi.getAll(0, 1000) },
+      {
+        queryKey: ['pos-customers'],
+        queryFn: () => customerApi.getAll(0, 100),
+      },
+      {
+        queryKey: ['pos-paymentMethods'],
+        queryFn: () => paymentMethodApi.getAll(0, 50),
+      },
+      {
+        queryKey: ['pos-discounts'],
+        queryFn: () => discountApi.getAll(0, 50, 0, true),
+      },
+    ],
   });
 
   const products: Product[] = useMemo(
