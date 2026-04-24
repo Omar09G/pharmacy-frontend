@@ -1,7 +1,10 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { Capacitor } from '@capacitor/core';
 import { API_BASE_URL } from '../utils/constants';
 import { useAuthStore } from '../store/authStore';
 import { captureError } from '../config/sentry';
+
+export const NATIVE_ACCESS_TOKEN_KEY = 'pharmacy_native_access_token';
 
 // C-2: Warn loudly if the API URL is using plain HTTP in production
 if (import.meta.env.PROD && API_BASE_URL.startsWith('http://')) {
@@ -16,6 +19,19 @@ const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
+});
+
+// Request interceptor: on native (Capacitor/Android), attach stored Bearer token
+// because HttpOnly cookies are blocked by SameSite=Strict cross-origin in WebView.
+axiosInstance.interceptors.request.use((config) => {
+  if (Capacitor.isNativePlatform()) {
+    const token = localStorage.getItem(NATIVE_ACCESS_TOKEN_KEY);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    config.headers['X-Client-Platform'] = 'native';
+  }
+  return config;
 });
 
 // ---------- Refresh-token machinery ----------

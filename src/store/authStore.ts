@@ -1,9 +1,23 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import axios from 'axios';
+import { Capacitor } from '@capacitor/core';
 import { API_BASE_URL } from '../utils/constants';
 import { setSentryUser } from '../config/sentry';
 import { getLoginErrorMessage } from '../utils/apiErrorMapper';
+import { NATIVE_ACCESS_TOKEN_KEY } from '../api/axiosInstance';
+
+const NATIVE_REFRESH_TOKEN_KEY = 'pharmacy_native_refresh_token';
+
+/** Returns headers needed for native clients (Bearer + platform marker). */
+function nativeAuthHeaders(): Record<string, string> {
+  if (!Capacitor.isNativePlatform()) return {};
+  const token = localStorage.getItem(NATIVE_ACCESS_TOKEN_KEY);
+  return {
+    'X-Client-Platform': 'native',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 export interface AuthUser {
   id: number;
@@ -39,12 +53,28 @@ export const useAuthStore = create<AuthState>()(
             `${API_BASE_URL}/auth/login`,
             credentials,
             {
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                // Signal native client so backend includes tokens in the body
+                ...(Capacitor.isNativePlatform()
+                  ? { 'X-Client-Platform': 'native' }
+                  : {}),
+              },
               withCredentials: true,
             },
           );
           const data = res.data?.data ?? res.data;
           if (data?.id) {
+            // On native, persist tokens for Bearer-based auth (cookies are blocked cross-origin)
+            if (Capacitor.isNativePlatform()) {
+              if (data.accessToken)
+                localStorage.setItem(NATIVE_ACCESS_TOKEN_KEY, data.accessToken);
+              if (data.refreshToken)
+                localStorage.setItem(
+                  NATIVE_REFRESH_TOKEN_KEY,
+                  data.refreshToken,
+                );
+            }
             const user = {
               id: Number(data.id ?? 0),
               fullName: data.name ?? data.fullName ?? data.username,
@@ -70,12 +100,27 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          await axios.post(`${API_BASE_URL}/auth/logout`, null, {
-            withCredentials: true,
-          });
+          const isNative = Capacitor.isNativePlatform();
+          const storedRefresh = isNative
+            ? localStorage.getItem(NATIVE_REFRESH_TOKEN_KEY)
+            : null;
+          await axios.post(
+            `${API_BASE_URL}/auth/logout`,
+            storedRefresh ? { refreshToken: storedRefresh } : null,
+            {
+              withCredentials: true,
+              headers: {
+                'Content-Type': 'application/json',
+                ...nativeAuthHeaders(),
+              },
+            },
+          );
         } catch {
           // Even if the backend call fails, clear local state
         }
+        // Clear native token storage
+        localStorage.removeItem(NATIVE_ACCESS_TOKEN_KEY);
+        localStorage.removeItem(NATIVE_REFRESH_TOKEN_KEY);
         set({
           user: null,
           isAuthenticated: false,
@@ -91,6 +136,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const res = await axios.get(`${API_BASE_URL}/auth/profile`, {
             withCredentials: true,
+            headers: nativeAuthHeaders(),
           });
           const data = res.data?.data ?? res.data;
           if (data) {
@@ -122,10 +168,27 @@ export const useAuthStore = create<AuthState>()(
 
       refreshSession: async () => {
         try {
-          const res = await axios.post(`${API_BASE_URL}/auth/refresh`, null, {
-            withCredentials: true,
-          });
+          const isNative = Capacitor.isNativePlatform();
+          const storedRefresh = isNative
+            ? localStorage.getItem(NATIVE_REFRESH_TOKEN_KEY)
+            : null;
+          const res = await axios.post(
+            `${API_BASE_URL}/auth/refresh`,
+            storedRefresh ? { refreshToken: storedRefresh } : null,
+            {
+              withCredentials: true,
+              headers: {
+                'Content-Type': 'application/json',
+                ...(isNative ? { 'X-Client-Platform': 'native' } : {}),
+              },
+            },
+          );
           const data = res.data?.data ?? res.data;
+          if (isNative && data?.accessToken) {
+            localStorage.setItem(NATIVE_ACCESS_TOKEN_KEY, data.accessToken);
+            if (data.refreshToken)
+              localStorage.setItem(NATIVE_REFRESH_TOKEN_KEY, data.refreshToken);
+          }
           return !!data;
         } catch {
           return false;
