@@ -6,7 +6,11 @@ import { customerApi } from '../../services/customerApi';
 import { paymentMethodApi } from '../../services/paymentMethodApi';
 import { discountApi } from '../../services/discountApi';
 import { saleApi } from '../../services/saleApi';
-import { usePOSStore, type CartItem } from '../../store/posStore';
+import {
+  CartItemInput,
+  usePOSStore,
+  type CartItem,
+} from '../../store/posStore';
 import { useAuthStore } from '../../store/authStore';
 import { nowUTC } from '../../utils/dateUtils';
 import { showSuccess, showError, showApiError } from '../../utils/alerts';
@@ -192,7 +196,7 @@ const POSPage: React.FC = () => {
       return;
     }
 
-    const item: Omit<CartItem, 'subtotal'> = {
+    const item: CartItemInput = {
       productId: p.id,
       name: p.name,
       barcode: p.barcodesDetail?.barcode ?? '',
@@ -608,7 +612,10 @@ const POSPage: React.FC = () => {
       {/* Confirm sale modal */}
       <Modal
         open={showConfirm}
-        onClose={() => setShowConfirm(false)}
+        onClose={() => {
+          setShowConfirm(false);
+          setPayAmountAt(0);
+        }}
         title={t('pos.confirmSale')}
         size="lg"
         footer={
@@ -616,7 +623,10 @@ const POSPage: React.FC = () => {
             <Button
               title={t('tooltips.cancel')}
               variant="secondary"
-              onClick={() => setShowConfirm(false)}
+              onClick={() => {
+                setShowConfirm(false);
+                setPayAmountAt(0);
+              }}
             >
               {t('common.cancel')}
             </Button>
@@ -669,11 +679,13 @@ const POSPage: React.FC = () => {
                   <td className="py-1 text-neutral-900 dark:text-neutral-100">
                     {c.name}
                   </td>
-                  <td className="py-1 text-center">{c.qty}</td>
-                  <td className="py-1 text-right">
+                  <td className="py-1 text-center dark:text-neutral-100">
+                    {c.qty}
+                  </td>
+                  <td className="py-1 text-right dark:text-neutral-100">
                     ${Number(c.unitPrice ?? 0).toFixed(2)}
                   </td>
-                  <td className="py-1 text-right font-medium">
+                  <td className="py-1 text-right font-medium dark:text-neutral-100">
                     ${Number(c.subtotal ?? 0).toFixed(2)}
                   </td>
                 </tr>
@@ -681,7 +693,7 @@ const POSPage: React.FC = () => {
             </tbody>
           </table>
           <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 space-y-1">
-            <div className="flex justify-between">
+            <div className="flex justify-between dark:text-neutral-100">
               <span>{t('pos.subtotal')}</span>
               <span>${Number(subtotal ?? 0).toFixed(2)}</span>
             </div>
@@ -713,11 +725,11 @@ const POSPage: React.FC = () => {
           </div>
 
           {methodName === 'Efectivo' && (
-            <div className="flex items-center justify-between text-xl text-gray-600 gap-3">
+            <div className="flex items-center justify-between text-xl text-gray-600 gap-3 dark:text-gray-300">
               <label className="font-bold">{t('pos.enterAmount')}</label>
               <div className="w-32">
                 <Input
-                  className="text-right text-xl font-bold"
+                  className="text-right text-xl font-bold dark:text-white"
                   type="number"
                   placeholder={t('pos.enterAmount')}
                   onChange={(e) => setPayAmountAt(Number(e.target.value))}

@@ -12,6 +12,8 @@ export interface CartItem {
   subtotal: number;
 }
 
+export type CartItemInput = Omit<CartItem, 'subtotal'>;
+
 interface POSStore {
   cart: CartItem[];
   customerId: number | null;
@@ -21,7 +23,7 @@ interface POSStore {
   notes: string;
   error: string | null;
   setError: (msg: string | null) => void;
-  addItem: (item: Omit<CartItem, 'subtotal'>) => void;
+  addItem: (item: CartItemInput) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, qty: number) => void;
   updateDiscount: (productId: number, discount: number) => void;
