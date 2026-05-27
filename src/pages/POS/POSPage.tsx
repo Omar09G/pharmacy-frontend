@@ -398,8 +398,8 @@ const POSPage: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-500">
-                      <th className="text-left py-2 px-3">
+                    <tr className="border-b border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-600 dark:text-neutral-100">
+                      <th className="text-left py-2 px-3 ">
                         {t('products.productName')}
                       </th>
                       <th className="text-center py-2 px-3">
@@ -424,9 +424,9 @@ const POSPage: React.FC = () => {
                     {cart.map((item) => (
                       <tr
                         key={item.productId}
-                        className="border-b border-neutral-100 dark:border-neutral-700/50"
+                        className="border-b border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100"
                       >
-                        <td className="py-2 px-3 text-neutral-900 dark:text-neutral-100">
+                        <td className="py-2 px-3 ">
                           {item.name}
                           <span className="ml-2 text-xs text-neutral-400">
                             {item.barcode}
