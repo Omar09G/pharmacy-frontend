@@ -21,7 +21,7 @@ export const customerApi = {
     api.get<ApiResponse<Customer>>(`/customer/${id}`).then((r) => r.data),
 
   create: (payload: CustomerCreate) =>
-    api.put<ApiResponse<Customer>>('/customer', payload).then((r) => r.data),
+    api.post<ApiResponse<Customer>>('/customer', payload).then((r) => r.data),
 
   update: (id: number, payload: CustomerUpdate) =>
     api

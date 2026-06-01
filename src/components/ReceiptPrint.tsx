@@ -20,6 +20,7 @@ interface ReceiptPrintProps {
   createdAt?: string;
   width?: number;
   currency?: string;
+  idSale?: string;
 }
 
 const ReceiptPrint = React.forwardRef<HTMLDivElement, ReceiptPrintProps>(
@@ -37,6 +38,7 @@ const ReceiptPrint = React.forwardRef<HTMLDivElement, ReceiptPrintProps>(
       createdAt,
       width = 280,
       currency = '$',
+      idSale = 'X',
     },
     ref,
   ) => {
@@ -52,10 +54,24 @@ const ReceiptPrint = React.forwardRef<HTMLDivElement, ReceiptPrintProps>(
       <div ref={ref} style={style}>
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>{storeName}</div>
+          <div>RFC: XXXX0XXX0XX</div>
+          <div>Presas Hgo CP 42390</div>
+          {idSale && <div> ID Venta {idSale}</div>}
           {createdAt && <div>{createdAt}</div>}
           {paymentMethod && <div>{paymentMethod}</div>}
         </div>
-
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: 4,
+          }}
+        >
+          <div style={{ width: '55%' }}>Num</div>
+          <div style={{ width: '10%', textAlign: 'center' }}>Num</div>
+          <div style={{ width: '15%', textAlign: 'right' }}>Price</div>
+          <div style={{ width: '20%', textAlign: 'right' }}>SubT</div>
+        </div>
         <div>
           {items.map((it, idx) => (
             <div
@@ -66,8 +82,8 @@ const ReceiptPrint = React.forwardRef<HTMLDivElement, ReceiptPrintProps>(
                 marginBottom: 4,
               }}
             >
-              <div style={{ width: '55%' }}>{it.name}</div>
-              <div style={{ width: '10%', textAlign: 'center' }}>{it.qty}</div>
+              <div style={{ width: '50%' }}>{it.name}</div>
+              <div style={{ width: '15%', textAlign: 'center' }}>{it.qty}</div>
               <div style={{ width: '15%', textAlign: 'right' }}>
                 {currency}
                 {Number(it.unitPrice ?? 0).toFixed(2)}
@@ -115,7 +131,9 @@ const ReceiptPrint = React.forwardRef<HTMLDivElement, ReceiptPrintProps>(
         )}
         {notes && <div>Notas: {notes}</div>}
         {reference && <div>Ref: {reference}</div>}
-
+        <div style={{ marginTop: 12, textAlign: 'center' }}>
+          Num: 7721248765
+        </div>
         <div style={{ marginTop: 12, textAlign: 'center' }}>
           Gracias por su compra
         </div>

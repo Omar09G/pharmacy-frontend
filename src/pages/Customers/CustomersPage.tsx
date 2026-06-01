@@ -371,7 +371,7 @@ const CustomersPage: React.FC = () => {
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <Input
-            label={t('customers.name')}
+            label={t('customers.fullName')}
             {...form.register('name')}
             error={form.formState.errors.name?.message}
           />
@@ -398,21 +398,27 @@ const CustomersPage: React.FC = () => {
             type="number"
             {...form.register('termsDays')}
           />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-            <input
-              type="checkbox"
-              {...form.register('status')}
-              className="rounded"
-              checked={form.watch('status') === 'ACTIVE'}
-              onChange={(e) =>
-                form.setValue(
-                  'status',
-                  e.target.checked ? 'ACTIVE' : 'INACTIVE',
-                )
-              }
-            />
-            {t('common.active')}
-          </label>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('common.status')}
+            </label>
+            <div className="relative">
+              <select
+                id="status"
+                {...form.register('status')}
+                className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-colors duration-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:border-gray-500"
+              >
+                <option value="ACTIVE">{t('common.active')}</option>
+                <option value="INACTIVE">{t('common.inactive')}</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </form>
       </Modal>
 

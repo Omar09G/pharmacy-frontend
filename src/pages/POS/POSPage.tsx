@@ -32,6 +32,7 @@ import {
   CreditCard,
   DollarSign,
   TicketIcon,
+  BrushCleaning,
 } from 'lucide-react';
 import Input from '../../components/ui/Input';
 import { useReactToPrint } from 'react-to-print';
@@ -78,6 +79,7 @@ const POSPage: React.FC = () => {
     paymentMethod?: string;
     reference?: string;
     createdAt?: string;
+    idSale?: string;
   } | null>(null);
 
   const handlePrint = useReactToPrint({
@@ -125,6 +127,11 @@ const POSPage: React.FC = () => {
     () => (Array.isArray(discountsData?.data) ? discountsData.data : []),
     [discountsData?.data],
   );
+
+  // 2. Función que envía el foco al buscar después de agregar un producto al carrito o limpiar el carrito, para mejorar la experiencia de usuario y que pueda seguir escaneando productos sin necesidad de usar el mouse
+  const goInputSearch = () => {
+    searchRef.current?.focus();
+  };
 
   useEffect(() => {
     searchRef.current?.focus();
@@ -302,6 +309,7 @@ const POSPage: React.FC = () => {
     };
 
     saleMut.mutate(payload);
+    goInputSearch();
   };
 
   const handleConfirmAndPrintSale = async () => {
@@ -603,12 +611,15 @@ const POSPage: React.FC = () => {
             </Button>
             <Button
               title={t('tooltips.clearCart')}
-              variant="ghost"
-              onClick={clearCart}
+              variant="secondary"
+              onClick={() => {
+                clearCart();
+                goInputSearch();
+              }}
               className="w-full mt-2"
               size="sm"
             >
-              {t('common.clear')}
+              <BrushCleaning size={15} /> {t('common.clear')}
             </Button>
           </Card>
         </div>
@@ -631,6 +642,7 @@ const POSPage: React.FC = () => {
               onClick={() => {
                 setShowConfirm(false);
                 setPayAmountAt(0);
+                goInputSearch();
               }}
             >
               {t('common.cancel')}
@@ -641,6 +653,7 @@ const POSPage: React.FC = () => {
               loading={saleMut.isPending}
               variant="tertiary"
               disabled={methodName === 'Efectivo' && getPayAmountAt() < total}
+              autoFocus
             >
               <DollarSign size={16} /> {t('common.confirm')}
             </Button>
@@ -736,12 +749,14 @@ const POSPage: React.FC = () => {
                 <Input
                   className="text-right text-xl font-bold dark:text-white"
                   type="number"
+                  autoFocus
                   placeholder={t('pos.enterAmount')}
                   onChange={(e) => setPayAmountAt(Number(e.target.value))}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       if (getPayAmountAt() >= total) {
                         handleConfirmSale();
+                        goInputSearch();
                       }
                     }
                   }}
@@ -756,7 +771,7 @@ const POSPage: React.FC = () => {
         {printData && (
           <ReceiptPrint
             ref={receiptRef}
-            storeName="Mi Tienda"
+            storeName="Farmacia Santo Niño"
             items={printData.items ?? []}
             subtotal={printData.subtotal}
             total={printData.total}
