@@ -432,7 +432,7 @@ const POSPage: React.FC = () => {
                             {item.barcode}
                           </span>
                         </td>
-                        <td className="py-2 px-3 text-center">
+                        <td className="py-2 px-3 text-center font-semibold">
                           ${Number(item.unitPrice ?? 0).toFixed(2)}
                         </td>
                         <td className="py-2 px-3">
@@ -447,7 +447,7 @@ const POSPage: React.FC = () => {
                             >
                               <Minus size={14} />
                             </button>
-                            <span className="w-8 text-center font-medium">
+                            <span className="w-8 text-center font-semibold">
                               {item.qty}
                             </span>
                             <button
@@ -468,7 +468,7 @@ const POSPage: React.FC = () => {
                         <td className="py-2 px-3 text-center">
                           ${Number(item.discount ?? 0).toFixed(2)}
                         </td>
-                        <td className="py-2 px-3 text-right font-medium">
+                        <td className="py-2 px-3 text-right font-semibold">
                           ${Number(item.subtotal ?? 0).toFixed(2)}
                         </td>
                         <td className="py-2 px-3">
@@ -505,7 +505,12 @@ const POSPage: React.FC = () => {
                       e.target.value ? Number(e.target.value) : null,
                     )
                   }
-                  className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100"
+                  className="w-full rounded-lg border border-neutral-300 
+                            dark:border-neutral-600 
+                            bg-white 
+                            dark:bg-neutral-800 px-3 py-2 
+                            text-sm text-neutral-900 
+                            dark:text-neutral-100"
                 >
                   <option value="">{t('pos.selectCustomer')}</option>
                   {customers.map((c) => (
