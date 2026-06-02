@@ -14,7 +14,7 @@ export const categoryApi = {
     api.get<ApiResponse<Category>>(`/category/${id}`).then((r) => r.data),
 
   create: (payload: CategoryCreate) =>
-    api.put<ApiResponse<Category>>('/category', payload).then((r) => r.data),
+    api.post<ApiResponse<Category>>('/category', payload).then((r) => r.data),
 
   update: (id: number, payload: Partial<Category>) =>
     api

@@ -18,7 +18,7 @@ export const supplierApi = {
     api.get<ApiResponse<Supplier>>(`/supplier/${id}`).then((r) => r.data),
 
   create: (payload: SupplierCreate) =>
-    api.put<ApiResponse<Supplier>>('/supplier', payload).then((r) => r.data),
+    api.post<ApiResponse<Supplier>>('/supplier', payload).then((r) => r.data),
 
   update: (id: number, payload: SupplierUpdate) =>
     api

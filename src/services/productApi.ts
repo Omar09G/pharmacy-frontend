@@ -27,7 +27,7 @@ export const productApi = {
       .then((r) => r.data),
 
   create: (payload: ProductCreate) =>
-    api.put<ApiResponse<Product>>('/add_product', payload).then((r) => r.data),
+    api.post<ApiResponse<Product>>('/add_product', payload).then((r) => r.data),
 
   update: (id: number, payload: Partial<Product>) =>
     api
