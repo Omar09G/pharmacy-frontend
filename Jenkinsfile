@@ -99,18 +99,26 @@ echo "Frontend mapped to localhost:${RESOLVED_PORT}"
 
 echo "Waiting for the frontend to respond on port ${RESOLVED_PORT}"
 RETRIES=30
+RESPONDED=0
 for i in $(seq 1 $RETRIES); do
-  if curl -sS "http://localhost:${RESOLVED_PORT}/" >/dev/null 2>&1; then
+  if curl -sS -o /dev/null "http://localhost:${RESOLVED_PORT}/"; then
     echo "Frontend responded on port ${RESOLVED_PORT}"
+    RESPONDED=1
     break
   fi
   echo "Waiting for frontend (attempt $i/$RETRIES)..."
   sleep 2
 done
 
-if ! curl -sS "http://localhost:${RESOLVED_PORT}/" >/dev/null 2>&1; then
-  echo "Frontend did not respond on port ${RESOLVED_PORT}"
+if [ "$RESPONDED" != "1" ]; then
+  echo "Frontend did not respond on port ${RESOLVED_PORT}. Diagnostics:"
+  echo '--- curl verbose (final attempt) ---'
+  curl -v "http://localhost:${RESOLVED_PORT}/" || true
+  echo '--- who is bound to this port on the host ---'
+  ss -ltnp 2>/dev/null | grep ":${RESOLVED_PORT} " || echo "(nothing found via ss)"
+  echo '--- docker compose ps ---'
   docker compose -f docker-compose.yml ps
+  echo '--- frontend container logs ---'
   docker compose -f docker-compose.yml logs frontend --tail=200 || true
   exit 1
 fi
