@@ -9,4 +9,4 @@ services:
         VITE_APP_TIMEZONE: America/Mexico_City
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "${FRONTEND_HOST_PORT:-3000}:80"
