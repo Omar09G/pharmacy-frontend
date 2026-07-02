@@ -21,7 +21,7 @@ export default defineConfig({
     proxy: {
       // Proxy any request starting with /api to the backend server
       '/api': {
-        target: process.env.BACKEND_URL || 'http://localhost:8080',
+        target: process.env.BACKEND_URL || 'http://localhost:8081',
         changeOrigin: true,
         // A-4 fix: SSL verification is ON by default.
         // Set VITE_PROXY_INSECURE=true only when using self-signed certs in local dev.

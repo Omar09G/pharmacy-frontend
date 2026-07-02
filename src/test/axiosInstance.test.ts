@@ -6,7 +6,7 @@ vi.mock('../store/authStore', () => ({
 }));
 vi.mock('../config/sentry', () => ({ captureError: vi.fn() }));
 vi.mock('../utils/constants', () => ({
-  API_BASE_URL: 'http://localhost:8080',
+  API_BASE_URL: 'http://localhost:8081',
 }));
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';

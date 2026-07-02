@@ -14,7 +14,7 @@ vi.mock('axios', async (importOriginal) => {
 });
 vi.mock('../config/sentry', () => ({ setSentryUser: vi.fn() }));
 vi.mock('../utils/constants', () => ({
-  API_BASE_URL: 'http://localhost:8080',
+  API_BASE_URL: 'http://localhost:8081',
 }));
 vi.mock('../utils/apiErrorMapper', () => ({
   getLoginErrorMessage: vi.fn((err: unknown) => {

@@ -5,11 +5,11 @@ import { Capacitor } from '@capacitor/core';
  *
  * Priority (highest → lowest):
  * 1. `VITE_APP_API_URL_ANDROID` — used only when running on a native device/emulator.
- *    Set to `http://10.0.2.2:8080/v1/api` for Android emulator (maps to host machine).
+ *    Set to `http://10.0.2.2:8081/v1/api` for Android emulator (maps to host machine).
  * 2. `VITE_APP_API_URL` — shared URL used by web (and Android if no specific override).
  * 3. Hard-coded dev defaults:
- *    - Android native → `http://10.0.2.2:8080/v1/api`
- *    - Web           → `http://localhost:8080/v1/api`
+ *    - Android native → `http://10.0.2.2:8081/v1/api`
+ *    - Web           → `http://localhost:8081/v1/api`
  */
 export const API_BASE_URL = (() => {
   const isNative = Capacitor.isNativePlatform();
@@ -22,8 +22,8 @@ export const API_BASE_URL = (() => {
   }
   // Dev fallback — no env config needed for local development
   return isNative
-    ? 'http://10.0.2.2:8080/v1/api'
-    : 'http://localhost:8080/v1/api';
+    ? 'http://10.0.2.2:8081/v1/api'
+    : 'http://localhost:8081/v1/api';
 })();
 export const DEFAULT_PAGE_SIZE = 25;
 export const PAGE_SIZE_OPTIONS = [25, 50, 100, 150, 200, 500, 1000];
