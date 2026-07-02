@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+} from 'react';
 import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { productApi } from '../../services/productApi';
@@ -128,7 +134,6 @@ const POSPage: React.FC = () => {
     [discountsData?.data],
   );
 
-  // 2. Función que envía el foco al buscar después de agregar un producto al carrito o limpiar el carrito, para mejorar la experiencia de usuario y que pueda seguir escaneando productos sin necesidad de usar el mouse
   const goInputSearch = () => {
     searchRef.current?.focus();
   };
@@ -178,6 +183,34 @@ const POSPage: React.FC = () => {
     setDiscountId,
   ]);
 
+  const handleCharge = useCallback(async () => {
+    if (cart.length === 0) {
+      showError(t('pos.emptyCart'));
+      return;
+    }
+
+    setShowConfirm(true);
+  }, [cart, t]);
+
+  // Detectar F12 para activar handleCharge
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      //Cobrar
+      if (e.key === 'F12') {
+        e.preventDefault();
+        handleCharge();
+      }
+      //Limpiar Cart
+      if (e.key === 'F9') {
+        e.preventDefault();
+        clearCart();
+        goInputSearch();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cart, handleCharge, clearCart]);
   //Inicializar los SET de Customer, PaymentMethod y Discount con el primer valor de cada uno para evitar errores al crear la venta, ya que el backend espera un valor numerico y no null
 
   const filteredProducts =
@@ -266,15 +299,6 @@ const POSPage: React.FC = () => {
     },
     onError: (err) => showApiError(err),
   });
-
-  const handleCharge = async () => {
-    if (cart.length === 0) {
-      showError(t('pos.emptyCart'));
-      return;
-    }
-
-    setShowConfirm(true);
-  };
 
   const handleConfirmSale = async () => {
     const payload: AddSaleRequest = {
