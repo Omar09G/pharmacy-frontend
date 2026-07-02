@@ -38,7 +38,7 @@ else
   exit 1
 fi
 
-echo 'Testing docker daemon access:'
+echo 'Testing docker daemon access:  checking if docker info can be executed'
 docker info >/dev/null 2>&1 || {
   echo 'ERROR: Cannot access Docker daemon.'
   docker info 2>&1 | sed 's/^/    /'
