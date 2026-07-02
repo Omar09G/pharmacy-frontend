@@ -80,7 +80,7 @@ docker build -t ${IMAGE_NAME} .
 set -e
 cd "$WORKSPACE"
 export IMAGE_NAME=${IMAGE_NAME}
-export FRONTEND_HOST_PORT="${FRONTEND_HOST_PORT:-0}"
+export FRONTEND_HOST_PORT="${FRONTEND_HOST_PORT:-8185}"
 
 echo 'Cleaning up previous Docker Compose services and containers...'
 docker compose -f docker-compose.yml down --remove-orphans || true
@@ -88,7 +88,7 @@ docker compose -f docker-compose.yml down --remove-orphans || true
 echo 'Starting frontend service from docker-compose.yml'
 docker compose -f docker-compose.yml up -d frontend
 
-RESOLVED_PORT="$(docker compose -f docker-compose.yml port frontend 80 | awk -F: '{print $NF}' | tr -d '[:space:]')"
+RESOLVED_PORT="$(docker compose -f docker-compose.yml port frontend 8085 | awk -F: '{print $NF}' | tr -d '[:space:]')"
 if [ -z "$RESOLVED_PORT" ]; then
   echo 'Could not resolve mapped frontend port from docker compose.'
   docker compose -f docker-compose.yml ps
@@ -137,12 +137,11 @@ docker push ${TARGET}
   }
 
   post {
-    always {
-      sh '''
-set +e
-cd "$WORKSPACE"
-docker compose -f docker-compose.yml down --remove-orphans
-'''
+    success {
+      echo 'Frontend container left running for continued access.'
+    }
+    failure {
+      echo 'Build failed; keeping compose services running for investigation.'
     }
   }
 }
