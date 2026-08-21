@@ -1,8 +1,12 @@
 pipeline {
   agent any
+  options {
+    disableConcurrentBuilds()
+  }
   environment {
     IMAGE_NAME = "pharmacy_frontend:${env.BUILD_NUMBER}"
     DOCKER_REGISTRY = ""
+    COMPOSE_PROJECT_NAME = "pharmacy_frontend_${env.BUILD_NUMBER}"
   }
   stages {
     stage('Checkout') {
@@ -80,9 +84,10 @@ docker build -t ${IMAGE_NAME} .
 set -e
 cd "$WORKSPACE"
 export IMAGE_NAME=${IMAGE_NAME}
+export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
 export FRONTEND_HOST_PORT="${FRONTEND_HOST_PORT:-8185}"
 
-echo 'Cleaning up previous Docker Compose services and containers...'
+echo 'Cleaning up previous Docker Compose services and containers for this build project only...'
 docker compose -f docker-compose.yml down --remove-orphans || true
 
 echo 'Starting frontend service from docker-compose.yml'
