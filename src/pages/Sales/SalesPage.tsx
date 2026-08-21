@@ -39,7 +39,14 @@ const SalesPage: React.FC = () => {
     queryFn: () => saleApi.getAll(page, pageSize, 0, dateInit, dateEnd),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
+  /* Get Total Page */
   const total = data?.total ?? 0;
+  /* Function to calculate the total sum of sales on the current page */
+  const getTotalSum = () => {
+    return items
+      .reduce((acc, item) => acc + Number(item.total ?? 0), 0)
+      .toFixed(2);
+  };
 
   const cancelMut = useMutation({
     mutationFn: (id: number) => saleApi.cancel(id),
@@ -169,7 +176,7 @@ const SalesPage: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-          {t('sales.title')}
+          {t('sales.title')} - Total Page: ${getTotalSum()}
         </h1>
       </div>
       <Card>
