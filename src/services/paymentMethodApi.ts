@@ -20,7 +20,7 @@ export const paymentMethodApi = {
 
   create: (payload: PaymentMethodCreate) =>
     api
-      .put<ApiResponse<PaymentMethod>>('/payment_methods', payload)
+      .post<ApiResponse<PaymentMethod>>('/payment_methods', payload)
       .then((r) => r.data),
 
   update: (id: number, payload: Partial<PaymentMethod>) =>

@@ -17,6 +17,10 @@ Estado: En desarrollo.
 - Tailwind CSS, PostCSS
 - TanStack Query / Table, React Hook Form, Zod
 - Axios, Recharts, Zustand
+- i18next (internacionalización), SweetAlert2 + DOMPurify
+- @sentry/react (monitoreo de errores)
+- Vitest + jsdom (tests)
+- Capacitor (empaquetado Android nativo) — opcional
 - ESLint, Prettier
 
 ## Requisitos
@@ -41,6 +45,18 @@ Abrir `http://localhost:5173` en el navegador.
 - `npm run build` — compila TypeScript y genera build de producción (`dist`)
 - `npm run lint` — ejecuta ESLint
 - `npm run preview` — vista previa del build (vite preview)
+
+## Tests (Vitest)
+
+El proyecto usa Vitest con entorno `jsdom` y cobertura vía `@vitest/coverage-v8`.
+
+```bash
+npm test            # correr todos los tests (modo watch: npm run test:unit si existe)
+npm test -- --run   # modo CI (una sola pasada)
+```
+
+Los tests viven en `src/test/` (`*.test.ts` / `*.test.tsx`) y cubren stores,
+utilidades de alertas, interceptor HTTP, login y hook de inactividad.
 
 ## Formateo y comprobaciones
 
@@ -92,10 +108,12 @@ docker build -t pharmacy-frontend:latest .
 - Ejecutar contenedor:
 
 ```bash
-docker run -p 8080:80 pharmacy-frontend:latest
+docker run -p 8185:8085 pharmacy-frontend:latest
 ```
 
-El `Dockerfile` usa Nginx para servir la carpeta `dist` y copia `nginx.conf` desde el repositorio.
+El contenedor expone el puerto `8085` (nginx); el `docker-compose.yml` de la raíz lo publica como `8185`.
+
+El `Dockerfile` usa build multi-stage (`node:20-alpine` → `nginx:alpine`) para servir la carpeta `dist` y copia `nginx.conf` desde el repositorio (CSP estricta, HSTS listo para TLS).
 
 ## Estructura principal (resumen)
 
