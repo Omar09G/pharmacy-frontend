@@ -5,9 +5,14 @@ import type { Discount, DiscountCreate } from '../models/discount.model';
 export const discountApi = {
   getAll: (page = 1, limit = 10, total = 0, active?: boolean) =>
     api
-      .get<
-        ApiResponse<Discount[]>
-      >('/discount', { params: { page, limit, total, ...(active !== undefined ? { active } : {}) } })
+      .get<ApiResponse<Discount[]>>('/discount', {
+        params: {
+          page,
+          limit,
+          total,
+          ...(active !== undefined ? { active } : {}),
+        },
+      })
       .then((r) => r.data),
 
   getById: (id: number) =>

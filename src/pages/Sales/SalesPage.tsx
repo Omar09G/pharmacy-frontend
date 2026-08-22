@@ -176,8 +176,11 @@ const SalesPage: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-          {t('sales.title')} - Total Page: ${getTotalSum()}
+          {t('sales.title')}
         </h1>
+        <div className="text-blue-800 font-bold text-lg justify-normal dark:text-white">
+          Total Sale Page: ${getTotalSum()}
+        </div>
       </div>
       <Card>
         <DateRangeInput

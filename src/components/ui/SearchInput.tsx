@@ -20,10 +20,14 @@ const SearchInput: React.FC<SearchInputProps> = ({
 }) => {
   const { t } = useTranslation();
   const [internal, setInternal] = useState(controlledValue ?? '');
+  const [prevControlled, setPrevControlled] = useState(controlledValue);
 
-  useEffect(() => {
-    if (controlledValue !== undefined) setInternal(controlledValue);
-  }, [controlledValue]);
+  if (controlledValue !== prevControlled) {
+    setPrevControlled(controlledValue);
+    if (controlledValue !== undefined && controlledValue !== internal) {
+      setInternal(controlledValue);
+    }
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => onSearch(internal), debounceMs);

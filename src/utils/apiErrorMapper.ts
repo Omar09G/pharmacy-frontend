@@ -4,11 +4,7 @@ import { API_BASE_URL } from './constants';
 
 /** Error type classification sent by the backend in the `errorType` field. */
 export type ApiErrorType =
-  | 'business'
-  | 'validation'
-  | 'auth'
-  | 'system'
-  | 'network';
+  'business' | 'validation' | 'auth' | 'system' | 'network';
 
 const statusMap: Record<number, string> = {
   400: 'apiErrors.badRequest',

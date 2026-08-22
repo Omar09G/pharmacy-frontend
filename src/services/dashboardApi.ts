@@ -82,9 +82,10 @@ export const dashboardApi = {
     dateEnd?: string,
   ) =>
     api
-      .get<
-        ApiResponse<CustomerAccountSummary[]>
-      >('/vw_customer_account_summary', { params: { page, limit, total, customerId, dateInit, dateEnd } })
+      .get<ApiResponse<CustomerAccountSummary[]>>(
+        '/vw_customer_account_summary',
+        { params: { page, limit, total, customerId, dateInit, dateEnd } },
+      )
       .then((r) => r.data),
 
   getCustomerInvoiceAging: (

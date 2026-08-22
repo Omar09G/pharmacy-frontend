@@ -9,9 +9,14 @@ import type {
 export const supplierApi = {
   getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
-      .get<
-        ApiResponse<Supplier[]>
-      >('/supplier', { params: { page, limit, total, ...(search ? { companyName: search } : {}) } })
+      .get<ApiResponse<Supplier[]>>('/supplier', {
+        params: {
+          page,
+          limit,
+          total,
+          ...(search ? { companyName: search } : {}),
+        },
+      })
       .then((r) => r.data),
 
   getById: (id: number) =>

@@ -44,9 +44,9 @@ const taxApiPath = '/tax_profiles';
 const taxApiFn = {
   getAll: (page: number, limit: number, total?: number) =>
     api
-      .get<
-        ApiResponse<TaxProfile[]>
-      >(taxApiPath, { params: { page, limit, total } })
+      .get<ApiResponse<TaxProfile[]>>(taxApiPath, {
+        params: { page, limit, total },
+      })
       .then((r) => r.data),
   create: (payload: Omit<TaxProfile, 'id'>) =>
     api

@@ -11,9 +11,9 @@ import type {
 export const userApi = {
   getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
-      .get<
-        ApiResponse<User[]>
-      >('/user', { params: { page, limit, total, ...(search ? { fullName: search } : {}) } })
+      .get<ApiResponse<User[]>>('/user', {
+        params: { page, limit, total, ...(search ? { fullName: search } : {}) },
+      })
       .then((r) => r.data),
 
   getById: (id: number) =>

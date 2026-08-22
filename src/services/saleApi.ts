@@ -12,9 +12,9 @@ export const saleApi = {
     dateEnd: string = getCurrentDate(),
   ) =>
     api
-      .get<
-        ApiResponse<Sale[]>
-      >('/sale', { params: { page, limit, total, dateInit, dateEnd } })
+      .get<ApiResponse<Sale[]>>('/sale', {
+        params: { page, limit, total, dateInit, dateEnd },
+      })
       .then((r) => r.data),
 
   getById: (id: number) =>
@@ -22,9 +22,9 @@ export const saleApi = {
 
   getByDate: (date: string, page = 1, limit = 10, total = 0) =>
     api
-      .get<
-        ApiResponse<Sale[]>
-      >('/sale/date', { params: { date, page, limit, total } })
+      .get<ApiResponse<Sale[]>>('/sale/date', {
+        params: { date, page, limit, total },
+      })
       .then((r) => r.data),
 
   search: (params: Record<string, unknown>) =>
@@ -38,8 +38,8 @@ export const saleApi = {
 
   getSaleDetails: (saleId: number, page = 1, limit = 1000, total = 0) =>
     api
-      .get<
-        ApiResponse<SaleItem[]>
-      >(`/sale_item`, { params: { page, limit, total, saleId } })
+      .get<ApiResponse<SaleItem[]>>(`/sale_item`, {
+        params: { page, limit, total, saleId },
+      })
       .then((r) => r.data),
 };

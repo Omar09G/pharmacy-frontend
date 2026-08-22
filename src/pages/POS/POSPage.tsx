@@ -2,8 +2,8 @@ import React, {
   useState,
   useRef,
   useEffect,
-  useMemo,
   useCallback,
+  useMemo,
 } from 'react';
 import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -68,6 +68,7 @@ const POSPage: React.FC = () => {
     //Agregar setPayAmountAt al store y aqui para manejar el monto que se paga en efectivo o con tarjeta, para mostrar el cambio al cliente
     setPayAmountAt,
     getPayAmountAt,
+    applyDiscountToCart,
   } = usePOSStore();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -119,19 +120,19 @@ const POSPage: React.FC = () => {
 
   const products: Product[] = useMemo(
     () => (Array.isArray(productsData?.data) ? productsData.data : []),
-    [productsData?.data],
+    [productsData],
   );
   const customers: Customer[] = useMemo(
     () => (Array.isArray(customersData?.data) ? customersData.data : []),
-    [customersData?.data],
+    [customersData],
   );
   const payMethods: PaymentMethod[] = useMemo(
     () => (Array.isArray(payMethodsData?.data) ? payMethodsData.data : []),
-    [payMethodsData?.data],
+    [payMethodsData],
   );
   const discounts: Discount[] = useMemo(
     () => (Array.isArray(discountsData?.data) ? discountsData.data : []),
-    [discountsData?.data],
+    [discountsData],
   );
 
   const goInputSearch = () => {
@@ -182,6 +183,14 @@ const POSPage: React.FC = () => {
     setPaymentMethodId,
     setDiscountId,
   ]);
+  //Update Descuento cuando cambie el descuento seleccionado
+  //Recalcula el monto de descuento de cada item del carrito con el nuevo porcentaje
+  const handleUpdateDiscount = (newDiscountId: number) => {
+    const pct = Number(
+      discounts.find((d) => d.id === newDiscountId)?.value ?? 0,
+    );
+    applyDiscountToCart(pct);
+  };
 
   const handleCharge = useCallback(async () => {
     if (cart.length === 0) {
@@ -243,10 +252,9 @@ const POSPage: React.FC = () => {
       qty: 1,
       qtyOnHand: p.lotsDetail?.qtyOnHand ?? 0,
       unitPrice: p.salePrice ?? 0,
-      discount:
-        ((p.salePrice ?? 0) *
-          (discounts.find((d) => d.id === discountId)?.value ?? 0)) /
-        100,
+      discountPct: Number(
+        discounts.find((d) => d.id === discountId)?.value ?? 0,
+      ),
       lotId: p.lotsDetail?.id,
     };
     addItem(item);
@@ -361,10 +369,8 @@ const POSPage: React.FC = () => {
   const totalDiscount = getTotalDiscount();
   const total = getTotal();
 
-  const methodName = useMemo(
-    () => payMethods.find((m) => m.id === paymentMethodId)?.name ?? null,
-    [payMethods, paymentMethodId],
-  );
+  const methodName =
+    payMethods.find((m) => m.id === paymentMethodId)?.name ?? null;
 
   return (
     <div className="space-y-4">
@@ -578,12 +584,14 @@ const POSPage: React.FC = () => {
                   {t('pos.discount')}
                 </label>
                 <select
-                  value={discountId ?? ''}
-                  onChange={(e) =>
-                    setDiscountId(
-                      e.target.value ? Number(e.target.value) : null,
-                    )
-                  }
+                  value={discountId ?? 0}
+                  onChange={(e) => {
+                    const newDiscountId = e.target.value
+                      ? Number(e.target.value)
+                      : 0;
+                    handleUpdateDiscount(newDiscountId);
+                    setDiscountId(newDiscountId);
+                  }}
                   className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100"
                 >
                   {discounts.map((d) => (

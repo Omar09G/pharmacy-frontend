@@ -5,9 +5,14 @@ import type { Category, CategoryCreate } from '../models/category.model';
 export const categoryApi = {
   getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
-      .get<
-        ApiResponse<Category[]>
-      >('/category', { params: { page, limit, total, ...(search ? { categoryName: search } : {}) } })
+      .get<ApiResponse<Category[]>>('/category', {
+        params: {
+          page,
+          limit,
+          total,
+          ...(search ? { categoryName: search } : {}),
+        },
+      })
       .then((r) => r.data),
 
   getById: (id: number) =>

@@ -9,7 +9,9 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  {
+    ignores: ['dist', 'android/**', 'ios/**'],
+  },
   {
     extends: [eslintJs.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],

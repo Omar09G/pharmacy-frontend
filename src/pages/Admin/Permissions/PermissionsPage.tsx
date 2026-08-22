@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useForm, type Resolver } from 'react-hook-form';
@@ -35,7 +35,6 @@ const PermissionsPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [search, setSearch] = useState('');
-  const [total, setTotal] = useState(0);
   const { open, editing, openCreate, openEdit, close } =
     useCrudModal<Permission>();
 
@@ -43,16 +42,11 @@ const PermissionsPage: React.FC = () => {
     queryKey: ['permissions', page, pageSize, search],
     queryFn: () =>
       search.trim().length > 0
-        ? permissionApi.getByName(search, page, pageSize, total)
-        : permissionApi.getAll(page, pageSize, total),
+        ? permissionApi.getByName(search, page, pageSize, 0)
+        : permissionApi.getAll(page, pageSize, 0),
   });
   const items = Array.isArray(data?.data) ? data.data : [];
-
-  useEffect(() => {
-    if (typeof data?.total === 'number') {
-      setTotal(data.total);
-    }
-  }, [data?.total]);
+  const total = data?.total ?? 0;
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema) as unknown as Resolver<FormData>,
@@ -63,7 +57,6 @@ const PermissionsPage: React.FC = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['permissions'] });
       showSuccess(t('permissions.created'));
-      setTotal((prev) => prev + 1);
       close();
     },
     onError: (err) => showApiError(err),
@@ -83,7 +76,6 @@ const PermissionsPage: React.FC = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['permissions'] });
       showSuccess(t('permissions.deleted'));
-      setTotal((prev) => prev - 1);
     },
     onError: (err) => showApiError(err),
   });

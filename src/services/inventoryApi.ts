@@ -13,9 +13,14 @@ import { getCurrentDate } from '../utils/dateUtils';
 export const inventoryApi = {
   getStock: (page = 1, limit = 10, total = 0, search?: string) =>
     api
-      .get<
-        ApiResponse<InventoryStock[]>
-      >('/inventory/stock', { params: { page, limit, total, ...(search ? { productName: search } : {}) } })
+      .get<ApiResponse<InventoryStock[]>>('/inventory/stock', {
+        params: {
+          page,
+          limit,
+          total,
+          ...(search ? { productName: search } : {}),
+        },
+      })
       .then((r) => r.data),
 
   getMovements: (
@@ -26,9 +31,9 @@ export const inventoryApi = {
     dateEnd: string = getCurrentDate(),
   ) =>
     api
-      .get<
-        ApiResponse<InventoryMovement[]>
-      >('/inventory_movement', { params: { page, limit, total, dateInit, dateEnd } })
+      .get<ApiResponse<InventoryMovement[]>>('/inventory_movement', {
+        params: { page, limit, total, dateInit, dateEnd },
+      })
       .then((r) => r.data),
 
   createMovement: (payload: Partial<InventoryMovement>) =>
@@ -48,27 +53,31 @@ export const inventoryApi = {
   ) =>
     typeOperation === 'update'
       ? api
-          .patch<
-            ApiResponse<ProductLotIdResponse>
-          >(`product_lot/${id}`, productLotRequest)
+          .patch<ApiResponse<ProductLotIdResponse>>(
+            `product_lot/${id}`,
+            productLotRequest,
+          )
           .then((r) => r.data)
       : api
-          .patch<
-            ApiResponse<ProductLotIdResponse>
-          >(`product_lot/adjust/${id}`, productLotRequest)
+          .patch<ApiResponse<ProductLotIdResponse>>(
+            `product_lot/adjust/${id}`,
+            productLotRequest,
+          )
           .then((r) => r.data),
   //Actualizar stock de un producto
   updateStockSimple: (id: number, productLotRequest: ProductLotRequest) =>
     api
-      .patch<
-        ApiResponse<ProductLotIdResponse>
-      >(`product_lot/${id}`, productLotRequest)
+      .patch<ApiResponse<ProductLotIdResponse>>(
+        `product_lot/${id}`,
+        productLotRequest,
+      )
       .then((r) => r.data),
   //Ajustar stock de un producto
   adjustStock: (id: number, productLotRequest: ProductLotRequest) =>
     api
-      .patch<
-        ApiResponse<ProductLotIdResponse>
-      >(`product_lot/adjust/${id}`, productLotRequest)
+      .patch<ApiResponse<ProductLotIdResponse>>(
+        `product_lot/adjust/${id}`,
+        productLotRequest,
+      )
       .then((r) => r.data),
 };

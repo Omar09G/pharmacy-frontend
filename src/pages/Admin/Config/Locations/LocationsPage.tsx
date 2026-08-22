@@ -41,9 +41,9 @@ const locationApiPath = '/inventory_locations';
 const locationApiFn = {
   getAll: (page: number, limit: number, total?: number) =>
     api
-      .get<
-        ApiResponse<Location[]>
-      >(locationApiPath, { params: { page, limit, total } })
+      .get<ApiResponse<Location[]>>(locationApiPath, {
+        params: { page, limit, total },
+      })
       .then((r) => r.data),
   create: (payload: Omit<Location, 'id'>) =>
     api

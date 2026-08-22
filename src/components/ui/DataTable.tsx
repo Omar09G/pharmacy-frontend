@@ -1,3 +1,5 @@
+'use no memo';
+
 import React from 'react';
 import {
   useReactTable,
@@ -28,6 +30,7 @@ function DataTable<T>({
 }: DataTableProps<T>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table v8 manages its own caching; compiler correctly skips this file ('use no memo')
   const table = useReactTable({
     data,
     columns,

@@ -8,11 +8,12 @@ export interface CartItem {
   qty: number;
   qtyOnHand: number;
   unitPrice: number;
+  discountPct: number;
   discount: number;
   subtotal: number;
 }
 
-export type CartItemInput = Omit<CartItem, 'subtotal'>;
+export type CartItemInput = Omit<CartItem, 'discount' | 'subtotal'>;
 
 interface POSStore {
   cart: CartItem[];
@@ -26,7 +27,7 @@ interface POSStore {
   addItem: (item: CartItemInput) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, qty: number) => void;
-  updateDiscount: (productId: number, discount: number) => void;
+  applyDiscountToCart: (pct: number) => void;
   setCustomerId: (id: number | null) => void;
   setDiscountId: (id: number | null) => void;
   setPaymentMethodId: (id: number | null) => void;
@@ -39,8 +40,19 @@ interface POSStore {
   getPayAmountAt: () => number;
 }
 
-function calcSubtotal(item: Omit<CartItem, 'subtotal'>): number {
+function calcDiscount(
+  item: Pick<CartItem, 'unitPrice' | 'qty' | 'discountPct'>,
+): number {
+  return item.unitPrice * item.qty * (item.discountPct / 100);
+}
+
+function calcSubtotal(item: Pick<CartItem, 'unitPrice' | 'qty' | 'discount'>) {
   return item.qty * item.unitPrice - item.discount;
+}
+
+function recalcItem(item: Omit<CartItem, 'discount' | 'subtotal'>): CartItem {
+  const discount = calcDiscount(item);
+  return { ...item, discount, subtotal: calcSubtotal({ ...item, discount }) };
 }
 
 export const usePOSStore = create<POSStore>((set, get) => ({
@@ -68,15 +80,13 @@ export const usePOSStore = create<POSStore>((set, get) => ({
       set({
         cart: cart.map((c) =>
           c.productId === item.productId
-            ? {
+            ? recalcItem({
                 ...c,
                 qty: c.qty + item.qty,
                 qtyOnHand: c.qtyOnHand - item.qty,
-                subtotal: calcSubtotal({
-                  ...c,
-                  qty: c.qty + item.qty,
-                }),
-              }
+                //El nuevo producto hereda el % de descuento vigente del carrito
+                discountPct: c.discountPct,
+              })
             : c,
         ),
         error: null,
@@ -91,11 +101,10 @@ export const usePOSStore = create<POSStore>((set, get) => ({
       set({
         cart: [
           ...cart,
-          {
+          recalcItem({
             ...item,
             qtyOnHand: item.qtyOnHand - item.qty,
-            subtotal: calcSubtotal(item),
-          },
+          }),
         ],
         error: null,
       });
@@ -128,12 +137,7 @@ export const usePOSStore = create<POSStore>((set, get) => ({
       set({
         cart: cart.map((c) =>
           c.productId === productId
-            ? {
-                ...c,
-                qty,
-                qtyOnHand: c.qtyOnHand - delta,
-                subtotal: calcSubtotal({ ...c, qty }),
-              }
+            ? recalcItem({ ...c, qty, qtyOnHand: c.qtyOnHand - delta })
             : c,
         ),
         error: null,
@@ -143,12 +147,11 @@ export const usePOSStore = create<POSStore>((set, get) => ({
       set({
         cart: cart.map((c) =>
           c.productId === productId
-            ? {
+            ? recalcItem({
                 ...c,
                 qty,
                 qtyOnHand: c.qtyOnHand + Math.abs(delta),
-                subtotal: calcSubtotal({ ...c, qty }),
-              }
+              })
             : c,
         ),
         error: null,
@@ -156,16 +159,10 @@ export const usePOSStore = create<POSStore>((set, get) => ({
     }
   },
 
-  updateDiscount: (productId, discount) =>
+  applyDiscountToCart: (pct) =>
     set({
       cart: get().cart.map((c) =>
-        c.productId === productId
-          ? {
-              ...c,
-              discount: discount,
-              subtotal: calcSubtotal({ ...c, discount: discount }),
-            }
-          : c,
+        recalcItem({ ...c, discountPct: Number(pct) || 0 }),
       ),
       error: null,
     }),
@@ -190,6 +187,7 @@ export const usePOSStore = create<POSStore>((set, get) => ({
   getTotal: () => get().cart.reduce((sum, c) => sum + c.subtotal, 0),
   getSubtotal: () =>
     get().cart.reduce((sum, c) => sum + c.qty * c.unitPrice, 0),
-  getTotalDiscount: () => get().cart.reduce((sum, c) => sum + c.discount, 0),
+  getTotalDiscount: () =>
+    get().cart.reduce((sum, c) => sum + Number(c.discount ?? 0), 0),
   getPayAmountAt: () => get().payAmountAt,
 }));

@@ -13,9 +13,9 @@ const taxApiPath = '/tax_profiles';
 export const productApi = {
   getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
-      .get<
-        ApiResponse<Product[]>
-      >('/product', { params: { page, limit, total, ...(search ? { name: search } : {}) } })
+      .get<ApiResponse<Product[]>>('/product', {
+        params: { page, limit, total, ...(search ? { name: search } : {}) },
+      })
       .then((r) => r.data),
 
   getById: (id: number) =>
@@ -39,15 +39,15 @@ export const productApi = {
 
   getAllUnits: (page: number, limit: number, total?: number) =>
     api
-      .get<
-        ApiResponse<UnitDetail[]>
-      >(unitApiPath, { params: { page, limit, total } })
+      .get<ApiResponse<UnitDetail[]>>(unitApiPath, {
+        params: { page, limit, total },
+      })
       .then((r) => r.data),
 
   getAllTaxProfiles: (page: number, limit: number, total?: number) =>
     api
-      .get<
-        ApiResponse<TaxProfileDetail[]>
-      >(taxApiPath, { params: { page, limit, total } })
+      .get<ApiResponse<TaxProfileDetail[]>>(taxApiPath, {
+        params: { page, limit, total },
+      })
       .then((r) => r.data),
 };

@@ -8,9 +8,9 @@ import type {
 export const paymentMethodApi = {
   getAll: (page = 1, limit = 50, total = 0) =>
     api
-      .get<
-        ApiResponse<PaymentMethod[]>
-      >('/payment_methods', { params: { page, limit, total } })
+      .get<ApiResponse<PaymentMethod[]>>('/payment_methods', {
+        params: { page, limit, total },
+      })
       .then((r) => r.data),
 
   getById: (id: number) =>

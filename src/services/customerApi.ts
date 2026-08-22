@@ -12,9 +12,9 @@ import type {
 export const customerApi = {
   getAll: (page = 1, limit = 10, total = 0, search?: string) =>
     api
-      .get<
-        ApiResponse<Customer[]>
-      >('/customer', { params: { page, limit, total, ...(search ? { fullName: search } : {}) } })
+      .get<ApiResponse<Customer[]>>('/customer', {
+        params: { page, limit, total, ...(search ? { fullName: search } : {}) },
+      })
       .then((r) => r.data),
 
   getById: (id: number) =>
@@ -39,9 +39,10 @@ export const customerApi = {
 
   createCreditAccount: (payload?: CustomerCreditAccountCreate) =>
     api
-      .put<
-        ApiResponse<CustomerCreditAccount>
-      >(`/customer_credit_account`, payload)
+      .put<ApiResponse<CustomerCreditAccount>>(
+        `/customer_credit_account`,
+        payload,
+      )
       .then((r) => r.data),
 
   updateCreditAccount: (
@@ -49,9 +50,10 @@ export const customerApi = {
     payload: CustomerCreditAccountUpdate,
   ) =>
     api
-      .patch<
-        ApiResponse<CustomerCreditAccount>
-      >(`/customer_credit_account/${customerId}`, payload)
+      .patch<ApiResponse<CustomerCreditAccount>>(
+        `/customer_credit_account/${customerId}`,
+        payload,
+      )
       .then((r) => r.data),
 
   deleteCreditAccount: (id: number) =>

@@ -22,9 +22,9 @@ export const purchaseApi = {
     dateEnd: string = getCurrentDate(),
   ) =>
     api
-      .get<
-        ApiResponse<Purchase[]>
-      >('/purchase', { params: { page, limit, total, dateInit, dateEnd } })
+      .get<ApiResponse<Purchase[]>>('/purchase', {
+        params: { page, limit, total, dateInit, dateEnd },
+      })
       .then((r) => r.data),
 
   getById: (id: number) =>
@@ -42,8 +42,8 @@ export const purchaseApi = {
     api.delete<ApiResponse<null>>(`/purchase/${id}`).then((r) => r.data),
   getAllTax: (page: number, limit: number, total?: number) =>
     api
-      .get<
-        ApiResponse<TaxProfile[]>
-      >(taxApiPath, { params: { page, limit, total } })
+      .get<ApiResponse<TaxProfile[]>>(taxApiPath, {
+        params: { page, limit, total },
+      })
       .then((r) => r.data),
 };

@@ -17,9 +17,9 @@ export const cashApi = {
     dateEnd: string = getCurrentDate(),
   ) =>
     api
-      .get<
-        ApiResponse<CashJournal[]>
-      >('/cash_journal', { params: { page, limit, total, dateInit, dateEnd } })
+      .get<ApiResponse<CashJournal[]>>('/cash_journal', {
+        params: { page, limit, total, dateInit, dateEnd },
+      })
       .then((r) => r.data),
 
   getJournalById: (id: number) =>
@@ -39,9 +39,9 @@ export const cashApi = {
 
   getEntries: (journalId: number, page = 1, limit = 20) =>
     api
-      .get<
-        ApiResponse<CashEntry[]>
-      >(`/cash_journal/${journalId}/entries`, { params: { page, limit } })
+      .get<ApiResponse<CashEntry[]>>(`/cash_journal/${journalId}/entries`, {
+        params: { page, limit },
+      })
       .then((r) => r.data),
 
   addEntry: (
@@ -54,8 +54,9 @@ export const cashApi = {
     },
   ) =>
     api
-      .post<
-        ApiResponse<CashEntry>
-      >(`/cash_journal/${journalId}/entries`, { id: 0, ...payload })
+      .post<ApiResponse<CashEntry>>(`/cash_journal/${journalId}/entries`, {
+        id: 0,
+        ...payload,
+      })
       .then((r) => r.data),
 };
