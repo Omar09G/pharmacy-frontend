@@ -5,9 +5,9 @@ import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
-import api from '../../../../api/axiosInstance';
-import type { ApiResponse } from '../../../../utils/Utils';
 import { DEFAULT_PAGE_SIZE } from '../../../../utils/constants';
+import { taxApiFn } from '../../../../services/taxApi';
+import type { TaxProfile } from '../../../../services/taxApi';
 import {
   showSuccess,
   showApiError,
@@ -24,14 +24,6 @@ import Input from '../../../../components/ui/Input';
 import Badge from '../../../../components/ui/Badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 
-interface TaxProfile {
-  id: number;
-  name: string;
-  rate: number;
-  isInclusive: boolean;
-  description?: string;
-}
-
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   rate: z.coerce.number<number>().min(0, 'Requerido').max(100),
@@ -39,26 +31,6 @@ const schema = z.object({
   description: z.string().optional(),
 });
 type FormData = z.infer<typeof schema>;
-
-const taxApiPath = '/tax_profiles';
-const taxApiFn = {
-  getAll: (page: number, limit: number, total?: number) =>
-    api
-      .get<ApiResponse<TaxProfile[]>>(taxApiPath, {
-        params: { page, limit, total },
-      })
-      .then((r) => r.data),
-  create: (payload: Omit<TaxProfile, 'id'>) =>
-    api
-      .put<ApiResponse<TaxProfile>>(taxApiPath, { id: 0, ...payload })
-      .then((r) => r.data),
-  update: (id: number, payload: Partial<TaxProfile>) =>
-    api
-      .patch<ApiResponse<TaxProfile>>(`${taxApiPath}/${id}`, payload)
-      .then((r) => r.data),
-  delete: (id: number) =>
-    api.delete<ApiResponse<null>>(`${taxApiPath}/${id}`).then((r) => r.data),
-};
 
 const TaxProfilesPage: React.FC = () => {
   const { t } = useTranslation();
