@@ -6,6 +6,7 @@ import { API_BASE_URL } from '../utils/constants';
 import { setSentryUser } from '../config/sentry';
 import { getLoginErrorMessage } from '../utils/apiErrorMapper';
 import { NATIVE_ACCESS_TOKEN_KEY } from '../api/axiosInstance';
+import { getOriginRequestId, REQUEST_ID_HEADER } from '../api/requestId';
 
 const NATIVE_REFRESH_TOKEN_KEY = 'pharmacy_native_refresh_token';
 
@@ -59,6 +60,7 @@ export const useAuthStore = create<AuthState>()(
                 ...(Capacitor.isNativePlatform()
                   ? { 'X-Client-Platform': 'native' }
                   : {}),
+                [REQUEST_ID_HEADER]: getOriginRequestId(),
               },
               withCredentials: true,
             },
@@ -111,6 +113,7 @@ export const useAuthStore = create<AuthState>()(
               withCredentials: true,
               headers: {
                 'Content-Type': 'application/json',
+                [REQUEST_ID_HEADER]: getOriginRequestId(),
                 ...nativeAuthHeaders(),
               },
             },
@@ -136,7 +139,10 @@ export const useAuthStore = create<AuthState>()(
         try {
           const res = await axios.get(`${API_BASE_URL}/auth/profile`, {
             withCredentials: true,
-            headers: nativeAuthHeaders(),
+            headers: {
+              [REQUEST_ID_HEADER]: getOriginRequestId(),
+              ...nativeAuthHeaders(),
+            },
           });
           const data = res.data?.data ?? res.data;
           if (data) {
@@ -180,6 +186,7 @@ export const useAuthStore = create<AuthState>()(
               headers: {
                 'Content-Type': 'application/json',
                 ...(isNative ? { 'X-Client-Platform': 'native' } : {}),
+                [REQUEST_ID_HEADER]: getOriginRequestId(),
               },
             },
           );
