@@ -8,4 +8,6 @@ services:
         VITE_APP_TIMEZONE: America/Mexico_City
     restart: unless-stopped
     ports:
-      - "${FRONTEND_HOST_PORT:-8185}:8085"
+      # Bind explícito a IPv4: evita que el navegador se cuelgue en ::1
+      # (pasta/Podman no reenvía IPv6 correctamente)
+      - "127.0.0.1:${FRONTEND_HOST_PORT:-8185}:8085"

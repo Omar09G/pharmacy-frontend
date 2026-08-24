@@ -5,8 +5,7 @@ import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
-import api from '../../../../api/axiosInstance';
-import type { ApiResponse } from '../../../../utils/Utils';
+import { unitApiFn, type Unit } from '../../../../services/unitsApi';
 import { DEFAULT_PAGE_SIZE } from '../../../../utils/constants';
 import {
   showSuccess,
@@ -23,37 +22,12 @@ import Modal from '../../../../components/ui/Modal';
 import Input from '../../../../components/ui/Input';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 
-interface Unit {
-  id: number;
-  name: string;
-  code: string;
-  precision: number;
-}
-
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   code: z.string().min(1, 'Requerido'),
   precision: z.coerce.number<number>().min(0, 'Requerido').max(100),
 });
 type FormData = z.infer<typeof schema>;
-
-const unitApiPath = '/units';
-const unitApiFn = {
-  getAll: (page: number, limit: number, total?: number) =>
-    api
-      .get<ApiResponse<Unit[]>>(unitApiPath, { params: { page, limit, total } })
-      .then((r) => r.data),
-  create: (payload: Omit<Unit, 'id'>) =>
-    api
-      .put<ApiResponse<Unit>>(unitApiPath, { id: 0, ...payload })
-      .then((r) => r.data),
-  update: (id: number, payload: Partial<Unit>) =>
-    api
-      .patch<ApiResponse<Unit>>(`${unitApiPath}/${id}`, payload)
-      .then((r) => r.data),
-  delete: (id: number) =>
-    api.delete<ApiResponse<null>>(`${unitApiPath}/${id}`).then((r) => r.data),
-};
 
 const UnitsPage: React.FC = () => {
   const { t } = useTranslation();

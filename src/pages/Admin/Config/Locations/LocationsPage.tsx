@@ -5,8 +5,7 @@ import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
-import api from '../../../../api/axiosInstance';
-import type { ApiResponse } from '../../../../utils/Utils';
+import { locationApiFn, type Location } from '../../../../services/locationApi';
 import { DEFAULT_PAGE_SIZE } from '../../../../utils/constants';
 import {
   showSuccess,
@@ -23,41 +22,12 @@ import Modal from '../../../../components/ui/Modal';
 import Input from '../../../../components/ui/Input';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 
-interface Location {
-  id: number;
-  name: string;
-  type: string;
-  description: string;
-}
-
 const schema = z.object({
   name: z.string().min(1, 'Requerido'),
   type: z.string().min(1, 'Requerido'),
   description: z.string().default(''),
 });
 type FormData = z.infer<typeof schema>;
-
-const locationApiPath = '/inventory_locations';
-const locationApiFn = {
-  getAll: (page: number, limit: number, total?: number) =>
-    api
-      .get<ApiResponse<Location[]>>(locationApiPath, {
-        params: { page, limit, total },
-      })
-      .then((r) => r.data),
-  create: (payload: Omit<Location, 'id'>) =>
-    api
-      .put<ApiResponse<Location>>(locationApiPath, { id: 0, ...payload })
-      .then((r) => r.data),
-  update: (id: number, payload: Partial<Location>) =>
-    api
-      .patch<ApiResponse<Location>>(`${locationApiPath}/${id}`, payload)
-      .then((r) => r.data),
-  delete: (id: number) =>
-    api
-      .delete<ApiResponse<null>>(`${locationApiPath}/${id}`)
-      .then((r) => r.data),
-};
 
 const LocationsPage: React.FC = () => {
   const { t } = useTranslation();
