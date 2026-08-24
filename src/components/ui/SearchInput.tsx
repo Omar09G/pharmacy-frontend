@@ -37,13 +37,17 @@ const SearchInput: React.FC<SearchInputProps> = ({
 
   return (
     <div className={cn('relative', className)}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+      <Search
+        className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted"
+        aria-hidden="true"
+      />
       <input
         type="text"
         value={internal}
         onChange={(e) => setInternal(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 pl-9 pr-9 py-2 text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+        aria-label={placeholder}
+        className="w-full rounded-lg border border-line bg-surface pl-9 pr-9 py-2 text-sm text-ink placeholder:text-muted/70 outline-none focus:border-brand transition-colors"
       />
       {internal && (
         <button
@@ -52,7 +56,8 @@ const SearchInput: React.FC<SearchInputProps> = ({
             onSearch('');
           }}
           title={t('tooltips.clearSearch')}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+          aria-label={t('tooltips.clearSearch')}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex h-6 w-6 items-center justify-center rounded-md text-muted transition-colors hover:text-ink"
         >
           <X size={16} />
         </button>

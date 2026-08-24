@@ -6,7 +6,16 @@ import { useUIStore } from '../../store/uiStore';
 import { useNavigate } from 'react-router';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
-import Badge from '../ui/Badge';
+
+function initials(fullName?: string): string {
+  if (!fullName) return '?';
+  return fullName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
 const Topbar: React.FC = () => {
   const { t } = useTranslation();
@@ -21,35 +30,42 @@ const Topbar: React.FC = () => {
   };
 
   return (
-    <header className="h-16 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex items-center justify-between px-4 md:px-6">
+    <header className="h-16 border-b border-line bg-surface/80 backdrop-blur flex items-center justify-between px-4 md:px-6">
       <button
         onClick={toggleSidebar}
         title={t('tooltips.openSidebar')}
-        className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 md:hidden"
+        aria-label={t('tooltips.openSidebar')}
+        className="p-2 inline-flex items-center justify-center rounded-lg hover:bg-raised md:hidden"
       >
-        <Menu size={20} className="text-neutral-600 dark:text-neutral-300" />
+        <Menu size={20} className="text-muted" />
       </button>
 
       <div className="hidden md:block" />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <LanguageToggle />
         <ThemeToggle />
 
-        <div className="flex items-center gap-2 pl-3 border-l border-neutral-200 dark:border-neutral-700">
+        <div className="flex items-center gap-3 pl-3 border-l border-line">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+            <p className="text-sm font-medium text-ink leading-tight">
               {user?.fullName}
             </p>
-            <Badge color={user?.role === 'ADMIN' ? 'green' : 'blue'}>
+            <span className="inline-block rounded-full bg-brand-soft text-brand px-2 py-px text-[11px] font-semibold">
               {user?.role}
-            </Badge>
+            </span>
+          </div>
+          <div
+            aria-hidden="true"
+            className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full bg-brand text-on-brand text-xs font-bold select-none"
+          >
+            {initials(user?.fullName)}
           </div>
           <button
             onClick={handleLogout}
             title={t('tooltips.logout')}
-            className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-500 hover:text-red-600 transition-colors"
-            aria-label="Logout"
+            aria-label={t('auth.logout')}
+            className="p-2 inline-flex items-center justify-center rounded-lg text-muted transition-colors hover:bg-danger-soft hover:text-danger"
           >
             <LogOut size={20} />
           </button>

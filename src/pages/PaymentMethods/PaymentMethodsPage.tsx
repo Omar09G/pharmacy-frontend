@@ -120,7 +120,7 @@ const PaymentMethodsPage: React.FC = () => {
       accessorKey: 'active',
       header: t('common.status'),
       cell: ({ getValue }) => (
-        <Badge color={getValue() ? 'green' : 'red'}>
+        <Badge tone={getValue() ? 'success' : 'danger'}>
           {getValue() ? t('common.active') : t('common.inactive')}
         </Badge>
       ),
@@ -144,7 +144,7 @@ const PaymentMethodsPage: React.FC = () => {
             size="sm"
             onClick={() => handleDelete(row.original)}
           >
-            <Trash2 size={16} className="text-red-500" />
+            <Trash2 size={16} className="text-danger" />
           </Button>
         </div>
       ),
@@ -154,7 +154,7 @@ const PaymentMethodsPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
           {t('paymentMethods.title')}
         </h1>
         <Button title={t('tooltips.newPaymentMethod')} onClick={handleCreate}>
@@ -224,7 +224,7 @@ const PaymentMethodsPage: React.FC = () => {
             error={form.formState.errors.name?.message}
           />
           <Input label={t('common.type')} {...form.register('methodType')} />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input
               type="checkbox"
               {...form.register('active')}

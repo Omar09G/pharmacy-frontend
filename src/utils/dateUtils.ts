@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, subDays } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { toZonedTime } from 'date-fns-tz';
 
@@ -76,6 +76,11 @@ export function dateToUTC(dateString: string): string {
 export function getCurrentDate(): string {
   const now = new Date();
   return format(now, 'yyyy-MM-dd');
+}
+
+//Obtener la fecha de hace N días en formato YYYY-MM-DD (para rangos de gráficas)
+export function getDaysAgoDate(days: number): string {
+  return format(subDays(new Date(), days), 'yyyy-MM-dd');
 }
 
 //Obtener la fecha actual en formato YYYY-MM-DD

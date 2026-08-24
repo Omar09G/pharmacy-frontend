@@ -135,7 +135,7 @@ const RolesPage: React.FC = () => {
             size="sm"
             onClick={() => handleDelete(row.original)}
           >
-            <Trash2 size={16} className="text-red-500" />
+            <Trash2 size={16} className="text-danger" />
           </Button>
         </div>
       ),
@@ -145,7 +145,7 @@ const RolesPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
           {t('roles.title')}
         </h1>
         <Button title={t('tooltips.newRole')} onClick={handleCreate}>

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useId } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
@@ -10,13 +11,15 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, options, placeholder, className, id, ...rest }, ref) => {
-    const selectId = id || label?.toLowerCase().replace(/\s/g, '-');
+    const autoId = useId();
+    const selectId = id || autoId;
+    const errorId = `${autoId}-error`;
     return (
       <div className="w-full">
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
+            className="block text-sm font-medium text-ink mb-1"
           >
             {label}
           </label>
@@ -24,12 +27,13 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           id={selectId}
           ref={ref}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
           className={cn(
-            'w-full rounded-lg border px-3 py-2 text-sm transition-colors outline-none',
-            'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100',
+            'w-full rounded-lg border px-3 py-2 text-sm transition-colors bg-surface text-ink',
             error
-              ? 'border-red-500 focus:ring-2 focus:ring-red-500'
-              : 'border-neutral-300 dark:border-neutral-600 focus:ring-2 focus:ring-blue-500',
+              ? 'border-danger focus:border-danger'
+              : 'border-line hover:border-muted/50 focus:border-brand',
             className,
           )}
           {...rest}
@@ -45,7 +49,15 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           ))}
         </select>
-        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+        {error && (
+          <p
+            id={errorId}
+            className="mt-1 flex items-center gap-1 text-xs font-medium text-danger"
+          >
+            <TriangleAlert size={12} aria-hidden="true" />
+            {error}
+          </p>
+        )}
       </div>
     );
   },

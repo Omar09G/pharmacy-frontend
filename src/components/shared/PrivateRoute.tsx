@@ -1,16 +1,18 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router';
-import { useAuthStore } from '../../store/authStore';
+import { hasPermission, useAuthStore } from '../../store/authStore';
 import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
   requiredRole?: string;
+  requiredPermission?: string;
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({
   children,
   requiredRole,
+  requiredPermission,
 }) => {
   const { isAuthenticated, user, loading } = useAuthStore();
   const location = useLocation();
@@ -22,6 +24,10 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
   }
 
   if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to="/app/dashboard" replace />;
+  }
+
+  if (requiredPermission && !hasPermission(user, requiredPermission)) {
     return <Navigate to="/app/dashboard" replace />;
   }
 

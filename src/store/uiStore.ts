@@ -1,30 +1,50 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export type Theme = 'light' | 'dark' | 'system';
+
+const prefersDark = () =>
+  window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+function resolveDark(theme: Theme): boolean {
+  return theme === 'dark' || (theme === 'system' && prefersDark());
+}
+
+export function applyTheme(theme: Theme): void {
+  document.documentElement.classList.toggle('dark', resolveDark(theme));
+}
+
 interface UIStore {
-  theme: 'light' | 'dark';
+  theme: Theme;
   language: 'es' | 'en';
   sidebarOpen: boolean;
-  toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
+  cycleTheme: () => void;
   setLanguage: (lang: 'es' | 'en') => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
 }
 
+const THEME_ORDER: Theme[] = ['light', 'dark', 'system'];
+
 export const useUIStore = create<UIStore>()(
   persist(
     (set, get) => ({
-      theme: 'dark',
+      theme: 'system',
       language: 'es',
       sidebarOpen: true,
 
-      toggleTheme: () => {
-        const next = get().theme === 'dark' ? 'light' : 'dark';
-        if (next === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+      setTheme: (theme) => {
+        applyTheme(theme);
+        set({ theme });
+      },
+
+      cycleTheme: () => {
+        const next =
+          THEME_ORDER[
+            (THEME_ORDER.indexOf(get().theme) + 1) % THEME_ORDER.length
+          ];
+        applyTheme(next);
         set({ theme: next });
       },
 
@@ -40,3 +60,11 @@ export const useUIStore = create<UIStore>()(
     },
   ),
 );
+
+window
+  .matchMedia('(prefers-color-scheme: dark)')
+  .addEventListener('change', () => {
+    if (useUIStore.getState().theme === 'system') {
+      applyTheme('system');
+    }
+  });

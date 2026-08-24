@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { type ColumnDef } from '@tanstack/react-table';
 import { inventoryApi } from '../../services/inventoryApi';
+import { dashboardApi } from '../../services/dashboardApi';
 import type {
   InventoryMovement,
   ProductLot,
@@ -14,15 +15,22 @@ import DataTable from '../../components/ui/DataTable';
 import Pagination from '../../components/ui/Pagination';
 import DateRangeInput from '../../components/ui/DateRangeInput';
 import Button from '../../components/ui/Button';
-import { BanIcon, PencilIcon, Plus, SaveIcon } from 'lucide-react';
+import {
+  BanIcon,
+  PackagePlus,
+  SaveIcon,
+  SlidersHorizontal,
+} from 'lucide-react';
 import Badge from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
+import Modal from '../../components/ui/Modal';
 import { z } from 'zod';
 import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCrudModal } from '../../hooks/useCrudModal';
 import { showError, showSuccess, showApiError } from '../../utils/alerts';
-import Modal from '../../components/ui/Modal';
+
+type StockOperation = 'restock' | 'adjust';
+
 const InventoryPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
@@ -30,90 +38,115 @@ const InventoryPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [dateInit, setDateInit] = useState(getCurrentDate());
   const [dateEnd, setDateEnd] = useState(getCurrentDate());
-  const [operationType, setOperationType] = useState<
-    'update' | 'adjust' | 'lowStock'
-  >('update');
-  //Agrega CRUD de Actualizar y Ajustar stock
+  // 'restock' adds to current stock; 'adjust' sets the exact physical count.
+  const [operation, setOperation] = useState<StockOperation>('restock');
+  const [stockModalOpen, setStockModalOpen] = useState(false);
+  const [lowStockOpen, setLowStockOpen] = useState(false);
+  const [loadedLot, setLoadedLot] = useState<ProductLot | null>(null);
+
   const schema = z.object({
     id: z.coerce.number<number>().min(0).catch(0),
-    barcode: z.string().min(1, 'Requerido'),
     productId: z.coerce.number<number>().min(0).catch(0),
-    lotNumber: z.string().min(1, 'Requerido'),
-    qtyOnHand: z.coerce.number<number>().min(0).catch(0),
+    qtyOnHand: z.coerce.number<number>().min(0, 'Requerido'),
     expiryDate: z.string().catch(''),
-    purchaseId: z.coerce.number<number>().min(0).catch(0),
-    createdAt: z.string().catch(nowUTC()),
   });
   type FormDataStock = z.infer<typeof schema>;
 
-  const formDataStock = useForm<FormDataStock>({
+  const form = useForm<FormDataStock>({
     resolver: zodResolver(schema) as unknown as Resolver<FormDataStock>,
+    defaultValues: { id: 0, productId: 0, qtyOnHand: 0, expiryDate: '' },
   });
+  const qtyValue = Number(form.watch('qtyOnHand') ?? 0);
+  const currentQty = Number(loadedLot?.qtyOnHand ?? 0);
+  const resultingQty =
+    operation === 'restock' ? currentQty + qtyValue : qtyValue;
 
-  const { open, editing, openCreate, close } = useCrudModal<ProductLot>();
-
-  const updateMutStock = useMutation({
+  const saveMut = useMutation({
     mutationFn: ({
       id,
       data: d,
-      typeOperation,
+      op,
     }: {
       id: number;
       data: FormDataStock;
-      typeOperation: string;
+      op: StockOperation;
     }) =>
       inventoryApi.updateStock(
         id,
         {
-          ...d,
-          expiryDate: d.expiryDate ? nowUTC().split('T')[0] : d.expiryDate,
+          id,
+          productId: d.productId,
+          lotNumber: loadedLot?.lotNumber ?? '',
+          qtyOnHand: d.qtyOnHand,
+          expiryDate: d.expiryDate || null,
+          purchaseId: loadedLot?.purchaseId ?? null,
         },
-        typeOperation,
+        op === 'adjust' ? 'adjust' : 'update',
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['inventory'] });
       showSuccess(t('inventory.updated'));
-      close();
+      closeStockModal();
     },
     onError: (err) => showApiError(err),
   });
 
-  const onSubmitStock = (d: FormDataStock, typeOperation?: string) => {
-    if (editing) {
-      updateMutStock.mutate({
-        id: editing.id,
-        data: d,
-        typeOperation: typeOperation || '',
-      });
-    } else {
-      updateMutStock.mutate({
-        id: d.id,
-        data: { ...d, createdAt: nowUTC() },
+  const closeStockModal = () => {
+    setStockModalOpen(false);
+    setLoadedLot(null);
+    form.reset({ id: 0, productId: 0, qtyOnHand: 0, expiryDate: '' });
+  };
 
-        typeOperation: typeOperation || '',
-      });
+  const openOperation = (op: StockOperation) => {
+    setOperation(op);
+    setLowStockOpen(false);
+    setStockModalOpen(true);
+    setLoadedLot(null);
+    form.reset({ id: 0, productId: 0, qtyOnHand: 0, expiryDate: '' });
+  };
+
+  // Barcode input is kept as an uncontrolled ref so Enter triggers lookup.
+  const lookupRef = React.useRef<HTMLInputElement>(null);
+
+  const doLookup = async (barcode: string) => {
+    if (!barcode.trim()) return;
+    try {
+      const res = await inventoryApi.getStockByBarCode(barcode.trim());
+      if (res.data) {
+        const lot = res.data as unknown as ProductLot;
+        setLoadedLot(lot);
+        form.setValue('id', lot.id);
+        form.setValue(
+          'productId',
+          typeof lot.productId === 'string'
+            ? Number(lot.productId)
+            : (lot.productId ?? 0),
+        );
+        form.setValue(
+          'expiryDate',
+          lot.expiryDate ? String(lot.expiryDate).slice(0, 10) : '',
+        );
+      } else {
+        showError(t('inventory.notFound'));
+      }
+    } catch {
+      showError(t('inventory.notFound'));
     }
   };
 
-  const handleCreate = () => {
-    openCreate();
-    setTimeout(
-      () =>
-        formDataStock.reset({
-          id: 0,
-          barcode: '',
-          productId: 0,
-          lotNumber: '',
-          qtyOnHand: 0,
-          expiryDate: new Date().toISOString().split('T')[0],
-          purchaseId: 0,
-        }),
-      10,
-    );
+  const onSubmitStock = (d: FormDataStock) => {
+    if (!d.id) {
+      showError(t('inventory.noLotSelected'));
+      return;
+    }
+    saveMut.mutate({ id: d.id, data: d, op: operation });
   };
 
-  const handleViewStock = () => {
-    handleCreate();
+  const handleCreate = () => {
+    setOperation('restock');
+    setLowStockOpen(false);
+    setStockModalOpen(true);
+    form.reset({ id: 0, productId: 0, qtyOnHand: 0, expiryDate: '' });
   };
 
   const { data, isLoading } = useQuery({
@@ -123,6 +156,17 @@ const InventoryPage: React.FC = () => {
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
+
+  // Low stock overview: lowest quantities first.
+  const { data: stockRes, isLoading: stockLoading } = useQuery({
+    queryKey: ['lowStockList'],
+    queryFn: () => dashboardApi.getInventoryStock(1, 500),
+    enabled: lowStockOpen,
+  });
+  const lowStockItems = (Array.isArray(stockRes?.data) ? stockRes.data : [])
+    .slice()
+    .sort((a, b) => Number(a.qtyOnHand ?? 0) - Number(b.qtyOnHand ?? 0))
+    .slice(0, 25);
 
   const columns: ColumnDef<InventoryMovement>[] = [
     {
@@ -134,9 +178,15 @@ const InventoryPage: React.FC = () => {
       accessorKey: 'reason',
       cell: ({ getValue }) => {
         const reason = getValue() as string;
-        return (
-          <Badge color={reason === 'sale' ? 'green' : 'red'}>{reason}</Badge>
-        );
+        const tone =
+          reason === 'sale'
+            ? 'success'
+            : reason === 'restock' || reason === 'purchase'
+              ? 'brand'
+              : reason === 'adjustment'
+                ? 'warning'
+                : 'danger';
+        return <Badge tone={tone}>{reason}</Badge>;
       },
     },
     {
@@ -145,14 +195,15 @@ const InventoryPage: React.FC = () => {
       cell: ({ getValue }) => {
         const qty = getValue() as number;
         return (
-          <Badge color={qty > 0 ? 'green' : 'red'}>
+          <Badge tone={qty > 0 ? 'success' : 'danger'}>
+            {qty > 0 ? '+' : ''}
             {Number(qty).toFixed(1)}
           </Badge>
         );
       },
     },
     {
-      header: t('inventory.inventoryMovement.referenceType'),
+      header: t('inventory.productName'),
       accessorKey: 'productName',
     },
     {
@@ -161,7 +212,7 @@ const InventoryPage: React.FC = () => {
       cell: ({ getValue }) => {
         const referenceId = getValue() as string;
         return (
-          <Badge color={referenceId ? 'purple' : 'red'}>{referenceId}</Badge>
+          <Badge tone={referenceId ? 'neutral' : 'danger'}>{referenceId}</Badge>
         );
       },
     },
@@ -174,42 +225,49 @@ const InventoryPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+      <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
         {t('inventory.title')}
       </h1>
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <Button
           title={t('tooltips.updateStock')}
-          variant="tertiary"
-          onClick={() => {
-            setOperationType('update');
-            handleViewStock();
-          }}
+          variant="success"
+          onClick={() => openOperation('restock')}
         >
-          <Plus size={16} /> {t('inventory.updateStock')}
+          <PackagePlus size={16} /> {t('inventory.restock')}
         </Button>
         <Button
           title={t('tooltips.adjustStock')}
           variant="primary"
-          onClick={() => {
-            setOperationType('adjust');
-            handleViewStock();
-          }}
+          onClick={() => openOperation('adjust')}
         >
-          <Plus size={16} /> {t('inventory.adjustStock')}
+          <SlidersHorizontal size={16} /> {t('inventory.adjustExact')}
         </Button>
         <Button
           title={t('tooltips.lowStock')}
           variant="secondary"
           onClick={() => {
-            setOperationType('lowStock');
-            handleViewStock();
+            setStockModalOpen(false);
+            setLowStockOpen(true);
           }}
         >
-          <Plus size={16} /> {t('inventory.lowStock')}
+          {t('inventory.lowStock')}
         </Button>
       </div>
-      <Card>
+
+      <Card
+        title={t('inventory.lastMovementAt')}
+        actions={
+          <Button
+            title={t('inventory.updateStock')}
+            variant="ghost"
+            size="sm"
+            onClick={handleCreate}
+          >
+            {t('inventory.getMovements')}
+          </Button>
+        }
+      >
         <DateRangeInput
           dateInit={dateInit}
           dateEnd={dateEnd}
@@ -234,128 +292,134 @@ const InventoryPage: React.FC = () => {
           onPageSizeChange={setPageSize}
         />
       </Card>
+
+      {/* Stock operation modal (restock / adjust) */}
       <Modal
-        open={open}
-        onClose={close}
-        title={t('inventory.title')}
+        open={stockModalOpen}
+        onClose={closeStockModal}
+        title={
+          operation === 'restock'
+            ? t('inventory.restock')
+            : t('inventory.adjustExact')
+        }
         footer={
           <>
             <Button
               title={t('tooltips.close')}
-              onClick={close}
-              variant="ghost"
-              size="sm"
+              variant="secondary"
+              onClick={closeStockModal}
             >
-              <BanIcon size={16} className="text-blue-500" />
+              <BanIcon size={16} /> {t('common.cancel')}
             </Button>
-
             <Button
               title={t('tooltips.saveStock')}
-              variant="ghost"
-              size="sm"
-              onClick={formDataStock.handleSubmit((data) =>
-                onSubmitStock(data, operationType),
-              )}
-              loading={updateMutStock.isPending}
+              variant="primary"
+              onClick={form.handleSubmit(onSubmitStock)}
+              loading={saveMut.isPending}
             >
-              {editing ? (
-                <PencilIcon size={16} className="text-black-500" />
-              ) : (
-                <SaveIcon size={16} className="text-green-500" />
-              )}
+              <SaveIcon size={16} /> {t('common.confirm')}
             </Button>
           </>
         }
       >
-        <form
-          onSubmit={formDataStock.handleSubmit((data) =>
-            onSubmitStock(data, operationType),
-          )}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
+        <div className="space-y-4">
+          <p className="rounded-md bg-info/10 px-3 py-2 text-xs text-muted">
+            {operation === 'restock'
+              ? t('inventory.restockHelp')
+              : t('inventory.adjustHelp')}
+          </p>
+
           <Input
-            placeholder={t('inventory.barcode')}
+            ref={lookupRef}
+            placeholder={t('inventory.scanHint')}
             label={t('inventory.barcode')}
-            {...formDataStock.register('barcode')}
-            error={formDataStock.formState.errors.barcode?.message}
-            //PRECIONE ENTER y tab PARA BUSCAR POR CODIGO DE BARRAS Y COMPLETAR LOS CAMPOS RESTANTES
-            onKeyDown={async (e) => {
+            onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === 'Tab') {
                 e.preventDefault();
-                const barcode = formDataStock.getValues('barcode');
-                try {
-                  const res = await inventoryApi.getStockByBarCode(barcode);
-                  if (res.data) {
-                    formDataStock.setValue('id', res.data.id);
-                    formDataStock.setValue('productId', res.data.productId);
-                    formDataStock.setValue('lotNumber', res.data.lotNumber);
-                    formDataStock.setValue('qtyOnHand', res.data.qtyOnHand);
-                    formDataStock.setValue(
-                      'expiryDate',
-                      res.data.expiryDate
-                        ? new Date(res.data.expiryDate)
-                            .toISOString()
-                            .split('T')[0]
-                        : new Date().toISOString().split('T')[0],
-                    );
-                    formDataStock.setValue('purchaseId', res.data.purchaseId);
-                  } else {
-                    showError(t('inventory.notFound'));
-                  }
-                } catch {
-                  showError(t('inventory.notFound'));
-                }
+                void doLookup((e.target as HTMLInputElement).value);
               }
             }}
           />
+
+          {loadedLot ? (
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-md border border-line px-3 py-2 text-sm sm:grid-cols-3">
+              <dt className="text-muted">{t('inventory.lotNumber')}</dt>
+              <dd className="text-ink">{loadedLot.lotNumber ?? '—'}</dd>
+              <dt className="text-muted">{t('inventory.currentQty')}</dt>
+              <dd className="font-mono tabular-nums font-semibold text-ink">
+                {currentQty}
+              </dd>
+            </dl>
+          ) : (
+            <p className="text-xs italic text-muted">
+              {t('inventory.noLotSelected')}
+            </p>
+          )}
+
           <Input
-            label={t('inventory.title')}
-            {...formDataStock.register('id')}
-            error={formDataStock.formState.errors.id?.message}
-            disabled={true}
-          />
-          <Input
-            label={t('inventory.inventoryMovement.productId')}
-            {...formDataStock.register('productId')}
-            error={formDataStock.formState.errors.productId?.message}
-            disabled={true}
-          />
-          <Input
-            label={t('inventory.inventoryMovement.locationId')}
-            {...formDataStock.register('lotNumber')}
-            error={formDataStock.formState.errors.lotNumber?.message}
-            disabled={true}
-          />
-          <Input
-            label={
-              operationType === 'update'
-                ? t('inventory.inventoryMovement.quantity') +
-                  ' (' +
-                  t('inventory.updateStock') +
-                  '): '
-                : t('inventory.inventoryMovement.quantity') +
-                  ' (' +
-                  t('inventory.adjustStock') +
-                  ') : '
-            }
+            label={t('inventory.inventoryMovement.quantity')}
             type="number"
-            {...formDataStock.register('qtyOnHand')}
-            error={formDataStock.formState.errors.qtyOnHand?.message}
+            step="0.01"
+            min="0"
+            {...form.register('qtyOnHand')}
+            error={form.formState.errors.qtyOnHand?.message}
           />
           <Input
-            label={t('inventory.inventoryMovement.createdAt')}
+            label={t('inventory.expiryDate')}
             type="date"
-            {...formDataStock.register('expiryDate')}
-            error={formDataStock.formState.errors.expiryDate?.message}
+            {...form.register('expiryDate')}
           />
-          <Input
-            label={t('inventory.inventoryMovement.referenceId')}
-            type="number"
-            {...formDataStock.register('purchaseId')}
-            error={formDataStock.formState.errors.purchaseId?.message}
-            disabled={true}
-          />
-        </form>
+
+          <div className="flex items-center justify-between rounded-md border border-line bg-neutral-50 px-3 py-2 dark:bg-neutral-800/50">
+            <span className="text-sm font-medium text-muted">
+              {t('inventory.resultQty')}
+            </span>
+            <span className="font-mono text-lg font-bold tabular-nums text-brand">
+              {resultingQty.toFixed(2)}
+            </span>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Low stock overview (read-only) */}
+      <Modal
+        open={lowStockOpen}
+        onClose={() => setLowStockOpen(false)}
+        title={t('inventory.lowStockList')}
+      >
+        <DataTable
+          columns={[
+            {
+              header: t('inventory.productName'),
+              accessorKey: 'productName',
+            },
+            {
+              header: t('inventory.qtyOnHand'),
+              accessorKey: 'qtyOnHand',
+              cell: ({ getValue }) => {
+                const q = Number(getValue() ?? 0);
+                return (
+                  <Badge
+                    tone={q <= 3 ? 'danger' : q <= 10 ? 'warning' : 'neutral'}
+                  >
+                    {q}
+                  </Badge>
+                );
+              },
+            },
+            {
+              header: t('inventory.maxExpiryDate'),
+              accessorKey: 'maxExpiryDate',
+              cell: ({ getValue }) => {
+                const v = getValue() as string | null;
+                return v ? formatLocal(v, i18n.language) : '—';
+              },
+            },
+          ]}
+          data={lowStockItems}
+          loading={stockLoading}
+          emptyMessage={t('common.noData')}
+        />
       </Modal>
     </div>
   );

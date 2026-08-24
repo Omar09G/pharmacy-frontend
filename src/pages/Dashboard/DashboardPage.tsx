@@ -2,8 +2,12 @@ import React from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { dashboardApi } from '../../services/dashboardApi';
+import { customerApi } from '../../services/customerApi';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import PageHeader from '../../components/shared/PageHeader';
+import StatCard from '../../components/shared/StatCard';
+import { useThemeColors } from '../../hooks/useThemeColors';
 import {
   BarChart,
   Bar,
@@ -14,12 +18,13 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { DollarSign, ShoppingCart, Users, AlertTriangle } from 'lucide-react';
-import { formatLocalDate } from '../../utils/dateUtils';
+import { formatLocalDate, getCurrentDate } from '../../utils/dateUtils';
 
 const n = (v: number | null | undefined) => v ?? 0;
 
 const DashboardPage: React.FC = () => {
   const { t } = useTranslation();
+  const chart = useThemeColors();
 
   // Preload data in parallel
   const [
@@ -29,6 +34,7 @@ const DashboardPage: React.FC = () => {
     { data: lowStockRes },
     { data: cashCutRes },
     { data: cashBalanceRes },
+    { data: customersRes },
   ] = useQueries({
     queries: [
       {
@@ -55,6 +61,10 @@ const DashboardPage: React.FC = () => {
         queryKey: ['dashboard-cashBalance'],
         queryFn: () => dashboardApi.getCashJournalBalance(),
       },
+      {
+        queryKey: ['dashboard-customers'],
+        queryFn: () => customerApi.getAll(1, 1),
+      },
     ],
   });
 
@@ -65,34 +75,40 @@ const DashboardPage: React.FC = () => {
   const cashCuts = cashCutRes?.data;
   const cashBalances = cashBalanceRes?.data;
 
-  const todaySales = dailySales?.[0] ?? null;
+  // The summary now covers the last 7 days; KPIs must use today's row.
+  const todayKey = getCurrentDate();
+  const isToday = (day: string | undefined) => day?.slice(0, 10) === todayKey;
+
+  const todaySales = dailySales?.find((d) => isToday(d.day)) ?? null;
   const totalSales = todaySales?.total ?? 0;
-  const todayCashCut = cashCuts?.[0] ?? null;
+  const weekTotal =
+    dailySales?.reduce((acc, d) => acc + Number(d.total ?? 0), 0) ?? 0;
+  const todayCashCut = cashCuts?.find((c) => isToday(c.day)) ?? null;
   const firstCashBalance = cashBalances?.[0] ?? null;
   const kpis = [
     {
       label: t('dashboard.todaySales'),
       value: n(todaySales?.salesCount),
       icon: <ShoppingCart size={20} />,
-      color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30',
+      tone: 'brand' as const,
     },
     {
       label: t('dashboard.todayRevenue'),
       value: `$${n(Number(totalSales)).toFixed(2)}`,
       icon: <DollarSign size={20} />,
-      color: 'text-green-600 bg-green-100 dark:bg-green-900/30',
+      tone: 'success' as const,
     },
     {
       label: t('dashboard.totalCustomers'),
-      value: 156,
+      value: customersRes?.total ?? 0,
       icon: <Users size={20} />,
-      color: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30',
+      tone: 'brand' as const,
     },
     {
       label: t('dashboard.lowStock'),
       value: lowStock?.length ?? 0,
       icon: <AlertTriangle size={20} />,
-      color: 'text-red-600 bg-red-100 dark:bg-red-900/30',
+      tone: 'danger' as const,
     },
   ];
 
@@ -105,34 +121,32 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-          {t('dashboard.title')}
-        </h1>
-      </div>
+      <PageHeader title={t('dashboard.title')} />
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, i) => (
-          <Card key={i}>
-            <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-lg ${kpi.color}`}>{kpi.icon}</div>
-              <div>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {kpi.label}
-                </p>
-                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-                  {kpi.value}
-                </p>
-              </div>
-            </div>
-          </Card>
+          <StatCard
+            key={kpi.label}
+            label={kpi.label}
+            value={kpi.value}
+            icon={kpi.icon}
+            tone={kpi.tone}
+            delayIndex={i}
+          />
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Daily sales chart */}
-        <Card title={t('dashboard.dailySales')}>
+        {/* Daily sales chart (last 7 days) */}
+        <Card
+          title={t('dashboard.dailySales')}
+          actions={
+            <span className="text-xs font-medium tabular-nums text-muted">
+              7d · ${weekTotal.toFixed(2)}
+            </span>
+          }
+        >
           <div className="h-64 w-full">
             <ResponsiveContainer
               width="100%"
@@ -141,18 +155,24 @@ const DashboardPage: React.FC = () => {
               minHeight={0}
             >
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="day" stroke="#9ca3af" fontSize={12} />
-                <YAxis stroke="#9ca3af" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1f2937',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#f9fafb',
-                  }}
+                <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+                <XAxis
+                  dataKey="day"
+                  stroke={chart.tick}
+                  fontSize={12}
+                  tickLine={false}
                 />
-                <Bar dataKey="total" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <YAxis stroke={chart.tick} fontSize={12} tickLine={false} />
+                <Tooltip
+                  contentStyle={chart.tooltipStyle}
+                  cursor={{ fill: chart.grid, opacity: 0.4 }}
+                />
+                <Bar
+                  dataKey="total"
+                  fill={chart.brand}
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={40}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -168,25 +188,32 @@ const DashboardPage: React.FC = () => {
               minHeight={0}
             >
               <BarChart data={bestSellers?.slice(0, 5)} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis type="number" stroke="#9ca3af" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+                <XAxis
+                  type="number"
+                  stroke={chart.tick}
+                  fontSize={12}
+                  tickLine={false}
+                />
                 <YAxis
                   type="category"
                   dataKey="productName"
                   width={120}
-                  stroke="#9ca3af"
+                  stroke={chart.tick}
                   fontSize={11}
+                  tickLine={false}
                   tickFormatter={(v: string | null) => v ?? ''}
                 />
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1f2937',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#f9fafb',
-                  }}
+                  contentStyle={chart.tooltipStyle}
+                  cursor={{ fill: chart.grid, opacity: 0.4 }}
                 />
-                <Bar dataKey="qtySold" fill="#22c55e" radius={[0, 4, 4, 0]} />
+                <Bar
+                  dataKey="qtySold"
+                  fill={chart.success}
+                  radius={[0, 6, 6, 0]}
+                  maxBarSize={24}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -199,33 +226,37 @@ const DashboardPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-500">
-                  <th className="text-left py-2">{t('customers.fullName')}</th>
-                  <th className="text-right py-2">{t('common.amount')}</th>
-                  <th className="text-center py-2">{t('common.status')}</th>
+                <tr className="border-b border-line text-muted">
+                  <th scope="col" className="text-left py-2 font-medium">
+                    {t('customers.fullName')}
+                  </th>
+                  <th scope="col" className="text-right py-2 font-medium">
+                    {t('common.amount')}
+                  </th>
+                  <th scope="col" className="text-center py-2 font-medium">
+                    {t('common.status')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {overdueInvoices?.map((inv) => (
-                  <tr
-                    key={inv.invoiceId}
-                    className="border-b border-neutral-100 dark:border-neutral-700/50"
-                  >
-                    <td className="py-2 text-neutral-900 dark:text-neutral-100">
-                      {inv.customerName}
-                    </td>
-                    <td className="py-2 text-right font-medium">
+                  <tr key={inv.invoiceId} className="border-b border-line/60">
+                    <td className="py-2 text-ink">{inv.customerName}</td>
+                    <td className="py-2 text-right font-mono tabular-nums font-medium">
                       ${n(Number(inv.outstanding)).toFixed(2)}
                     </td>
                     <td className="py-2 text-center">
                       <Badge
-                        color={
+                        tone={
                           (
                             {
-                              overdue: 'red' as const,
-                              open: 'yellow' as const,
-                            } as Record<string, 'red' | 'yellow' | 'green'>
-                          )[inv.invoiceStatus ?? ''] ?? 'green'
+                              overdue: 'danger' as const,
+                              open: 'warning' as const,
+                            } as Record<
+                              string,
+                              'danger' | 'warning' | 'success'
+                            >
+                          )[inv.invoiceStatus ?? ''] ?? 'success'
                         }
                       >
                         {inv.invoiceStatus}{' '}
@@ -246,31 +277,28 @@ const DashboardPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-500">
-                  <th className="text-left py-2">
+                <tr className="border-b border-line text-muted">
+                  <th scope="col" className="text-left py-2 font-medium">
                     {t('products.productName')}
                   </th>
-                  <th className="text-center py-2">{t('common.quantity')}</th>
-                  <th className="text-center py-2">
+                  <th scope="col" className="text-center py-2 font-medium">
+                    {t('common.quantity')}
+                  </th>
+                  <th scope="col" className="text-center py-2 font-medium">
                     {t('products.expirationDate')}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {lowStock?.map((s) => (
-                  <tr
-                    key={s.productId}
-                    className="border-b border-neutral-100 dark:border-neutral-700/50"
-                  >
-                    <td className="py-2 text-neutral-900 dark:text-neutral-100">
-                      {s.productName}
-                    </td>
+                  <tr key={s.productId} className="border-b border-line/60">
+                    <td className="py-2 text-ink">{s.productName}</td>
                     <td className="py-2 text-center">
-                      <Badge color={n(s.qtyOnHand) <= 3 ? 'red' : 'yellow'}>
+                      <Badge tone={n(s.qtyOnHand) <= 3 ? 'danger' : 'warning'}>
                         {n(s.qtyOnHand)}
                       </Badge>
                     </td>
-                    <td className="py-2 text-center text-neutral-500">
+                    <td className="py-2 text-center text-muted font-mono tabular-nums">
                       {s.maxExpiryDate ? formatLocalDate(s.maxExpiryDate) : '-'}
                     </td>
                   </tr>
@@ -283,36 +311,40 @@ const DashboardPage: React.FC = () => {
 
       {/* Cash cut */}
       <Card title={t('dashboard.cashCut')}>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-center">
           <div>
-            <p className="text-sm text-neutral-500">
-              {t('dashboard.cashCut')} Efectivo
-            </p>
-            <p className="text-xl font-bold text-neutral-900 dark:text-white">
+            <p className="text-sm text-muted">{t('dashboard.cashCut')}</p>
+            <p className="text-xl font-semibold font-mono tabular-nums text-ink">
               ${n(Number(todayCashCut?.salesCash ?? 0)).toFixed(2)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-neutral-500">No Efectivo</p>
-            <p className="text-xl font-bold text-neutral-900 dark:text-white">
+            <p className="text-sm text-muted">No Efectivo</p>
+            <p className="text-xl font-semibold font-mono tabular-nums text-ink">
               ${n(Number(todayCashCut?.salesNonCash ?? 0)).toFixed(2)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-neutral-500">Entradas</p>
-            <p className="text-xl font-bold text-green-600">
+            <p className="text-sm text-muted">Entradas</p>
+            <p className="text-xl font-semibold font-mono tabular-nums text-success">
               ${n(Number(todayCashCut?.cashEntriesIn ?? 0)).toFixed(2)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-neutral-500">Salidas</p>
-            <p className="text-xl font-bold text-red-600">
+            <p className="text-sm text-muted">Salidas</p>
+            <p className="text-xl font-semibold font-mono tabular-nums text-danger">
               ${n(Number(todayCashCut?.cashEntriesOut ?? 0)).toFixed(2)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-neutral-500">Balance</p>
-            <p className="text-xl font-bold text-blue-600">
+            <p className="text-sm text-muted">Neto hoy</p>
+            <p className="text-xl font-semibold font-mono tabular-nums text-brand">
+              ${n(Number(todayCashCut?.netCash ?? 0)).toFixed(2)}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted">Balance</p>
+            <p className="text-xl font-semibold font-mono tabular-nums text-brand">
               ${n(Number(firstCashBalance?.balance ?? 0)).toFixed(2)}
             </p>
           </div>

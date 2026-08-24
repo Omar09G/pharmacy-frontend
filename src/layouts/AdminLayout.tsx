@@ -4,6 +4,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
 import Sidebar from '../components/shared/Sidebar';
 import Topbar from '../components/shared/Topbar';
+import Button from '../components/ui/Button';
 import { captureError } from '../config/sentry';
 
 function ErrorFallback({
@@ -17,28 +18,31 @@ function ErrorFallback({
   const message = error instanceof Error ? error.message : 'Error desconocido';
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
-      <h2 className="text-2xl font-bold text-red-600 mb-4">Algo salió mal</h2>
-      <p className="text-neutral-600 dark:text-neutral-400 mb-4 max-w-md">
-        {message}
-      </p>
-      <button
-        onClick={resetErrorBoundary}
-        title={t('tooltips.retry')}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-      >
+      <h2 className="font-display text-2xl font-bold text-danger mb-4">
+        Algo salió mal
+      </h2>
+      <p className="text-muted mb-4 max-w-md">{message}</p>
+      <Button onClick={resetErrorBoundary} title={t('tooltips.retry')}>
         Intentar de nuevo
-      </button>
+      </Button>
     </div>
   );
 }
 
 const AdminLayout: React.FC = () => {
+  const { t } = useTranslation();
   return (
-    <div className="flex h-screen bg-neutral-50 dark:bg-neutral-950 overflow-hidden">
+    <div className="flex h-screen bg-canvas overflow-hidden">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3 focus:bg-brand focus:text-on-brand focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-medium"
+      >
+        {t('a11y.skipToContent')}
+      </a>
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main id="main-content" className="flex-1 overflow-y-auto p-4 md:p-6">
           <ErrorBoundary
             FallbackComponent={ErrorFallback}
             onError={(error, info) =>

@@ -11,14 +11,14 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ children, className, title, actions }) => (
   <div
     className={cn(
-      'rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm',
+      'rounded-xl border border-line bg-surface shadow-xs',
       className,
     )}
   >
     {(title || actions) && (
-      <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+      <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-line">
         {title && (
-          <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
+          <h3 className="font-display text-base font-semibold tracking-tight text-ink">
             {title}
           </h3>
         )}

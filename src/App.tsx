@@ -43,6 +43,11 @@ const LocationsPage = lazy(
 
 const Fallback = () => <LoadingSpinner className="min-h-screen" size="lg" />;
 
+/** Route guard mirroring the backend authz middleware permissions. */
+const guarded = (permission: string, element: React.ReactNode) => (
+  <PrivateRoute requiredPermission={permission}>{element}</PrivateRoute>
+);
+
 const App: React.FC = () => {
   // A-5 + M-9: Logout after 15 min of inactivity; warn at 13 min
   useInactivityLogout({
@@ -72,17 +77,50 @@ const App: React.FC = () => {
         >
           <Route index element={<Navigate to="/app/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="pos" element={<POSPage />} />
-          <Route path="products" element={<ProductsPage />} />
-          <Route path="customers" element={<CustomersPage />} />
-          <Route path="suppliers" element={<SuppliersPage />} />
-          <Route path="categories" element={<CategoriesPage />} />
-          <Route path="sales" element={<SalesPage />} />
-          <Route path="purchases" element={<PurchasesPage />} />
-          <Route path="discounts" element={<DiscountsPage />} />
-          <Route path="payment-methods" element={<PaymentMethodsPage />} />
-          <Route path="cash-journal" element={<CashJournalPage />} />
-          <Route path="inventory" element={<InventoryPage />} />
+          <Route
+            path="pos"
+            element={guarded('SALES_MANAGER', <POSPage />)}
+          />
+          <Route
+            path="products"
+            element={guarded('PRODUCT_MANAGEMENT', <ProductsPage />)}
+          />
+          <Route
+            path="customers"
+            element={guarded('SALES_MANAGER', <CustomersPage />)}
+          />
+          <Route
+            path="suppliers"
+            element={guarded('PRODUCT_MANAGEMENT', <SuppliersPage />)}
+          />
+          <Route
+            path="categories"
+            element={guarded('PRODUCT_MANAGEMENT', <CategoriesPage />)}
+          />
+          <Route
+            path="sales"
+            element={guarded('SALES_MANAGER', <SalesPage />)}
+          />
+          <Route
+            path="purchases"
+            element={guarded('PRODUCT_MANAGEMENT', <PurchasesPage />)}
+          />
+          <Route
+            path="discounts"
+            element={guarded('PRODUCT_MANAGEMENT', <DiscountsPage />)}
+          />
+          <Route
+            path="payment-methods"
+            element={guarded('PRODUCT_MANAGEMENT', <PaymentMethodsPage />)}
+          />
+          <Route
+            path="cash-journal"
+            element={guarded('SALES_MANAGER', <CashJournalPage />)}
+          />
+          <Route
+            path="inventory"
+            element={guarded('PRODUCT_MANAGEMENT', <InventoryPage />)}
+          />
 
           {/* Admin only */}
           <Route

@@ -24,6 +24,8 @@ export interface AuthUser {
   fullName: string;
   username: string;
   role: string;
+  /** Permission names granted to the user's role (from the JWT/login). */
+  permissions: string[];
 }
 
 interface AuthState {
@@ -36,6 +38,16 @@ interface AuthState {
   setError: (error: string | null) => void;
   restoreSession: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
+}
+
+/** True when the current user holds the given permission (ADMIN bypasses). */
+export function hasPermission(
+  user: AuthUser | null,
+  permission: string,
+): boolean {
+  if (!user) return false;
+  if (user.role === 'ADMIN') return true;
+  return user.permissions?.includes(permission) ?? false;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -71,7 +83,10 @@ export const useAuthStore = create<AuthState>()(
             // plugin, or localStorage as final fallback).
             if (Capacitor.isNativePlatform()) {
               if (data.accessToken)
-                await secureStorage.setItem(NATIVE_ACCESS_TOKEN_KEY, data.accessToken);
+                await secureStorage.setItem(
+                  NATIVE_ACCESS_TOKEN_KEY,
+                  data.accessToken,
+                );
               if (data.refreshToken)
                 await secureStorage.setItem(
                   NATIVE_REFRESH_TOKEN_KEY,
@@ -83,6 +98,9 @@ export const useAuthStore = create<AuthState>()(
               fullName: data.name ?? data.fullName ?? data.username,
               username: data.username,
               role: data.role,
+              permissions: Array.isArray(data.permissions)
+                ? data.permissions
+                : [],
             };
             set({
               user,
@@ -153,6 +171,9 @@ export const useAuthStore = create<AuthState>()(
                 fullName: data.name ?? data.fullName ?? data.username,
                 username: data.username,
                 role: data.role,
+                permissions: Array.isArray(data.permissions)
+                  ? data.permissions
+                  : [],
               },
               isAuthenticated: true,
               loading: false,
@@ -193,9 +214,15 @@ export const useAuthStore = create<AuthState>()(
           );
           const data = res.data?.data ?? res.data;
           if (isNative && data?.accessToken) {
-            await secureStorage.setItem(NATIVE_ACCESS_TOKEN_KEY, data.accessToken);
+            await secureStorage.setItem(
+              NATIVE_ACCESS_TOKEN_KEY,
+              data.accessToken,
+            );
             if (data.refreshToken)
-              await secureStorage.setItem(NATIVE_REFRESH_TOKEN_KEY, data.refreshToken);
+              await secureStorage.setItem(
+                NATIVE_REFRESH_TOKEN_KEY,
+                data.refreshToken,
+              );
           }
           return !!data;
         } catch {

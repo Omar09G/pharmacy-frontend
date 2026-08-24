@@ -374,16 +374,31 @@ const POSPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-        <ShoppingCart size={24} /> {t('pos.title')}
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink flex items-center gap-2">
+          <ShoppingCart size={24} aria-hidden="true" /> {t('pos.title')}
+        </h1>
+        <p className="text-xs text-muted hidden sm:flex items-center gap-2">
+          <kbd className="rounded border border-line bg-raised px-1.5 py-0.5 font-mono text-[10px]">
+            F12
+          </kbd>
+          {t('pos.charge')}
+          <kbd className="ml-1 rounded border border-line bg-raised px-1.5 py-0.5 font-mono text-[10px]">
+            F9
+          </kbd>
+          {t('common.clear')}
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left: Product search + results */}
         <div className="lg:col-span-2 space-y-4">
           <Card>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted"
+                aria-hidden="true"
+              />
               <input
                 ref={searchRef}
                 type="text"
@@ -395,28 +410,27 @@ const POSPage: React.FC = () => {
                   }
                 }}
                 placeholder={t('pos.scanBarcode')}
-                className="w-full pl-10 pr-4 py-3 text-lg rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label={t('pos.scanBarcode')}
+                className="w-full pl-10 pr-4 py-3 text-lg rounded-lg border border-line bg-surface text-ink outline-none focus:border-brand transition-colors"
                 autoFocus
               />
             </div>
             {filteredProducts.length > 0 && (
-              <div className="mt-2 max-h-48 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-lg divide-y divide-neutral-100 dark:divide-neutral-700">
+              <div className="mt-2 max-h-48 overflow-y-auto border border-line rounded-lg divide-y divide-line/60">
                 {filteredProducts.slice(0, 100).map((p) => (
                   <button
                     key={p.id}
                     onClick={() => handleAddProduct(p)}
                     title={t('tooltips.addProduct')}
-                    className="w-full flex items-center justify-between px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-left transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-2 hover:bg-brand-soft text-left transition-colors"
                   >
                     <div>
-                      <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                        {p.name}
-                      </span>
-                      <span className="ml-2 text-xs text-neutral-500">
+                      <span className="font-medium text-ink">{p.name}</span>
+                      <span className="ml-2 text-xs font-mono text-muted">
                         {p.barcodesDetail?.barcode ?? ''}
                       </span>
                     </div>
-                    <span className="font-semibold text-blue-600">
+                    <span className="font-semibold font-mono tabular-nums text-brand">
                       ${Number(p.salePrice ?? 0).toFixed(2)}
                     </span>
                   </button>
@@ -428,49 +442,73 @@ const POSPage: React.FC = () => {
           {/* Cart table */}
           <Card title={t('pos.cart')}>
             {cart.length === 0 ? (
-              <div className="text-center py-8 text-neutral-400">
-                <ShoppingCart size={40} className="mx-auto mb-2" />
+              <div className="text-center py-8 text-muted">
+                <ShoppingCart
+                  size={40}
+                  className="mx-auto mb-2"
+                  aria-hidden="true"
+                />
                 <p>{t('pos.emptyCart')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-600 dark:text-neutral-100">
-                      <th className="text-left py-2 px-3 ">
+                    <tr className="border-b border-line bg-raised/60 text-muted">
+                      <th
+                        scope="col"
+                        className="text-left py-2 px-3 font-medium"
+                      >
                         {t('products.productName')}
                       </th>
-                      <th className="text-center py-2 px-3">
+                      <th
+                        scope="col"
+                        className="text-center py-2 px-3 font-medium"
+                      >
                         {t('pos.unitPrice')}
                       </th>
-                      <th className="text-center py-2 px-3">
+                      <th
+                        scope="col"
+                        className="text-center py-2 px-3 font-medium"
+                      >
                         {t('common.quantity')}
                       </th>
-                      <th className="text-center py-2 px-3">
+                      <th
+                        scope="col"
+                        className="text-center py-2 px-3 font-medium"
+                      >
                         {t('products.maxStock')}
                       </th>
-                      <th className="text-center py-2 px-3">
+                      <th
+                        scope="col"
+                        className="text-center py-2 px-3 font-medium"
+                      >
                         {t('pos.discountAmount')}
                       </th>
-                      <th className="text-right py-2 px-3">
+                      <th
+                        scope="col"
+                        className="text-right py-2 px-3 font-medium"
+                      >
                         {t('pos.subtotal')}
                       </th>
-                      <th className="py-2 px-3"></th>
+                      <th scope="col" className="py-2 px-3">
+                        <span className="sr-only">{t('common.actions')}</span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {cart.map((item) => (
                       <tr
                         key={item.productId}
-                        className="border-b border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100"
+                        className="border-b border-line/60 text-sm text-ink animate-rise"
                       >
-                        <td className="py-2 px-3 ">
+                        <td className="py-2 px-3">
                           {item.name}
-                          <span className="ml-2 text-xs text-neutral-400">
+                          <span className="ml-2 text-xs font-mono text-muted">
                             {item.barcode}
                           </span>
                         </td>
-                        <td className="py-2 px-3 text-center font-semibold">
+                        <td className="py-2 px-3 text-center font-mono tabular-nums font-semibold">
                           ${Number(item.unitPrice ?? 0).toFixed(2)}
                         </td>
                         <td className="py-2 px-3">
@@ -480,12 +518,12 @@ const POSPage: React.FC = () => {
                                 updateQuantity(item.productId, item.qty - 1)
                               }
                               title={t('tooltips.decreaseQuantity')}
-                              aria-label="Disminuir cantidad"
-                              className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                              aria-label={t('tooltips.decreaseQuantity')}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-raised hover:text-ink"
                             >
-                              <Minus size={14} />
+                              <Minus size={16} />
                             </button>
-                            <span className="w-8 text-center font-semibold">
+                            <span className="w-8 text-center font-semibold tabular-nums">
                               {item.qty}
                             </span>
                             <button
@@ -493,28 +531,28 @@ const POSPage: React.FC = () => {
                                 updateQuantity(item.productId, item.qty + 1)
                               }
                               title={t('tooltips.increaseQuantity')}
-                              aria-label="Aumentar cantidad"
-                              className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                              aria-label={t('tooltips.increaseQuantity')}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-raised hover:text-ink"
                             >
-                              <Plus size={14} />
+                              <Plus size={16} />
                             </button>
                           </div>
                         </td>
-                        <td className="py-2 px-3 text-center">
+                        <td className="py-2 px-3 text-center tabular-nums">
                           {Number(item.qtyOnHand ?? 0).toFixed(1)}
                         </td>
-                        <td className="py-2 px-3 text-center">
+                        <td className="py-2 px-3 text-center font-mono tabular-nums">
                           ${Number(item.discount ?? 0).toFixed(2)}
                         </td>
-                        <td className="py-2 px-3 text-right font-semibold">
+                        <td className="py-2 px-3 text-right font-mono tabular-nums font-semibold">
                           ${Number(item.subtotal ?? 0).toFixed(2)}
                         </td>
                         <td className="py-2 px-3">
                           <button
                             onClick={() => removeItem(item.productId)}
                             title={t('tooltips.removeItem')}
-                            aria-label="Eliminar producto"
-                            className="text-red-500 hover:text-red-600"
+                            aria-label={t('tooltips.removeItem')}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-danger transition-colors hover:bg-danger-soft"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -533,22 +571,21 @@ const POSPage: React.FC = () => {
           <Card>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+                <label
+                  htmlFor="pos-customer"
+                  className="block text-sm font-medium text-muted mb-1"
+                >
                   {t('pos.customer')}
                 </label>
                 <select
+                  id="pos-customer"
                   value={customerId ?? ''}
                   onChange={(e) =>
                     setCustomerId(
                       e.target.value ? Number(e.target.value) : null,
                     )
                   }
-                  className="w-full rounded-lg border border-neutral-300 
-                            dark:border-neutral-600 
-                            bg-white 
-                            dark:bg-neutral-800 px-3 py-2 
-                            text-sm text-neutral-900 
-                            dark:text-neutral-100"
+                  className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink transition-colors focus:border-brand"
                 >
                   <option value="">{t('pos.selectCustomer')}</option>
                   {customers.map((c) => (
@@ -559,17 +596,21 @@ const POSPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+                <label
+                  htmlFor="pos-payment-method"
+                  className="block text-sm font-medium text-muted mb-1"
+                >
                   {t('pos.paymentMethod')}
                 </label>
                 <select
+                  id="pos-payment-method"
                   value={paymentMethodId ?? ''}
                   onChange={(e) =>
                     setPaymentMethodId(
                       e.target.value ? Number(e.target.value) : null,
                     )
                   }
-                  className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100"
+                  className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink transition-colors focus:border-brand"
                 >
                   <option value="">{t('pos.selectPayment')}</option>
                   {payMethods.map((m) => (
@@ -580,10 +621,14 @@ const POSPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+                <label
+                  htmlFor="pos-discount"
+                  className="block text-sm font-medium text-muted mb-1"
+                >
                   {t('pos.discount')}
                 </label>
                 <select
+                  id="pos-discount"
                   value={discountId ?? 0}
                   onChange={(e) => {
                     const newDiscountId = e.target.value
@@ -592,7 +637,7 @@ const POSPage: React.FC = () => {
                     handleUpdateDiscount(newDiscountId);
                     setDiscountId(newDiscountId);
                   }}
-                  className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100"
+                  className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink transition-colors focus:border-brand"
                 >
                   {discounts.map((d) => (
                     <option key={d.id} value={d.id}>
@@ -602,14 +647,18 @@ const POSPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+                <label
+                  htmlFor="pos-notes"
+                  className="block text-sm font-medium text-muted mb-1"
+                >
                   {t('pos.notes')}
                 </label>
                 <textarea
+                  id="pos-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 resize-none"
+                  className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink resize-none transition-colors focus:border-brand"
                 />
               </div>
             </div>
@@ -617,19 +666,25 @@ const POSPage: React.FC = () => {
 
           <Card>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-neutral-600 dark:text-neutral-400">
+              <div className="flex justify-between text-sm text-muted">
                 <span>{t('pos.subtotal')}</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span className="font-mono tabular-nums">
+                  ${subtotal.toFixed(2)}
+                </span>
               </div>
-              <div className="flex justify-between text-sm text-neutral-600 dark:text-neutral-400">
+              <div className="flex justify-between text-sm text-muted">
                 <span>{t('pos.discount')}</span>
-                <span className="text-red-500">
+                <span className="font-mono tabular-nums text-danger">
                   -${Number(totalDiscount).toFixed(2)}
                 </span>
               </div>
-              <div className="flex justify-between text-lg font-bold text-neutral-900 dark:text-white border-t border-neutral-200 dark:border-neutral-700 pt-2">
-                <span>{t('pos.totalToPay')}</span>
-                <span className="text-green-600">${total.toFixed(2)}</span>
+              <div className="flex justify-between items-baseline border-t border-line pt-2">
+                <span className="font-display text-base font-semibold text-ink">
+                  {t('pos.totalToPay')}
+                </span>
+                <span className="font-display text-3xl font-semibold tabular-nums tracking-tight text-brand">
+                  ${total.toFixed(2)}
+                </span>
               </div>
             </div>
             <Button
@@ -683,7 +738,7 @@ const POSPage: React.FC = () => {
               title={t('tooltips.confirmSale')}
               onClick={handleConfirmSale}
               loading={saleMut.isPending}
-              variant="tertiary"
+              variant="success"
               disabled={methodName === 'Efectivo' && getPayAmountAt() < total}
               autoFocus
             >
@@ -702,86 +757,91 @@ const POSPage: React.FC = () => {
       >
         <div className="space-y-4">
           {customerId && (
-            <p className="text-sm text-neutral-500">
-              <Badge color="blue">{t('pos.customer')}</Badge>{' '}
+            <p className="text-sm text-muted">
+              <Badge tone="brand">{t('pos.customer')}</Badge>{' '}
               {customers.find((c) => c.id === customerId)?.name}
             </p>
           )}
-          <h3 className="font-medium text-neutral-900 dark:text-neutral-100">
-            {t('sales.items')}
-          </h3>
+          <h3 className="font-medium text-ink">{t('sales.items')}</h3>
 
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-500">
-                <th className="text-left py-1">{t('products.productName')}</th>
-                <th className="text-center py-1">{t('common.quantity')}</th>
-                <th className="text-right py-1">{t('pos.unitPrice')}</th>
-                <th className="text-right py-1">{t('pos.subtotal')}</th>
+              <tr className="border-b border-line text-muted">
+                <th scope="col" className="text-left py-1 font-medium">
+                  {t('products.productName')}
+                </th>
+                <th scope="col" className="text-center py-1 font-medium">
+                  {t('common.quantity')}
+                </th>
+                <th scope="col" className="text-right py-1 font-medium">
+                  {t('pos.unitPrice')}
+                </th>
+                <th scope="col" className="text-right py-1 font-medium">
+                  {t('pos.subtotal')}
+                </th>
               </tr>
             </thead>
             <tbody>
               {cart.map((c) => (
-                <tr
-                  key={c.productId}
-                  className="border-b border-neutral-100 dark:border-neutral-700/50"
-                >
-                  <td className="py-1 text-neutral-900 dark:text-neutral-100">
-                    {c.name}
-                  </td>
-                  <td className="py-1 text-center dark:text-neutral-100">
+                <tr key={c.productId} className="border-b border-line/60">
+                  <td className="py-1 text-ink">{c.name}</td>
+                  <td className="py-1 text-center tabular-nums text-ink">
                     {c.qty}
                   </td>
-                  <td className="py-1 text-right dark:text-neutral-100">
+                  <td className="py-1 text-right font-mono tabular-nums text-ink">
                     ${Number(c.unitPrice ?? 0).toFixed(2)}
                   </td>
-                  <td className="py-1 text-right font-medium dark:text-neutral-100">
+                  <td className="py-1 text-right font-mono tabular-nums font-medium text-ink">
                     ${Number(c.subtotal ?? 0).toFixed(2)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 space-y-1">
-            <div className="flex justify-between dark:text-neutral-100">
+          <div className="border-t border-line pt-3 space-y-1">
+            <div className="flex justify-between text-ink">
               <span>{t('pos.subtotal')}</span>
-              <span>${Number(subtotal ?? 0).toFixed(2)}</span>
+              <span className="font-mono tabular-nums">
+                ${Number(subtotal ?? 0).toFixed(2)}
+              </span>
             </div>
-            <div className="flex justify-between text-red-500">
+            <div className="flex justify-between text-danger">
               <span>{t('pos.discount')}</span>
-              <span>-${Number(totalDiscount ?? 0).toFixed(2)}</span>
+              <span className="font-mono tabular-nums">
+                -${Number(totalDiscount ?? 0).toFixed(2)}
+              </span>
             </div>
-            <div className="flex justify-end text-xl font-bold text-green-600">
-              <span className="justify-end">=</span>
-            </div>
-            <div className="flex justify-between text-xl font-bold text-green-600">
+            <div className="flex justify-between font-display text-xl font-semibold text-brand">
               <span>{t('pos.totalToPay')}</span>
-              <span>${Number(total ?? 0).toFixed(2)}</span>
+              <span className="tabular-nums">
+                ${Number(total ?? 0).toFixed(2)}
+              </span>
             </div>
 
             {methodName === 'Efectivo' && (
-              <div>
-                <div className="flex justify-between text-xl font-bold text-blue-600">
-                  <span>{t('pos.change') + ':'}</span>
-                  <span>
-                    $
-                    {(
-                      Number(getPayAmountAt() ?? 0) - Number(total ?? 0)
-                    ).toFixed(2)}
-                  </span>
-                </div>
+              <div className="flex justify-between text-lg font-semibold text-ink">
+                <span>{t('pos.change') + ':'}</span>
+                <span className="font-mono tabular-nums">
+                  $
+                  {(Number(getPayAmountAt() ?? 0) - Number(total ?? 0)).toFixed(
+                    2,
+                  )}
+                </span>
               </div>
             )}
           </div>
 
           {methodName === 'Efectivo' && (
-            <div className="flex items-center justify-between text-xl text-gray-600 gap-3 dark:text-gray-300">
-              <label className="font-bold">{t('pos.enterAmount')}</label>
-              <div className="w-32">
+            <div className="flex items-center justify-between gap-3 text-ink">
+              <label htmlFor="pos-pay-amount" className="font-bold text-sm">
+                {t('pos.enterAmount')}
+              </label>
+              <div className="w-36">
                 <Input
-                  className="text-right text-xl font-bold dark:text-white"
+                  id="pos-pay-amount"
+                  data-autofocus
+                  className="text-right text-xl font-bold font-mono tabular-nums"
                   type="number"
-                  autoFocus
                   placeholder={t('pos.enterAmount')}
                   onChange={(e) => setPayAmountAt(Number(e.target.value))}
                   onKeyDown={(e) => {

@@ -10,15 +10,22 @@ const PublicLayout: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-neutral-950">
+    <div className="min-h-screen flex flex-col bg-canvas">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3 focus:bg-brand focus:text-on-brand focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-medium"
+      >
+        {t('a11y.skipToContent')}
+      </a>
+
       {/* Navbar */}
-      <header className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-30">
+      <header className="bg-surface/80 backdrop-blur border-b border-line sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <NavLink to="/" className="flex items-center gap-2">
-            <div className="bg-blue-600 rounded-lg p-1.5">
-              <Pill size={20} className="text-white" />
+          <NavLink to="/" className="flex items-center gap-2.5">
+            <div className="bg-brand text-on-brand rounded-xl p-1.5">
+              <Pill size={20} aria-hidden="true" />
             </div>
-            <span className="font-bold text-lg text-neutral-900 dark:text-white">
+            <span className="font-display font-semibold text-lg text-ink">
               Farmacia Santo Niño
             </span>
           </NavLink>
@@ -27,7 +34,7 @@ const PublicLayout: React.FC = () => {
               <button
                 onClick={() => navigate('/app/dashboard')}
                 title={t('tooltips.enterSystem')}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-brand hover:bg-brand-strong text-on-brand rounded-lg text-sm font-medium transition-colors active:scale-[0.98]"
               >
                 {t('landing.enterSystem')}
               </button>
@@ -35,7 +42,7 @@ const PublicLayout: React.FC = () => {
               <button
                 onClick={() => navigate('/login')}
                 title={t('tooltips.login')}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-brand hover:bg-brand-strong text-on-brand rounded-lg text-sm font-medium transition-colors active:scale-[0.98]"
               >
                 {t('auth.login')}
               </button>
@@ -45,28 +52,30 @@ const PublicLayout: React.FC = () => {
       </header>
 
       {/* Main */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <Outlet />
       </main>
 
       {/* Footer */}
-      <footer className="bg-neutral-900 text-neutral-400 py-8">
+      <footer className="bg-canvas border-t border-line text-muted py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="font-bold text-white text-lg mb-2">
+              <h3 className="font-display font-semibold text-ink text-lg mb-2">
                 Farmacia Santo Niño S.A. de C.V.
               </h3>
               <p className="text-sm">{t('landing.address')}</p>
-              <p className="text-sm">{t('landing.phone')}</p>
+              <p className="text-sm font-mono tabular-nums">
+                {t('landing.phone')}
+              </p>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-2">Enlaces</h3>
+              <h3 className="font-semibold text-ink mb-2">Enlaces</h3>
               <ul className="text-sm space-y-1">
                 <li>
                   <NavLink
                     to="/"
-                    className="hover:text-white transition-colors"
+                    className="hover:text-brand transition-colors"
                   >
                     Inicio
                   </NavLink>
@@ -74,7 +83,7 @@ const PublicLayout: React.FC = () => {
                 <li>
                   <NavLink
                     to="/login"
-                    className="hover:text-white transition-colors"
+                    className="hover:text-brand transition-colors"
                   >
                     {t('auth.login')}
                   </NavLink>
@@ -82,11 +91,13 @@ const PublicLayout: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-white mb-2">Horario</h3>
-              <p className="text-sm">{t('landing.schedule')}</p>
+              <h3 className="font-semibold text-ink mb-2">Horario</h3>
+              <p className="text-sm font-mono tabular-nums">
+                {t('landing.schedule')}
+              </p>
             </div>
           </div>
-          <div className="mt-6 border-t border-neutral-700 pt-4 text-sm text-center">
+          <div className="mt-6 border-t border-line pt-4 text-sm text-center">
             © {new Date().getFullYear()} Farmacia Santo Niño — Todos los
             derechos reservados
           </div>

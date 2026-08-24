@@ -1,17 +1,38 @@
 import React from 'react';
-import { Sun, Moon } from 'lucide-react';
-import { useUIStore } from '../../store/uiStore';
+import { Sun, Moon, Monitor } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useUIStore, type Theme } from '../../store/uiStore';
+
+const icons: Record<Theme, React.ReactNode> = {
+  light: <Sun size={20} />,
+  dark: <Moon size={20} />,
+  system: <Monitor size={20} />,
+};
+
+const nextThemeMap: Record<Theme, Theme> = {
+  light: 'dark',
+  dark: 'system',
+  system: 'light',
+};
 
 const ThemeToggle: React.FC = () => {
-  const { theme, toggleTheme } = useUIStore();
+  const { t } = useTranslation();
+  const theme = useUIStore((s) => s.theme);
+  const cycleTheme = useUIStore((s) => s.cycleTheme);
+
+  const nextTheme = nextThemeMap[theme];
+
   return (
     <button
-      onClick={toggleTheme}
-      className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-colors"
-      title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-      aria-label="Toggle theme"
+      onClick={cycleTheme}
+      title={t('tooltips.toggleTheme')}
+      aria-label={t('theme.current', { theme: t(`theme.${theme}`) })}
+      className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted transition-colors hover:bg-raised hover:text-ink"
     >
-      {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+      {icons[theme]}
+      <span className="sr-only">
+        {t('theme.next', { theme: t(`theme.${nextTheme}`) })}
+      </span>
     </button>
   );
 };

@@ -24,32 +24,28 @@ const DateRangeInput: React.FC<DateRangeInputProps> = ({
   return (
     <div className={cn('flex flex-wrap items-end gap-3', className)}>
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-          {labelInit}
-        </label>
+        <label className="text-xs font-medium text-muted">{labelInit}</label>
         <div className="relative">
-          <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+          <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
           <input
             type="date"
             value={dateInit}
             max={dateEnd || undefined}
             onChange={(e) => onDateInitChange(e.target.value)}
-            className="w-44 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 pl-9 pr-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            className="w-44 rounded-lg border border-line bg-surface pl-9 pr-3 py-2 text-sm text-ink outline-none focus:border-brand transition-colors"
           />
         </div>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-          {labelEnd}
-        </label>
+        <label className="text-xs font-medium text-muted">{labelEnd}</label>
         <div className="relative">
-          <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+          <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
           <input
             type="date"
             value={dateEnd}
             min={dateInit || undefined}
             onChange={(e) => onDateEndChange(e.target.value)}
-            className="w-44 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 pl-9 pr-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            className="w-44 rounded-lg border border-line bg-surface pl-9 pr-3 py-2 text-sm text-ink outline-none focus:border-brand transition-colors"
           />
         </div>
       </div>

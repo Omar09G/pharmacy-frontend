@@ -6,7 +6,7 @@ import type {
   CreateCashJournal,
   CashJournalUpdate,
 } from '../models/cash.model';
-import { getCurrentDate } from '../utils/dateUtils';
+import { getCurrentDate, nowUTC } from '../utils/dateUtils';
 
 export const cashApi = {
   getJournals: (
@@ -37,26 +37,33 @@ export const cashApi = {
       .patch<ApiResponse<CashJournal>>(`/cash_journal/${id}`, payload)
       .then((r) => r.data),
 
-  getEntries: (journalId: number, page = 1, limit = 20) =>
+  // Cash ledger entries (entradas/salidas) — flat /cash_entry endpoint.
+  getEntries: (
+    page = 1,
+    limit = 20,
+    total = 0,
+    dateInit: string = getCurrentDate(),
+    dateEnd: string = getCurrentDate(),
+  ) =>
     api
-      .get<ApiResponse<CashEntry[]>>(`/cash_journal/${journalId}/entries`, {
-        params: { page, limit },
+      .get<ApiResponse<CashEntry[]>>('/cash_entry', {
+        params: { page, limit, total, dateInit, dateEnd },
       })
       .then((r) => r.data),
 
-  addEntry: (
-    journalId: number,
-    payload: {
-      entryType: 'IN' | 'OUT';
-      amount: number;
-      description: string;
-      reference: string;
-    },
-  ) =>
+  addEntry: (payload: {
+    name: string;
+    entryType: 'inflow' | 'outflow';
+    amount: number;
+    description?: string;
+  }) =>
     api
-      .post<ApiResponse<CashEntry>>(`/cash_journal/${journalId}/entries`, {
-        id: 0,
-        ...payload,
+      .post<ApiResponse<CashEntry>>('/cash_entry', {
+        name: payload.name,
+        entryType: payload.entryType,
+        amount: payload.amount,
+        description: payload.description ?? null,
+        recordedAt: nowUTC(),
       })
       .then((r) => r.data),
 };

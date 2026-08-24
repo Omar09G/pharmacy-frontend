@@ -12,13 +12,21 @@ import { Capacitor } from '@capacitor/core';
 
 const isNative = Capacitor.isNativePlatform();
 
-async function getPreferences(): Promise<
-  | { get: (key: string) => Promise<{ value: string | null }>; set: (key: string, value: string) => Promise<void>; remove: (key: string) => Promise<void> }
-  | null
-> {
+async function getPreferences(): Promise<{
+  get: (key: string) => Promise<{ value: string | null }>;
+  set: (key: string, value: string) => Promise<void>;
+  remove: (key: string) => Promise<void>;
+} | null> {
   try {
     const { Preferences } = await import('@capacitor/preferences');
-    return Preferences;
+    return {
+      get: async (key: string) => {
+        const result = await Preferences.get({ key });
+        return { value: result.value ?? null };
+      },
+      set: (key: string, value: string) => Preferences.set({ key, value }),
+      remove: (key: string) => Preferences.remove({ key }),
+    };
   } catch {
     return null;
   }

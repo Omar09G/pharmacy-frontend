@@ -6,20 +6,28 @@ const NotFoundPage: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 dark:bg-neutral-950 text-center p-8">
-      <h1 className="text-8xl font-bold text-neutral-300 dark:text-neutral-700">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-canvas text-center p-8 grain relative overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-brand-soft blur-3xl"
+      />
+      <p
+        aria-hidden="true"
+        className="font-display font-semibold text-[10rem] md:text-[14rem] leading-none tracking-tighter text-brand/15 select-none"
+      >
         404
-      </h1>
-      <h2 className="text-2xl font-semibold text-neutral-900 dark:text-white mt-4">
+      </p>
+      <h1 className="font-display -mt-16 md:-mt-24 text-3xl font-semibold tracking-tight text-ink animate-rise">
         {t('common.pageNotFound') || 'Página no encontrada'}
-      </h2>
-      <p className="text-neutral-500 dark:text-neutral-400 mt-2 max-w-md">
+      </h1>
+      <p className="text-muted mt-3 max-w-md animate-rise [animation-delay:80ms]">
         {t('common.pageNotFoundDesc') ||
           'La página que buscas no existe o fue movida.'}
       </p>
       <Link
         to="/app/dashboard"
-        className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+        title={t('tooltips.enterSystem')}
+        className="mt-8 inline-flex min-h-11 items-center px-6 rounded-lg bg-brand hover:bg-brand-strong active:scale-[0.98] transition-all text-on-brand font-medium shadow-sm animate-rise [animation-delay:160ms]"
       >
         {t('common.goHome') || 'Ir al inicio'}
       </Link>

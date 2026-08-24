@@ -14,9 +14,10 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 }) => (
   <div className={cn('flex items-center justify-center', className)}>
     <svg
-      className={cn('animate-spin text-blue-600', sizes[size])}
+      className={cn('animate-spin text-brand', sizes[size])}
       viewBox="0 0 24 24"
       fill="none"
+      role="status"
     >
       <circle
         className="opacity-25"

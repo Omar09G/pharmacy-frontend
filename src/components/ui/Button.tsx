@@ -1,8 +1,8 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'tertiary';
-type Size = 'sm' | 'md' | 'lg';
+type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'success';
+type Size = 'sm' | 'md' | 'lg' | 'icon';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -11,19 +11,18 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm',
-  secondary:
-    'bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 text-neutral-900 dark:text-neutral-100',
-  danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm',
-  ghost:
-    'bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300',
-  tertiary: 'bg-green-600 hover:bg-green-700 text-white shadow-sm',
+  primary: 'bg-brand text-on-brand hover:bg-brand-strong shadow-sm',
+  secondary: 'bg-raised text-ink hover:bg-line border border-line shadow-xs',
+  danger: 'bg-danger text-on-danger hover:brightness-90 shadow-sm',
+  ghost: 'bg-transparent text-muted hover:bg-raised hover:text-ink',
+  success: 'bg-success text-on-success hover:brightness-90 shadow-sm',
 };
 
 const sizeClasses: Record<Size, string> = {
-  sm: 'px-2.5 py-1.5 text-xs',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-6 py-3 text-base',
+  sm: 'min-h-7 px-2.5 py-1 text-xs gap-1.5',
+  md: 'min-h-9 px-4 py-2 text-sm',
+  lg: 'min-h-11 px-6 py-3 text-base',
+  icon: 'h-11 w-11 p-0',
 };
 
 const Button: React.FC<ButtonProps> = ({
@@ -37,7 +36,7 @@ const Button: React.FC<ButtonProps> = ({
 }) => (
   <button
     className={cn(
-      'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed',
+      'inline-flex items-center justify-center rounded-lg font-medium transition-all active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
       variantClasses[variant],
       sizeClasses[size],
       className,
@@ -46,7 +45,12 @@ const Button: React.FC<ButtonProps> = ({
     {...rest}
   >
     {loading && (
-      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+      <svg
+        className="animate-spin h-4 w-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
         <circle
           className="opacity-25"
           cx="12"

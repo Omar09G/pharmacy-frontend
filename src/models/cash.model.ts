@@ -1,13 +1,15 @@
 export interface CashEntry {
   id: number;
-  journalId: number;
-  entryType: 'IN' | 'OUT';
+  name: string;
+  /** Canonical types: inflow | sale (money in) / outflow | expense (out). */
+  entryType: 'inflow' | 'sale' | 'outflow' | 'expense';
   amount: number;
-  description: string;
-  reference: string;
-  userId: number;
-  userName?: string;
-  createdAt: string;
+  methodId?: number | null;
+  relatedType?: string | null;
+  relatedId?: number | null;
+  description?: string | null;
+  recordedAt: string;
+  recordedBy?: number | null;
 }
 
 export interface CashJournal {

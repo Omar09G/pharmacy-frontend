@@ -231,7 +231,7 @@ const ProductsPage: React.FC = () => {
       header: t('common.price'),
       cell: ({ getValue }) => {
         const reason = `$${Number(getValue()).toFixed(2)}` as string;
-        return <Badge color="green">{reason}</Badge>;
+        return <Badge tone="success">{reason}</Badge>;
       },
     },
     {
@@ -239,7 +239,7 @@ const ProductsPage: React.FC = () => {
       header: t('products.sellingPrice'),
       cell: ({ getValue }) => {
         const reason = `$${Number(getValue()).toFixed(2)}` as string;
-        return <Badge color="blue">{reason}</Badge>;
+        return <Badge tone="brand">{reason}</Badge>;
       },
     },
     {
@@ -259,7 +259,7 @@ const ProductsPage: React.FC = () => {
             size="sm"
             onClick={() => handleDelete(row.original)}
           >
-            <Trash2 size={16} className="text-red-500" />
+            <Trash2 size={16} className="text-danger" />
           </Button>
         </div>
       ),
@@ -269,7 +269,7 @@ const ProductsPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
           {t('products.title')}
         </h1>
         <Button title={t('tooltips.newProduct')} onClick={handleCreate}>

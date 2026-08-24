@@ -2,8 +2,141 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:focus-visible {
-  outline: 2px solid oklch(0.55 0.22 265);
-  outline-offset: 2px;
-  border-radius: 2px;
+@theme {
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Albert Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-on-brand: var(--on-brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-danger: var(--danger);
+  --color-on-danger: var(--on-danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-on-warning: var(--on-warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-success: var(--success);
+  --color-on-success: var(--on-success);
+  --color-success-soft: var(--success-soft);
+  --color-focus: var(--focus);
+}
+
+:root {
+  --canvas: #fafaf7;
+  --surface: #ffffff;
+  --raised: #f4f4ef;
+  --line: #e4e4dc;
+  --ink: #1a2622;
+  --muted: #5b6b64;
+  --brand: #047857;
+  --brand-strong: #065f46;
+  --on-brand: #ffffff;
+  --brand-soft: #ecfdf5;
+  --danger: #b91c1c;
+  --on-danger: #ffffff;
+  --danger-soft: #fef2f2;
+  --warning: #b45309;
+  --on-warning: #ffffff;
+  --warning-soft: #fffbeb;
+  --success: #15803d;
+  --on-success: #ffffff;
+  --success-soft: #f0fdf4;
+  --focus: #0d9488;
+}
+
+.dark {
+  --canvas: #0c1411;
+  --surface: #131d19;
+  --raised: #1a2721;
+  --line: #26332d;
+  --ink: #e8efeb;
+  --muted: #9db4ab;
+  --brand: #34d399;
+  --brand-strong: #6ee7b7;
+  --on-brand: #05201a;
+  --brand-soft: rgba(52, 211, 153, 0.12);
+  --danger: #f87171;
+  --on-danger: #450a0a;
+  --danger-soft: rgba(248, 113, 113, 0.12);
+  --warning: #fbbf24;
+  --on-warning: #451a03;
+  --warning-soft: rgba(251, 191, 36, 0.12);
+  --success: #4ade80;
+  --on-success: #052e16;
+  --success-soft: rgba(74, 222, 128, 0.12);
+  --focus: #2dd4bf;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--brand) 25%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@utility animate-rise {
+  animation: rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.25s ease-out both;
+}
+
+@utility grain {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
 }

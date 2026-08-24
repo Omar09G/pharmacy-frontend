@@ -141,7 +141,7 @@ const CategoriesPage: React.FC = () => {
             size="sm"
             onClick={() => handleDelete(row.original)}
           >
-            <Trash2 size={16} className="text-red-500" />
+            <Trash2 size={16} className="text-danger" />
           </Button>
         </div>
       ),
@@ -151,7 +151,7 @@ const CategoriesPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
           {t('categories.title')}
         </h1>
         <Button title={t('tooltips.newCategory')} onClick={handleCreate}>
@@ -222,7 +222,7 @@ const CategoriesPage: React.FC = () => {
             label={t('common.description')}
             {...form.register('description')}
           />
-          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <Select
               options={categoriesDetail.map((c) => ({
                 label: c.name,

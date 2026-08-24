@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useId } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -9,13 +10,16 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, helper, className, id, ...rest }, ref) => {
-    const inputId = id || label?.toLowerCase().replace(/\s/g, '-');
+    const autoId = useId();
+    const inputId = id || autoId;
+    const errorId = `${autoId}-error`;
+    const helperId = `${autoId}-helper`;
     return (
       <div className="w-full">
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
+            className="block text-sm font-medium text-ink mb-1"
           >
             {label}
           </label>
@@ -23,20 +27,31 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           id={inputId}
           ref={ref}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={
+            cn(error && errorId, helper && !error && helperId) || undefined
+          }
           className={cn(
-            'w-full rounded-lg border px-3 py-2 text-sm transition-colors outline-none',
-            'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100',
-            'placeholder:text-neutral-400 dark:placeholder:text-neutral-500',
+            'w-full rounded-lg border px-3 py-2 text-sm transition-colors bg-surface text-ink',
+            'placeholder:text-muted/70',
             error
-              ? 'border-red-500 focus:ring-2 focus:ring-red-500'
-              : 'border-neutral-300 dark:border-neutral-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+              ? 'border-danger focus:border-danger'
+              : 'border-line hover:border-muted/50 focus:border-brand',
             className,
           )}
           {...rest}
         />
-        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+        {error && (
+          <p
+            id={errorId}
+            className="mt-1 flex items-center gap-1 text-xs font-medium text-danger"
+          >
+            <TriangleAlert size={12} aria-hidden="true" />
+            {error}
+          </p>
+        )}
         {helper && !error && (
-          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+          <p id={helperId} className="mt-1 text-xs text-muted">
             {helper}
           </p>
         )}

@@ -15,6 +15,8 @@
     "previous": "Previous",
     "loading": "Loading...",
     "noData": "No data available",
+    "pageNotFound": "Page not found",
+    "pageNotFoundDesc": "The page you are looking for does not exist or was moved.",
     "actions": "Actions",
     "active": "Active",
     "inactive": "Inactive",
@@ -60,7 +62,21 @@
     "register": "Sign up",
     "welcome": "Welcome",
     "signing": "Signing in...",
-    "subtitle": "Pharmacy Santo Niño — Quality and trust"
+    "subtitle": "Pharmacy Santo Niño — Quality and trust",
+    "rateLimited": "Too many attempts. Try again in {seconds}s"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "current": "Current theme: {{theme}}",
+    "next": "Switch to {{theme}}"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content",
+    "sortAscending": "sorted ascending",
+    "sortDescending": "sorted descending",
+    "sortableColumn": "sortable column"
   },
   "nav": {
     "home": "Home",
@@ -72,7 +88,6 @@
     "categories": "Categories",
     "sales": "Sales",
     "purchases": "Purchases",
-    "cashIn": "Cash In",
     "discounts": "Discounts",
     "paymentMethods": "Payment Methods",
     "cashJournal": "Cash Journal",
@@ -250,7 +265,9 @@
     "description": {
       "open": "Open a new cash journal at the start of the day to track all cash transactions.",
       "close": "Close the cash journal at the end of the day to calculate total cash flow and reconcile with physical cash."
-    }
+    },
+    "concept": "Concept",
+    "entriesTitle": "Cash In & Out"
   },
   "inventory": {
     "title": "Inventory",
@@ -278,7 +295,18 @@
       "notes": "Notes",
       "createdAt": "Created At",
       "saleId": "Sale ID"
-    }
+    },
+    "restock": "Stock intake",
+    "adjustExact": "Exact adjustment",
+    "restockHelp": "The entered quantity is ADDED to the current lot stock.",
+    "adjustHelp": "The entered quantity REPLACES the lot stock (physical count).",
+    "currentQty": "Current stock",
+    "resultQty": "Resulting stock",
+    "lotNumber": "Lot",
+    "expiryDate": "Expiry date",
+    "lowStockList": "Low stock products",
+    "scanHint": "Scan or type the barcode and press Enter",
+    "noLotSelected": "Scan a barcode to load the lot"
   },
   "auditLog": {
     "title": "Audit Log",

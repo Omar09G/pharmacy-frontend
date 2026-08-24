@@ -22,17 +22,6 @@ export interface InventoryLocation {
   updatedAt: string;
 }
 
-export interface InventoryStock {
-  productId: number;
-  productName: string;
-  barcode: string;
-  locationId: number;
-  locationName: string;
-  qtyOnHand: number;
-  maxExpiryDate: string;
-  lastMovementAt: string;
-}
-
 export interface ProductLotRequest {
   productId: number;
   lotNumber: string;

@@ -15,6 +15,8 @@
     "previous": "Anterior",
     "loading": "Cargando...",
     "noData": "Sin datos disponibles",
+    "pageNotFound": "Página no encontrada",
+    "pageNotFoundDesc": "La página que buscas no existe o fue movida.",
     "actions": "Acciones",
     "active": "Activo",
     "inactive": "Inactivo",
@@ -60,7 +62,21 @@
     "register": "Regístrate",
     "welcome": "Bienvenido",
     "signing": "Iniciando sesión...",
-    "subtitle": "Farmacia Santo Niño — Calidad y confianza"
+    "subtitle": "Farmacia Santo Niño — Calidad y confianza",
+    "rateLimited": "Demasiados intentos. Espera {seconds}s"
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "current": "Tema actual: {{theme}}",
+    "next": "Cambiar a {{theme}}"
+  },
+  "a11y": {
+    "skipToContent": "Saltar al contenido",
+    "sortAscending": "ordenado ascendente",
+    "sortDescending": "ordenado descendente",
+    "sortableColumn": "columna ordenable"
   },
   "nav": {
     "home": "Inicio",
@@ -72,7 +88,6 @@
     "categories": "Categorías",
     "sales": "Ventas",
     "purchases": "Compras",
-    "cashIn": "Entrada de Dinero",
     "discounts": "Descuentos",
     "paymentMethods": "Métodos de Pago",
     "cashJournal": "Dinero en Caja",
@@ -246,7 +261,9 @@
     "nameJournal": "Nombre de Caja",
     "openedBy": "Abierta por",
     "closedBy": "Cerrada por",
-    "descriptionJournal": "Descripción de la caja"
+    "descriptionJournal": "Descripción de la caja",
+    "concept": "Concepto",
+    "entriesTitle": "Entradas y Salidas"
   },
   "inventory": {
     "title": "Inventario",
@@ -274,7 +291,18 @@
       "notes": "Notas",
       "createdAt": "Creado En",
       "saleId": "ID de Venta"
-    }
+    },
+    "restock": "Ingreso de mercancía",
+    "adjustExact": "Ajuste exacto",
+    "restockHelp": "La cantidad capturada se SUMA a la existencia actual del lote.",
+    "adjustHelp": "La cantidad capturada REEMPLAZA la existencia del lote (conteo físico).",
+    "currentQty": "Existencia actual",
+    "resultQty": "Existencia resultante",
+    "lotNumber": "Lote",
+    "expiryDate": "Caducidad",
+    "lowStockList": "Productos con stock bajo",
+    "scanHint": "Escanea o escribe el código y presiona Enter",
+    "noLotSelected": "Escanea un código de barras para cargar el lote"
   },
   "auditLog": {
     "title": "Auditoría",

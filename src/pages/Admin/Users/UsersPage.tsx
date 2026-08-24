@@ -153,14 +153,12 @@ const UsersPage: React.FC = () => {
     openCreate();
   };
 
-  const getColorRole = (role: string) => {
+  const getColorRole = (role: string): 'brand' | 'neutral' => {
     switch (role) {
       case 'ADMIN':
-        return 'purple';
-      case 'USER':
-        return 'blue';
+        return 'brand';
       default:
-        return 'teal';
+        return 'neutral';
     }
   };
 
@@ -172,7 +170,7 @@ const UsersPage: React.FC = () => {
       header: t('users.username'),
       cell: ({ getValue }) => (
         <Badge
-          color={getColorRole(getValue() as string)}
+          tone={getColorRole(getValue() as string)}
           className="font-medium"
         >
           {getValue() as string}
@@ -185,7 +183,7 @@ const UsersPage: React.FC = () => {
       header: t('users.role'),
       cell: ({ getValue }) => (
         <Badge
-          color={getColorRole(getValue() as string)}
+          tone={getColorRole(getValue() as string)}
           className="font-medium"
         >
           {getValue() as string}
@@ -199,7 +197,7 @@ const UsersPage: React.FC = () => {
         const status = getValue() as string;
         const isActive = status === 'ACTIVE';
         return (
-          <Badge color={isActive ? 'green' : 'red'}>
+          <Badge tone={isActive ? 'success' : 'danger'}>
             {isActive ? t('common.active') : t('common.inactive')}
           </Badge>
         );
@@ -224,7 +222,7 @@ const UsersPage: React.FC = () => {
             size="sm"
             onClick={() => handleDelete(row.original)}
           >
-            <Trash2 size={16} className="text-red-500" />
+            <Trash2 size={16} className="text-danger" />
           </Button>
         </div>
       ),
@@ -234,7 +232,7 @@ const UsersPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
           {t('users.title')}
         </h1>
         <Button title={t('tooltips.newUser')} onClick={handleCreate}>

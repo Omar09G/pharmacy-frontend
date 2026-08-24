@@ -62,11 +62,13 @@ const SalesPage: React.FC = () => {
     if (r.isConfirmed) cancelMut.mutate(item.id);
   };
 
-  const statusColor = (status: string): 'green' | 'red' | 'yellow' | 'gray' => {
-    if (status === 'completed') return 'green';
-    if (status === 'cancelled') return 'red';
-    if (status === 'pending') return 'yellow';
-    return 'gray';
+  const statusColor = (
+    status: string,
+  ): 'success' | 'danger' | 'warning' | 'neutral' => {
+    if (status === 'completed') return 'success';
+    if (status === 'cancelled') return 'danger';
+    if (status === 'pending') return 'warning';
+    return 'neutral';
   };
 
   const handleViewDetails = (item: Sale) => {
@@ -116,7 +118,7 @@ const SalesPage: React.FC = () => {
       header: t('customers.fullName'),
       cell: ({ getValue }) => {
         const s = getValue() as string;
-        return <Badge color="purple">{s}</Badge>;
+        return <Badge tone="neutral">{s}</Badge>;
       },
       size: 150,
     },
@@ -133,7 +135,7 @@ const SalesPage: React.FC = () => {
       header: t('common.total'),
       cell: ({ getValue }) => {
         const s = getValue() as string;
-        return <Badge color="gray">{`$${Number(s ?? 0).toFixed(2)}`}</Badge>;
+        return <Badge tone="neutral">{`$${Number(s ?? 0).toFixed(2)}`}</Badge>;
       },
     },
     {
@@ -141,7 +143,7 @@ const SalesPage: React.FC = () => {
       header: t('common.status'),
       cell: ({ getValue }) => {
         const s = getValue() as string;
-        return <Badge color={statusColor(s)}>{s.toUpperCase()}</Badge>;
+        return <Badge tone={statusColor(s)}>{s.toUpperCase()}</Badge>;
       },
     },
     {
@@ -156,7 +158,7 @@ const SalesPage: React.FC = () => {
             onClick={() => handleViewDetails(row.original)}
             disabled={row.original.status === 'cancelled'}
           >
-            <EyeIcon size={16} className="text-blue-500" />
+            <EyeIcon size={16} className="text-brand" />
           </Button>
           <Button
             title={t('tooltips.cancelSale')}
@@ -165,7 +167,7 @@ const SalesPage: React.FC = () => {
             onClick={() => handleCancel(row.original)}
             disabled={row.original.status === 'cancelled'}
           >
-            <Trash2 size={16} className="text-red-500" />
+            <Trash2 size={16} className="text-danger" />
           </Button>
         </div>
       ),
@@ -175,10 +177,10 @@ const SalesPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
           {t('sales.title')}
         </h1>
-        <div className="text-blue-800 font-bold text-lg justify-normal dark:text-white">
+        <div className="font-display text-lg font-semibold tracking-tight text-ink justify-normal">
           Total Sale Page: ${getTotalSum()}
         </div>
       </div>

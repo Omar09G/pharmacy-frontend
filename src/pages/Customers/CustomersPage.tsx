@@ -258,7 +258,7 @@ const CustomersPage: React.FC = () => {
       cell: ({ getValue }) => {
         const status = getValue() as string;
         return (
-          <Badge color={status === 'ACTIVE' ? 'green' : 'red'}>
+          <Badge tone={status === 'ACTIVE' ? 'success' : 'danger'}>
             {status === 'ACTIVE' ? t('common.active') : t('common.inactive')}
           </Badge>
         );
@@ -283,7 +283,7 @@ const CustomersPage: React.FC = () => {
             size="sm"
             onClick={() => handleDelete(row.original)}
           >
-            <Trash2 size={16} className="text-red-500" />
+            <Trash2 size={16} className="text-danger" />
           </Button>
           <Button
             title={t('tooltips.viewCreditLine')}
@@ -291,7 +291,7 @@ const CustomersPage: React.FC = () => {
             size="sm"
             onClick={() => handleViewLinCredit(row.original)}
           >
-            <EyeIcon size={16} className="text-blue-500" />
+            <EyeIcon size={16} className="text-brand" />
           </Button>
           <Button
             title={t('tooltips.accountStatement')}
@@ -299,7 +299,7 @@ const CustomersPage: React.FC = () => {
             size="sm"
             onClick={() => handleViewLinCredit(row.original)}
           >
-            <ReceiptText size={16} className="text-gray-500" />
+            <ReceiptText size={16} className="text-muted" />
           </Button>
         </div>
       ),
@@ -309,7 +309,7 @@ const CustomersPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
           {t('customers.title')}
         </h1>
         <Button title={t('tooltips.newCustomer')} onClick={handleCreate}>
@@ -400,19 +400,19 @@ const CustomersPage: React.FC = () => {
           />
 
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-ink mb-1">
               {t('common.status')}
             </label>
             <div className="relative">
               <select
                 id="status"
                 {...form.register('status')}
-                className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-colors duration-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:border-gray-500"
+                className="w-full appearance-none bg-surface border border-line rounded-lg px-4 py-2 pr-10 text-ink font-medium outline-none focus:border-brand hover:border-brand/50 transition-colors duration-200"
               >
                 <option value="ACTIVE">{t('common.active')}</option>
                 <option value="INACTIVE">{t('common.inactive')}</option>
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted">
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
                   <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                 </svg>
@@ -434,7 +434,7 @@ const CustomersPage: React.FC = () => {
               variant="ghost"
               size="sm"
             >
-              <BanIcon size={16} className="text-blue-500" />
+              <BanIcon size={16} className="text-brand" />
             </Button>
             <Button
               title={t('tooltips.deleteCreditAccount')}
@@ -444,7 +444,7 @@ const CustomersPage: React.FC = () => {
               variant="ghost"
               size="sm"
             >
-              <Trash2 size={16} className="text-red-500" />
+              <Trash2 size={16} className="text-danger" />
             </Button>
 
             <Button
@@ -457,7 +457,7 @@ const CustomersPage: React.FC = () => {
               {editingCredit ? (
                 <PencilIcon size={16} className="text-black-500" />
               ) : (
-                <SaveIcon size={16} className="text-green-500" />
+                <SaveIcon size={16} className="text-success" />
               )}
             </Button>
           </>

@@ -6,7 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { type ColumnDef } from '@tanstack/react-table';
 import { cashApi } from '../../services/cashApi';
+import { dashboardApi } from '../../services/dashboardApi';
 import type {
+  CashEntry,
   CashJournal,
   CashJournalUpdate,
   CreateCashJournal,
@@ -50,6 +52,61 @@ const CashJournalPage: React.FC = () => {
   });
   const items = Array.isArray(data?.data) ? data.data : [];
   const total = data?.total ?? 0;
+
+  // Balance per journal (opening + inflows - outflows) for the selected range.
+  const { data: balancesRes } = useQuery({
+    queryKey: ['cashJournalBalance', dateInit, dateEnd],
+    queryFn: () => dashboardApi.getCashJournalBalance(1, 200, 0, dateInit, dateEnd),
+  });
+  const balanceById = new Map(
+    (Array.isArray(balancesRes?.data) ? balancesRes.data : []).map((b) => [
+      b.cashJournalId,
+      b,
+    ]),
+  );
+
+  // Cash ledger entries (entradas/salidas) for the selected range.
+  const [entriesPage, setEntriesPage] = useState(1);
+  const { data: entriesRes, isLoading: entriesLoading } = useQuery({
+    queryKey: ['cashEntries', entriesPage, pageSize, dateInit, dateEnd],
+    queryFn: () => cashApi.getEntries(entriesPage, pageSize, 0, dateInit, dateEnd),
+  });
+  const entries = Array.isArray(entriesRes?.data) ? entriesRes.data : [];
+  const entriesTotal = entriesRes?.total ?? 0;
+
+  const isInflow = (e: CashEntry) =>
+    e.entryType === 'inflow' || e.entryType === 'sale';
+
+  const entryColumns: ColumnDef<CashEntry>[] = [
+    {
+      accessorKey: 'recordedAt',
+      header: t('common.date'),
+      cell: ({ getValue }) => formatLocal(getValue() as string, i18n.language),
+    },
+    { accessorKey: 'name', header: t('cashJournal.concept') },
+    {
+      accessorKey: 'entryType',
+      header: t('common.type'),
+      cell: ({ getValue }) => {
+        const v = getValue() as CashEntry['entryType'];
+        return <Badge tone={isInflow({ entryType: v } as CashEntry) ? 'success' : 'danger'}>{v}</Badge>;
+      },
+    },
+    {
+      accessorKey: 'amount',
+      header: t('common.amount'),
+      cell: ({ row }) => (
+        <span
+          className={`font-mono tabular-nums font-medium ${
+            isInflow(row.original) ? 'text-success' : 'text-danger'
+          }`}
+        >
+          {isInflow(row.original) ? '+' : '−'}$
+          {Number(row.original.amount ?? 0).toFixed(2)}
+        </span>
+      ),
+    },
+  ];
 
   const form = useForm({ resolver: zodResolver(openSchema) });
 
@@ -116,11 +173,38 @@ const CashJournalPage: React.FC = () => {
       cell: ({ getValue }) => `$${Number(getValue() ?? 0).toFixed(2)}`,
     },
     {
+      id: 'inflow',
+      header: 'Entradas',
+      cell: ({ row }) => (
+        <span className="font-mono tabular-nums text-success">
+          ${Number(balanceById.get(row.original.id)?.inflow ?? 0).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      id: 'outflow',
+      header: 'Salidas',
+      cell: ({ row }) => (
+        <span className="font-mono tabular-nums text-danger">
+          ${Number(balanceById.get(row.original.id)?.outflow ?? 0).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      id: 'balance',
+      header: 'Balance',
+      cell: ({ row }) => (
+        <span className="font-mono tabular-nums font-semibold text-brand">
+          ${Number(balanceById.get(row.original.id)?.balance ?? row.original.openingAmount ?? 0).toFixed(2)}
+        </span>
+      ),
+    },
+    {
       accessorKey: 'status',
       header: t('common.status'),
       cell: ({ getValue }) => {
         const s = getValue() as string;
-        return <Badge color={s === 'OPEN' ? 'green' : 'gray'}>{s}</Badge>;
+        return <Badge tone={s === 'OPEN' ? 'success' : 'neutral'}>{s}</Badge>;
       },
     },
     {
@@ -151,7 +235,7 @@ const CashJournalPage: React.FC = () => {
             onClick={() => onSubmitCancelJournal(row.original)}
             loading={closeMut.isPending}
           >
-            <PencilIcon size={16} className="text-red-500" />{' '}
+            <PencilIcon size={16} className="text-danger" />{' '}
             {t('common.confirm')}
           </Button>
         ) : null,
@@ -161,7 +245,7 @@ const CashJournalPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
           {t('cashJournal.title')}
         </h1>
         <Button title={t('tooltips.openJournal')} onClick={handleOpen}>
@@ -191,6 +275,20 @@ const CashJournalPage: React.FC = () => {
           pageSize={pageSize}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
+        />
+      </Card>
+
+      <Card title="Entradas y Salidas">
+        <DataTable
+          columns={entryColumns}
+          data={entries}
+          loading={entriesLoading}
+        />
+        <Pagination
+          page={entriesPage}
+          totalItems={entriesTotal}
+          pageSize={pageSize}
+          onPageChange={setEntriesPage}
         />
       </Card>
 

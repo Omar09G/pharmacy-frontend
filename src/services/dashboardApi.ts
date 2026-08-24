@@ -11,14 +11,15 @@ import type {
   SalesWithPayments,
   SaleItemsDetail,
 } from '../models/dashboard.model';
-import { getCurrentDate } from '../utils/dateUtils';
+import { getCurrentDate, getDaysAgoDate } from '../utils/dateUtils';
 
 export const dashboardApi = {
+  // Default range: last 7 days so the dashboard chart shows the week.
   getSalesDailySummary: (
     page = 1,
     limit = 31,
     total = 0,
-    dateInit: string = getCurrentDate(),
+    dateInit: string = getDaysAgoDate(6),
     dateEnd: string = getCurrentDate(),
   ) =>
     api

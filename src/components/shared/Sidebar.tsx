@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../../store/authStore';
+import { hasPermission, useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import { ROLES } from '../../utils/constants';
 import {
@@ -26,7 +26,6 @@ import {
   MapPin,
   X,
   Pill,
-  BanknoteArrowUpIcon,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -35,6 +34,8 @@ interface NavItem {
   label: string;
   icon: React.ReactNode;
   adminOnly?: boolean;
+  /** Permission required to see the link (mirrors backend authz middleware). */
+  permission?: string;
 }
 
 const Sidebar: React.FC = () => {
@@ -54,57 +55,71 @@ const Sidebar: React.FC = () => {
       label: t('nav.dashboard'),
       icon: <LayoutDashboard size={20} />,
     },
-    { to: '/app/pos', label: t('nav.pos'), icon: <ShoppingCart size={20} /> },
+    {
+      to: '/app/pos',
+      label: t('nav.pos'),
+      icon: <ShoppingCart size={20} />,
+      permission: 'SALES_MANAGER',
+    },
     {
       to: '/app/products',
       label: t('nav.products'),
       icon: <Package size={20} />,
+      permission: 'PRODUCT_MANAGEMENT',
     },
     {
       to: '/app/customers',
       label: t('nav.customers'),
       icon: <Users size={20} />,
+      permission: 'SALES_MANAGER',
     },
     {
       to: '/app/suppliers',
       label: t('nav.suppliers'),
       icon: <Truck size={20} />,
+      permission: 'PRODUCT_MANAGEMENT',
     },
     {
       to: '/app/categories',
       label: t('nav.categories'),
       icon: <FolderOpen size={20} />,
+      permission: 'PRODUCT_MANAGEMENT',
     },
-    { to: '/app/sales', label: t('nav.sales'), icon: <Receipt size={20} /> },
+    {
+      to: '/app/sales',
+      label: t('nav.sales'),
+      icon: <Receipt size={20} />,
+      permission: 'SALES_MANAGER',
+    },
     {
       to: '/app/purchases',
       label: t('nav.purchases'),
       icon: <ShoppingBag size={20} />,
-    },
-    {
-      to: '/app/cash-in',
-      label: t('nav.cashIn'),
-      icon: <BanknoteArrowUpIcon size={20} />,
+      permission: 'PRODUCT_MANAGEMENT',
     },
     {
       to: '/app/discounts',
       label: t('nav.discounts'),
       icon: <Tags size={20} />,
+      permission: 'PRODUCT_MANAGEMENT',
     },
     {
       to: '/app/payment-methods',
       label: t('nav.paymentMethods'),
       icon: <CreditCard size={20} />,
+      permission: 'PRODUCT_MANAGEMENT',
     },
     {
       to: '/app/cash-journal',
       label: t('nav.cashJournal'),
       icon: <Landmark size={20} />,
+      permission: 'SALES_MANAGER',
     },
     {
       to: '/app/inventory',
       label: t('nav.inventory'),
       icon: <Warehouse size={20} />,
+      permission: 'PRODUCT_MANAGEMENT',
     },
   ];
 
@@ -153,6 +168,10 @@ const Sidebar: React.FC = () => {
     },
   ];
 
+  const visibleMainItems = mainItems.filter(
+    (item) => !item.permission || hasPermission(user, item.permission),
+  );
+
   const renderLink = (item: NavItem) => (
     <NavLink
       key={item.to}
@@ -160,15 +179,25 @@ const Sidebar: React.FC = () => {
       onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+          'relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors outline-offset-2',
           isActive
-            ? 'bg-blue-600 text-white'
-            : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700',
+            ? 'bg-brand-soft text-brand'
+            : 'text-muted hover:bg-raised hover:text-ink',
         )
       }
     >
-      {item.icon}
-      <span>{item.label}</span>
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <span
+              aria-hidden="true"
+              className="absolute -left-3 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-brand"
+            />
+          )}
+          {item.icon}
+          <span>{item.label}</span>
+        </>
+      )}
     </NavLink>
   );
 
@@ -177,46 +206,60 @@ const Sidebar: React.FC = () => {
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          className="fixed inset-0 z-30 bg-black/50 md:hidden animate-fade-in"
           onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
         />
       )}
 
       <aside
         className={cn(
-          'fixed top-0 left-0 z-40 h-full w-64 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-700 flex flex-col transition-transform duration-200',
+          'fixed top-0 left-0 z-40 h-full w-64 bg-surface border-r border-line flex flex-col transition-transform duration-200',
           'md:translate-x-0 md:static md:z-auto',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-neutral-200 dark:border-neutral-700">
-          <NavLink to="/app/dashboard" className="flex items-center gap-2">
-            <div className="bg-blue-600 rounded-lg p-1.5">
-              <Pill size={20} className="text-white" />
+        <div className="flex items-center justify-between gap-2 px-4 py-4 border-b border-line">
+          <NavLink
+            to="/app/dashboard"
+            className="flex items-center gap-2.5 min-w-0"
+          >
+            <div className="bg-brand text-on-brand rounded-xl p-1.5 shrink-0">
+              <Pill size={20} aria-hidden="true" />
             </div>
-            <span className="font-bold text-lg text-neutral-900 dark:text-white">
-              {appName} v{appVersion} ({appEnv})
+            <span className="min-w-0">
+              <span className="block truncate font-display font-semibold text-base leading-tight text-ink">
+                {appName}
+              </span>
+              <span className="block text-[11px] font-mono text-muted">
+                v{appVersion} · {appEnv}
+              </span>
             </span>
           </NavLink>
           <button
             title={t('tooltips.closeSidebar')}
-            className="md:hidden p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
+            aria-label={t('tooltips.closeSidebar')}
+            className="md:hidden p-2 inline-flex items-center justify-center rounded-lg hover:bg-raised text-muted"
             onClick={() => setSidebarOpen(false)}
           >
-            <X size={20} className="text-neutral-500" />
+            <X size={20} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-          {mainItems.map(renderLink)}
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1" aria-label="Main">
+          {visibleMainItems.map(renderLink)}
 
           {isAdmin && (
             <>
-              <div className="pt-4 pb-2 px-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                  <Settings size={12} className="inline mr-1" />
+              <div className="pt-5 pb-2 px-3">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-muted/80">
+                  <Settings
+                    size={12}
+                    className="inline mr-1"
+                    aria-hidden="true"
+                  />
                   {t('nav.admin')}
                 </span>
               </div>
