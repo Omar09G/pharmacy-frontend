@@ -4,6 +4,7 @@ import { API_BASE_URL } from '../utils/constants';
 import { useAuthStore } from '../store/authStore';
 import { captureError } from '../config/sentry';
 import { getOriginRequestId, REQUEST_ID_HEADER } from './requestId';
+import { secureStorage } from '../utils/secureStorage';
 
 export const NATIVE_ACCESS_TOKEN_KEY = 'pharmacy_native_access_token';
 
@@ -26,12 +27,12 @@ const axiosInstance = axios.create({
 // - Attach the persistent origin X-Request-ID so the backend can trace every
 //   call back to this client. If a call already carries its own value, it is
 //   respected (never overwritten).
-// - On native (Capacitor/Android), attach stored Bearer token because HttpOnly
-//   cookies are blocked by SameSite=Strict cross-origin in WebView.
-axiosInstance.interceptors.request.use((config) => {
+// - On native (Capacitor/Android), attach stored Bearer token from secureStorage
+//   because HttpOnly cookies are blocked by SameSite=Strict cross-origin in WebView.
+axiosInstance.interceptors.request.use(async (config) => {
   config.headers[REQUEST_ID_HEADER] ??= getOriginRequestId();
   if (Capacitor.isNativePlatform()) {
-    const token = localStorage.getItem(NATIVE_ACCESS_TOKEN_KEY);
+    const token = await secureStorage.getItem(NATIVE_ACCESS_TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

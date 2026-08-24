@@ -7,17 +7,16 @@ import { setSentryUser } from '../config/sentry';
 import { getLoginErrorMessage } from '../utils/apiErrorMapper';
 import { NATIVE_ACCESS_TOKEN_KEY } from '../api/axiosInstance';
 import { getOriginRequestId, REQUEST_ID_HEADER } from '../api/requestId';
+import { secureStorage } from '../utils/secureStorage';
 
 const NATIVE_REFRESH_TOKEN_KEY = 'pharmacy_native_refresh_token';
 
 /** Returns headers needed for native clients (Bearer + platform marker). */
 function nativeAuthHeaders(): Record<string, string> {
   if (!Capacitor.isNativePlatform()) return {};
-  const token = localStorage.getItem(NATIVE_ACCESS_TOKEN_KEY);
-  return {
-    'X-Client-Platform': 'native',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
+  // NOTE: This is called synchronously; for async secureStorage, the
+  // interceptor in axiosInstance handles the async token read.
+  return { 'X-Client-Platform': 'native' };
 }
 
 export interface AuthUser {
@@ -67,12 +66,14 @@ export const useAuthStore = create<AuthState>()(
           );
           const data = res.data?.data ?? res.data;
           if (data?.id) {
-            // On native, persist tokens for Bearer-based auth (cookies are blocked cross-origin)
+            // On native, persist tokens via secureStorage (Keychain/Keystore
+            // when @capacitor/secure-storage is installed, Preferences
+            // plugin, or localStorage as final fallback).
             if (Capacitor.isNativePlatform()) {
               if (data.accessToken)
-                localStorage.setItem(NATIVE_ACCESS_TOKEN_KEY, data.accessToken);
+                await secureStorage.setItem(NATIVE_ACCESS_TOKEN_KEY, data.accessToken);
               if (data.refreshToken)
-                localStorage.setItem(
+                await secureStorage.setItem(
                   NATIVE_REFRESH_TOKEN_KEY,
                   data.refreshToken,
                 );
@@ -104,7 +105,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const isNative = Capacitor.isNativePlatform();
           const storedRefresh = isNative
-            ? localStorage.getItem(NATIVE_REFRESH_TOKEN_KEY)
+            ? await secureStorage.getItem(NATIVE_REFRESH_TOKEN_KEY)
             : null;
           await axios.post(
             `${API_BASE_URL}/auth/logout`,
@@ -122,8 +123,8 @@ export const useAuthStore = create<AuthState>()(
           // Even if the backend call fails, clear local state
         }
         // Clear native token storage
-        localStorage.removeItem(NATIVE_ACCESS_TOKEN_KEY);
-        localStorage.removeItem(NATIVE_REFRESH_TOKEN_KEY);
+        await secureStorage.removeItem(NATIVE_ACCESS_TOKEN_KEY);
+        await secureStorage.removeItem(NATIVE_REFRESH_TOKEN_KEY);
         set({
           user: null,
           isAuthenticated: false,
@@ -176,7 +177,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const isNative = Capacitor.isNativePlatform();
           const storedRefresh = isNative
-            ? localStorage.getItem(NATIVE_REFRESH_TOKEN_KEY)
+            ? await secureStorage.getItem(NATIVE_REFRESH_TOKEN_KEY)
             : null;
           const res = await axios.post(
             `${API_BASE_URL}/auth/refresh`,
@@ -192,9 +193,9 @@ export const useAuthStore = create<AuthState>()(
           );
           const data = res.data?.data ?? res.data;
           if (isNative && data?.accessToken) {
-            localStorage.setItem(NATIVE_ACCESS_TOKEN_KEY, data.accessToken);
+            await secureStorage.setItem(NATIVE_ACCESS_TOKEN_KEY, data.accessToken);
             if (data.refreshToken)
-              localStorage.setItem(NATIVE_REFRESH_TOKEN_KEY, data.refreshToken);
+              await secureStorage.setItem(NATIVE_REFRESH_TOKEN_KEY, data.refreshToken);
           }
           return !!data;
         } catch {

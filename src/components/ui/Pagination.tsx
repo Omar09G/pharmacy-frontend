@@ -24,7 +24,13 @@ const Pagination: React.FC<PaginationProps> = ({
   onPageSizeChange,
 }) => {
   const { t } = useTranslation();
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+  // The backend may return an inflated total when using the `limit+1`
+  // pattern (fetching one extra row to detect if more pages exist).
+  // Clamp totalPages so phantom pages are never shown.
+  const rawPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const maxReachable = page + (totalItems > page * pageSize ? 1 : 0);
+  const totalPages = Math.min(rawPages, Math.max(1, maxReachable));
 
   const from = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, totalItems);

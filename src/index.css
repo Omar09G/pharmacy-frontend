@@ -1,3 +1,9 @@
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+:focus-visible {
+  outline: 2px solid oklch(0.55 0.22 265);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

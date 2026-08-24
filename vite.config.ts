@@ -16,6 +16,46 @@ export default defineConfig({
       overrideConfigFile: path.resolve(__dirname, './eslint.config.mjs'),
     }),
   ],
+  build: {
+    target: 'es2020',
+    sourcemap: process.env.NODE_ENV !== 'production',
+    rollupOptions: {
+      output: {
+        // Split stable vendor code so app deploys don't invalidate the
+        // whole cache: react runtime / tanstack / heavy chart libs.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (
+            id.includes('/react-dom/') ||
+            id.includes('/react/') ||
+            id.includes('/scheduler/') ||
+            id.includes('/react-router')
+          ) {
+            return 'react-vendor';
+          }
+          if (id.includes('@tanstack')) return 'tanstack-vendor';
+          if (
+            id.includes('/recharts') ||
+            id.includes('/d3-') ||
+            id.includes('/victory-') ||
+            id.includes('/chart.js')
+          ) {
+            return 'charts-vendor';
+          }
+          if (
+            id.includes('/axios/') ||
+            id.includes('/i18next') ||
+            id.includes('/zustand') ||
+            id.includes('/date-fns') ||
+            id.includes('/lodash')
+          ) {
+            return 'lib-vendor';
+          }
+          return undefined;
+        },
+      },
+    },
+  },
   server: {
     // Development proxy to avoid CORS issues when calling the API
     proxy: {
