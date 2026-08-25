@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import React from 'react';
 import Modal from '../components/ui/Modal';
 
 // jsdom leaves offsetParent null for every element, which hides visibility

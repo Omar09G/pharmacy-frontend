@@ -56,7 +56,8 @@ const CashJournalPage: React.FC = () => {
   // Balance per journal (opening + inflows - outflows) for the selected range.
   const { data: balancesRes } = useQuery({
     queryKey: ['cashJournalBalance', dateInit, dateEnd],
-    queryFn: () => dashboardApi.getCashJournalBalance(1, 200, 0, dateInit, dateEnd),
+    queryFn: () =>
+      dashboardApi.getCashJournalBalance(1, 200, 0, dateInit, dateEnd),
   });
   const balanceById = new Map(
     (Array.isArray(balancesRes?.data) ? balancesRes.data : []).map((b) => [
@@ -69,7 +70,8 @@ const CashJournalPage: React.FC = () => {
   const [entriesPage, setEntriesPage] = useState(1);
   const { data: entriesRes, isLoading: entriesLoading } = useQuery({
     queryKey: ['cashEntries', entriesPage, pageSize, dateInit, dateEnd],
-    queryFn: () => cashApi.getEntries(entriesPage, pageSize, 0, dateInit, dateEnd),
+    queryFn: () =>
+      cashApi.getEntries(entriesPage, pageSize, 0, dateInit, dateEnd),
   });
   const entries = Array.isArray(entriesRes?.data) ? entriesRes.data : [];
   const entriesTotal = entriesRes?.total ?? 0;
@@ -89,7 +91,15 @@ const CashJournalPage: React.FC = () => {
       header: t('common.type'),
       cell: ({ getValue }) => {
         const v = getValue() as CashEntry['entryType'];
-        return <Badge tone={isInflow({ entryType: v } as CashEntry) ? 'success' : 'danger'}>{v}</Badge>;
+        return (
+          <Badge
+            tone={
+              isInflow({ entryType: v } as CashEntry) ? 'success' : 'danger'
+            }
+          >
+            {v}
+          </Badge>
+        );
       },
     },
     {
@@ -195,7 +205,12 @@ const CashJournalPage: React.FC = () => {
       header: 'Balance',
       cell: ({ row }) => (
         <span className="font-mono tabular-nums font-semibold text-brand">
-          ${Number(balanceById.get(row.original.id)?.balance ?? row.original.openingAmount ?? 0).toFixed(2)}
+          $
+          {Number(
+            balanceById.get(row.original.id)?.balance ??
+              row.original.openingAmount ??
+              0,
+          ).toFixed(2)}
         </span>
       ),
     },

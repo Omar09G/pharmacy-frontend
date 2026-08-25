@@ -26,18 +26,18 @@ export interface ProductLotRequest {
   productId: number;
   lotNumber: string;
   qtyOnHand: number;
-  expiryDate: string;
-  purchaseId: number;
-  createdAt: string;
+  expiryDate: string | null;
+  purchaseId: number | null;
+  createdAt?: string;
 }
 
 export interface ProductLot {
   id: number;
   productId: number;
-  lotNumber: string;
+  lotNumber: string | null;
   qtyOnHand: number;
-  expiryDate: string;
-  purchaseId: number;
+  expiryDate: string | null;
+  purchaseId: number | null;
   createdAt: string;
 }
 

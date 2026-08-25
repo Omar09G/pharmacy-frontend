@@ -37,7 +37,10 @@ export const inventoryApi = {
     const payload = { ...productLotRequest, createdAt: nowUTC() };
     return typeOperation === 'update'
       ? api
-          .patch<ApiResponse<ProductLotIdResponse>>(`product_lot/${id}`, payload)
+          .patch<ApiResponse<ProductLotIdResponse>>(
+            `product_lot/${id}`,
+            payload,
+          )
           .then((r) => r.data)
       : api
           .patch<ApiResponse<ProductLotIdResponse>>(

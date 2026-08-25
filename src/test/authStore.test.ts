@@ -124,7 +124,13 @@ describe('authStore', () => {
   describe('logout', () => {
     it('clears user and isAuthenticated on logout', async () => {
       useAuthStore.setState({
-        user: { id: 1, fullName: 'Test', username: 'test', role: 'admin' },
+        user: {
+          id: 1,
+          fullName: 'Test',
+          username: 'test',
+          role: 'admin',
+          permissions: [],
+        },
         isAuthenticated: true,
       });
       vi.mocked(axios.post).mockResolvedValueOnce({});
@@ -138,7 +144,13 @@ describe('authStore', () => {
 
     it('clears state even if backend logout call fails', async () => {
       useAuthStore.setState({
-        user: { id: 1, fullName: 'Test', username: 'test', role: 'admin' },
+        user: {
+          id: 1,
+          fullName: 'Test',
+          username: 'test',
+          role: 'admin',
+          permissions: [],
+        },
         isAuthenticated: true,
       });
       vi.mocked(axios.post).mockRejectedValueOnce(new Error('Network error'));

@@ -77,10 +77,7 @@ const App: React.FC = () => {
         >
           <Route index element={<Navigate to="/app/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route
-            path="pos"
-            element={guarded('SALES_MANAGER', <POSPage />)}
-          />
+          <Route path="pos" element={guarded('SALES_MANAGER', <POSPage />)} />
           <Route
             path="products"
             element={guarded('PRODUCT_MANAGEMENT', <ProductsPage />)}

@@ -9,7 +9,7 @@ import type {
   ProductLot,
 } from '../../models/inventory.model';
 import { DEFAULT_PAGE_SIZE } from '../../utils/constants';
-import { formatLocal, getCurrentDate, nowUTC } from '../../utils/dateUtils';
+import { formatLocal, getCurrentDate } from '../../utils/dateUtils';
 import Card from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
 import Pagination from '../../components/ui/Pagination';
@@ -21,15 +21,28 @@ import {
   SaveIcon,
   SlidersHorizontal,
 } from 'lucide-react';
-import Badge from '../../components/ui/Badge';
+import Badge, { type BadgeTone } from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
 import { z } from 'zod';
-import { useForm, type Resolver } from 'react-hook-form';
+import { useWatch, useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { showError, showSuccess, showApiError } from '../../utils/alerts';
 
 type StockOperation = 'restock' | 'adjust';
+
+const REASON_TONES: Record<string, BadgeTone> = {
+  sale: 'success',
+  restock: 'brand',
+  purchase: 'brand',
+  adjustment: 'warning',
+};
+
+const stockTone = (qty: number): BadgeTone => {
+  if (qty <= 3) return 'danger';
+  if (qty <= 10) return 'warning';
+  return 'neutral';
+};
 
 const InventoryPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -56,7 +69,12 @@ const InventoryPage: React.FC = () => {
     resolver: zodResolver(schema) as unknown as Resolver<FormDataStock>,
     defaultValues: { id: 0, productId: 0, qtyOnHand: 0, expiryDate: '' },
   });
-  const qtyValue = Number(form.watch('qtyOnHand') ?? 0);
+  const watchedQty = useWatch({
+    control: form.control,
+    name: 'qtyOnHand',
+    defaultValue: 0,
+  });
+  const qtyValue = Number(watchedQty ?? 0);
   const currentQty = Number(loadedLot?.qtyOnHand ?? 0);
   const resultingQty =
     operation === 'restock' ? currentQty + qtyValue : qtyValue;
@@ -74,7 +92,6 @@ const InventoryPage: React.FC = () => {
       inventoryApi.updateStock(
         id,
         {
-          id,
           productId: d.productId,
           lotNumber: loadedLot?.lotNumber ?? '',
           qtyOnHand: d.qtyOnHand,
@@ -178,15 +195,7 @@ const InventoryPage: React.FC = () => {
       accessorKey: 'reason',
       cell: ({ getValue }) => {
         const reason = getValue() as string;
-        const tone =
-          reason === 'sale'
-            ? 'success'
-            : reason === 'restock' || reason === 'purchase'
-              ? 'brand'
-              : reason === 'adjustment'
-                ? 'warning'
-                : 'danger';
-        return <Badge tone={tone}>{reason}</Badge>;
+        return <Badge tone={REASON_TONES[reason] ?? 'danger'}>{reason}</Badge>;
       },
     },
     {
@@ -398,13 +407,7 @@ const InventoryPage: React.FC = () => {
               accessorKey: 'qtyOnHand',
               cell: ({ getValue }) => {
                 const q = Number(getValue() ?? 0);
-                return (
-                  <Badge
-                    tone={q <= 3 ? 'danger' : q <= 10 ? 'warning' : 'neutral'}
-                  >
-                    {q}
-                  </Badge>
-                );
+                return <Badge tone={stockTone(q)}>{q}</Badge>;
               },
             },
             {
